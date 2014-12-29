@@ -1,7 +1,7 @@
 Soriento
 ========
 
-## Scala OrientDb objects mapping library
+## Scala to OrientDb object mapping library
 
 Soriento is an object-relational mapping framework from scala case classes to OrientDb ODocument.
 
