@@ -47,4 +47,4 @@ To run unit tests:
     sbt/sbt test
     
 ## License
-This software is available under the [New 2-clause BSD](LICENSE).    
+This software is available under the [New 2-clause BSD License](LICENSE).    
