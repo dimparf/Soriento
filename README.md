@@ -22,6 +22,7 @@ Supported types:
 
 ##Usage
 Simple example:
+```scala
   case class Message(content: String)
   case class Blog(author: String, @Embedded message: Message) // or @Linked
   createOClass[Message]
@@ -31,6 +32,7 @@ Simple example:
   val blogs: List[Blog] = db.queryBySql[Blog]("select from blog")
   deleteOClass[Message]
   deletOClass[Blog]
+```
 
 More examples in test folder.
 
