@@ -12,6 +12,7 @@ Soriento is an object-relational mapping framework from scala case classes to Or
  - Linked or Embedded definitions for case classes.
  - Transactions support.
  - Query by SQL.
+ 
 Supported types:
 - Long, Double, Int, Float, Short, String, case class.
 
