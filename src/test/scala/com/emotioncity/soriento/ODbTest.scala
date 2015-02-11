@@ -17,7 +17,7 @@ class ODbTest extends FunSuite with Matchers with ODb {
   override def initialize(): Unit = {}
 
   test("ODb should be create OClass with name in OrientDb") {
-    createOClass[Test]
+    val oClassOpt = createOClass[Test]
     assert(schema.existsClass("Test"))
     assert(schema.getClass("Test").existsProperty("field"))
   }

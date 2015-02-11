@@ -19,7 +19,10 @@ trait ODb {
   def createOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocumentTx): OClass = {
     val schema = db.getMetadata.getSchema
     val clazz = tag.runtimeClass
-    createOClassByName(schema, clazz.getName, clazz.getSimpleName)
+    val ccSimpleName = clazz.getSimpleName
+    if (!schema.existsClass(ccSimpleName)) {//TODO isExists ???
+      createOClassByName(schema, clazz.getName, ccSimpleName)
+    } else schema.getClass(ccSimpleName)
   }
 
   def dropOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocumentTx) = {
