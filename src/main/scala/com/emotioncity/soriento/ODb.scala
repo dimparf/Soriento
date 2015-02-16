@@ -64,16 +64,17 @@ trait ODb {
   private def getOType[T](inName: String, field: Field, clazz: Class[_]): OType = {
     import ReflectionUtils._
     val fieldClassName = field.getType.getName
+    println(s"Field type: $fieldClassName")
     fieldClassName match {
       //TODO add support for List[T]
-      case "java.lang.Boolean" => OType.BOOLEAN
-      case "java.lang.String" => OType.STRING
-      case "java.lang.Byte" => OType.BYTE
-      case "java.lang.Short" => OType.SHORT
-      case "java.lang.Integer" => OType.INTEGER
-      case "java.lang.Long" => OType.LONG
-      case "java.lang.Float" => OType.FLOAT
-      case "java.lang.Double" => OType.DOUBLE
+      case "java.lang.Boolean" | "boolean"=> OType.BOOLEAN
+      case "java.lang.String" | "string" => OType.STRING
+      case "java.lang.Byte" | "byte" => OType.BYTE
+      case "java.lang.Short" | "short" => OType.SHORT
+      case "java.lang.Integer" | "int" => OType.INTEGER
+      case "java.lang.Long" | "long" => OType.LONG
+      case "java.lang.Float" | "float" => OType.FLOAT
+      case "java.lang.Double" | "double" => OType.DOUBLE
       case "java.util.Date" => OType.DATE
       case _ =>
         val annotatedFields: List[(String, List[java.lang.annotation.Annotation])] = valNamesWithAnnotations(clazz)
