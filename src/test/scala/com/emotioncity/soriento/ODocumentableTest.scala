@@ -1,5 +1,7 @@
 package com.emotioncity.soriento
 
+import java.util
+
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.scalatest.{Matchers, FunSuite}
@@ -31,6 +33,22 @@ class ODocumentableTest
     val blogFromODocument = fromODocument[Blog](oDocument)
     
     blogFromODocument should be equals Blog("Alice", Record("Hi!"))
+
+    val oBlogWithLinkSetMessages = new ODocument("BlogWithLinkSetMessages")
+    oBlogWithLinkSetMessages.field("name", "Rabbit blog")
+    val messages = new util.ArrayList[ODocument]()
+    messages.add(new ODocument("Message"))
+    messages.add(new ODocument("Message2"))
+    oBlogWithLinkSetMessages.field("messages", messages)
+
+    println(s"oBlogWithLinkSetMessages: $oBlogWithLinkSetMessages")
+
+    val blogWithLinkSetMessagesFromODocument = fromODocument[BlogWithLinkSetMessages](oDocument)
+
+    blogWithLinkSetMessagesFromODocument should be equals BlogWithLinkSetMessages("Rabbit blog", Set(Message("Test"), Message("Test2")))
+
+
+
   }
 
 }

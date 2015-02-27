@@ -1,6 +1,6 @@
 package com.emotioncity.soriento
 
-import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
+import collection.JavaConverters._
 import com.orientechnologies.orient.core.record.impl.ODocument
 
 /**
@@ -30,10 +30,20 @@ trait Dsl {
                   productToDocument(cc)
                 case item =>
                   item
-              }.toList
+              }.toList.asJavaCollection
             case _ => productToDocument(p)
           }
-        case x => x
+        case x =>
+          x match {
+            case _:Set[_] =>
+              x.asInstanceOf[Set[_]].map {
+                case cc: Product =>
+                  productToDocument(cc)
+                case item =>
+                  item
+              }.asJavaCollection
+            case _ => x
+          }
       }
       if (fieldValue != None) {
         document.field(fieldName, fieldValue)

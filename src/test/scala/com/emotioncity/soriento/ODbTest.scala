@@ -17,7 +17,7 @@ class ODbTest extends FunSuite with Matchers with ODb {
   override def initialize(): Unit = {}
 
   test("ODb should be create OClass with name in OrientDb") {
-    val oClassOpt = createOClass[Test]
+    createOClass[Test]
     assert(schema.existsClass("Test"))
     assert(schema.getClass("Test").existsProperty("field"))
   }
@@ -36,6 +36,15 @@ class ODbTest extends FunSuite with Matchers with ODb {
     assert(schema.getClass("BlogWithEmbeddedMessages").existsProperty("message"))
     val embeddedMessageProperty = schema.getClass("BlogWithEmbeddedMessages").getProperty("message")
     embeddedMessageProperty should be equals OType.EMBEDDED
+  }
+
+  test("ODb should be create OClass by case classes with @LinkSet type of connections") {
+    createOClass[BlogWithLinkSetMessages]
+    assert(schema.existsClass("BlogWithLinkSetMessages"))
+    assert(schema.existsClass("Message"))
+    assert(schema.getClass("BlogWithLinkSetMessages").existsProperty("messages"))
+    val linkedMessageProperty = schema.getClass("BlogWithLinkSetMessages").getProperty("messages")
+    linkedMessageProperty should be equals OType.LINKSET
   }
 
   test("ODb should be drop OClass from OrientDb") {

@@ -6,10 +6,10 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.metadata.schema.{OClass, OSchema, OType}
 
 import scala.reflect.ClassTag
-import scala.tools.scalap.scalax.rules.scalasig._
 
 /**
  * Created by stream on 13.12.14.
+ *
  */
 trait ODb {
   private var register: Map[String, OClass] = Map.empty
@@ -20,7 +20,7 @@ trait ODb {
     val schema = db.getMetadata.getSchema
     val clazz = tag.runtimeClass
     val ccSimpleName = clazz.getSimpleName
-    if (!schema.existsClass(ccSimpleName)) {//TODO isExists ???
+    if (!schema.existsClass(ccSimpleName)) { //TODO isExists ???
       createOClassByName(schema, clazz.getName, ccSimpleName)
     } else schema.getClass(ccSimpleName)
   }
@@ -81,12 +81,16 @@ trait ODb {
         annotatedFields.find {
           case (name, listOfAnnotations) => name == inName
         }.map {
-          case (name, listOfAnnotations) => listOfAnnotations(0) // LINK or EMBEDDED
+          case (name, listOfAnnotations) => listOfAnnotations(0) // LINK or EMBEDDED or LINKSET
         } match {
           case Some(annotation) =>
             annotation match {
               case a: com.emotioncity.soriento.Embedded => OType.EMBEDDED
               case a: com.emotioncity.soriento.Linked => OType.LINK
+              case a: com.emotioncity.soriento.LinkSet
+                if fieldClassName == "scala.collection.immutable.Set" || fieldClassName == "scala.collection.immutable.List" => OType.LINKSET //TODO what types is supported?
+              case a: com.emotioncity.soriento.EmbeddedSet
+                if fieldClassName == "scala.collection.immutable.Set" || fieldClassName == "scala.collection.immutable.List" => OType.EMBEDDEDSET
               case _ => OType.ANY
             }
           case None => OType.ANY
