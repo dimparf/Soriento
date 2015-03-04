@@ -34,7 +34,7 @@ class ODocumentableTest
     
     blogFromODocument should be equals Blog("Alice", Record("Hi!"))
 
-    val oBlogWithLinkSetMessages = new ODocument("BlogWithLinkSetMessages")
+    /*val oBlogWithLinkSetMessages = new ODocument("BlogWithLinkSetMessages")
     oBlogWithLinkSetMessages.field("name", "Rabbit blog")
     val messages = new util.ArrayList[ODocument]()
     messages.add(new ODocument("Message"))
@@ -46,7 +46,7 @@ class ODocumentableTest
     val blogWithLinkSetMessagesFromODocument = fromODocument[BlogWithLinkSetMessages](oDocument)
 
     blogWithLinkSetMessagesFromODocument should be equals BlogWithLinkSetMessages("Rabbit blog", Set(Message("Test"), Message("Test2")))
-
+*/
 
 
   }

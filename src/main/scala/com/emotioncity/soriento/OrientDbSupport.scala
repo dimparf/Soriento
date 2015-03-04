@@ -27,7 +27,7 @@ object Implicits {
       results.toList.map(document => fromODocument[T](document))
     }
 
-    def queryB(sql: String): List[ODocument] = {
+    def queryD(sql: String): List[ODocument] = {
       val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](sql))
       results.toList
     }

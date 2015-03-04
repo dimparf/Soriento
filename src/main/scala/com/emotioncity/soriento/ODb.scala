@@ -3,6 +3,7 @@ package com.emotioncity.soriento
 import java.lang.reflect.Field
 
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
+import com.orientechnologies.orient.core.exception.OSchemaException
 import com.orientechnologies.orient.core.metadata.schema.{OClass, OSchema, OType}
 
 import scala.reflect.ClassTag
@@ -20,13 +21,27 @@ trait ODb {
     val schema = db.getMetadata.getSchema
     val clazz = tag.runtimeClass
     val ccSimpleName = clazz.getSimpleName
-    if (!schema.existsClass(ccSimpleName)) { //TODO isExists ???
+    if (!schema.existsClass(ccSimpleName)) {
+      //TODO isExists ???
       createOClassByName(schema, clazz.getName, ccSimpleName)
     } else schema.getClass(ccSimpleName)
   }
 
+  /**
+   * Drop OClass if it exists
+   * @param tag
+   * @param db
+   * @tparam T Associated case class
+   * @return true if class dropped else false
+   */
   def dropOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocumentTx) = {
-    db.getMetadata.getSchema.dropClass(tag.runtimeClass.getSimpleName)
+    try {
+      db.getMetadata.getSchema.dropClass(tag.runtimeClass.getSimpleName)
+      true
+    } catch {
+      case ose: OSchemaException =>
+        false
+    }
   }
 
   private def createOClassByName(schema: OSchema, ccName: String, ccSimpleName: String): OClass = {
@@ -62,12 +77,12 @@ trait ODb {
   }
 
   private def getOType[T](inName: String, field: Field, clazz: Class[_]): OType = {
-    import ReflectionUtils._
+    import com.emotioncity.soriento.ReflectionUtils._
     val fieldClassName = field.getType.getName
     println(s"Field type: $fieldClassName")
     fieldClassName match {
       //TODO add support for List[T]
-      case "java.lang.Boolean" | "boolean"=> OType.BOOLEAN
+      case "java.lang.Boolean" | "boolean" => OType.BOOLEAN
       case "java.lang.String" | "string" => OType.STRING
       case "java.lang.Byte" | "byte" => OType.BYTE
       case "java.lang.Short" | "short" => OType.SHORT
