@@ -23,11 +23,12 @@ object Implicits {
   implicit class RichODatabaseDocumentTx(db: ODatabaseDocument) extends ODocumentable {
 
     def queryBySql[T](sql: String)(implicit tag: TypeTag[T]): List[T] = {
+
       val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](sql))
       results.toList.map(document => fromODocument[T](document))
     }
 
-    def queryD(sql: String): List[ODocument] = {
+    def queryBySql(sql: String): List[ODocument] = {
       val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](sql))
       results.toList
     }
