@@ -32,7 +32,8 @@ trait ODocumentable {
     createCaseClass[T](map)
   }
 
-  def oDocumentToMap(oDocument: ODocument): Map[String, Any] = {
+  //TODO support linked documents ???
+  protected def oDocumentToMap(oDocument: ODocument): Map[String, Any] = {
     val docEntries = oDocument.iterator().toList
     docEntries.map { entry =>
       val key = entry.getKey

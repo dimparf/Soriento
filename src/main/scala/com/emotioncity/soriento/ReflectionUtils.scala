@@ -17,12 +17,12 @@ object ReflectionUtils {
   }
 
   def createCaseClass[T](map: Map[String, Any])(implicit tag: TypeTag[T]): T = {
-    val t = typeOf[T]
-    createCaseClassByType(t, map).asInstanceOf[T]
+    val tpe = typeOf[T]
+    createCaseClassByType(tpe, map).asInstanceOf[T]
   }
 
-  def createCaseClassByType(t: Type, map : Map[String, Any]): Any = {
-    val constr = constructor(t)
+  def createCaseClassByType(tpe: Type, map : Map[String, Any]): Any = {
+    val constr = constructor(tpe)
     val params = constr.symbol.paramLists.flatten // get constructor params
     val input = map.map {
       case (k: String, m: Map[String, Any]) =>

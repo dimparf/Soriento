@@ -18,13 +18,13 @@ class DslTest extends FunSuite with Matchers with Dsl {
   test("Dsl should be convert Any with Product to ODocument") {
     val blog = Blog(author = "Arnold", message = Record("Agrh!"))
     val blogDoc = productToDocument(blog)
-    val blogMessageField = blogDoc.field("message").asInstanceOf[ODocument]
+    val blogMessageField = blogDoc.field[ODocument]("message")
 
     blogMessageField should be equals new ODocument("Record").field("content", "Agrh!")
 
     val blogAuthorField = blogDoc.field("author").toString
     blogAuthorField should be equals "Arnold"
-    val recordContentField = blogDoc.field("message").asInstanceOf[ODocument].field("content").toString
+    val recordContentField = blogDoc.field[ODocument]("message").field[String]("content").toString
 
     recordContentField should be equals "Agrh"
   }

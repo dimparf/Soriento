@@ -1,5 +1,7 @@
 package com.emotioncity.soriento
 
+import com.emotioncity.soriento.annotations.{LinkSet, Linked, EmbeddedSet, Embedded}
+
 /*
  *
  * Copyright (c) 2014 Dmitriy Parenskiy aka stream (dimparf@gmail.com)

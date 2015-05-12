@@ -2,6 +2,7 @@ package com.emotioncity.soriento
 
 import java.lang.reflect.Field
 
+import com.emotioncity.soriento.annotations.{LinkSet, Linked, EmbeddedSet, Embedded}
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.exception.OSchemaException
 import com.orientechnologies.orient.core.metadata.schema.{OClass, OSchema, OType}
@@ -96,17 +97,17 @@ trait ODb {
         annotatedFields.find {
           case (name, listOfAnnotations) => name == inName
         }.map {
-          case (name, listOfAnnotations) => listOfAnnotations(0) // LINK or EMBEDDED or LINKSET
+          case (name, listOfAnnotations) => listOfAnnotations.head // LINK or EMBEDDED or LINKSET
         } match {
           case Some(annotation) =>
             annotation match {
-              case a: com.emotioncity.soriento.Embedded => OType.EMBEDDED
-              case a: com.emotioncity.soriento.Linked => OType.LINK
-              case a: com.emotioncity.soriento.LinkSet
+              case a: Embedded => OType.EMBEDDED
+              case a: Linked => OType.LINK
+              case a: LinkSet
                 if fieldClassName == "scala.collection.immutable.Set" || fieldClassName == "scala.collection.immutable.List" => OType.LINKSET //TODO what types is supported?
-              case a: com.emotioncity.soriento.EmbeddedSet
+              case a: EmbeddedSet
                 if fieldClassName == "scala.collection.immutable.Set" || fieldClassName == "scala.collection.immutable.List" => OType.EMBEDDEDSET
-              case _ => OType.ANY
+              case _ => OType.ANY //TODO unsupported annotations
             }
           case None => OType.ANY
         }

@@ -1,4 +1,4 @@
-package com.emotioncity.soriento;
+package com.emotioncity.soriento.annotations;
 
 import java.lang.annotation.*;
 

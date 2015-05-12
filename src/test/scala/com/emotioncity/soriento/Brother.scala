@@ -12,8 +12,8 @@ object Brother {
 
     def read(oDocument: ODocument): Brother = {
       Brother(
-        oDocument.get[String]("mother").get,
-        oDocument.get[String]("father")
+        oDocument.get[String]("name").get,
+        oDocument.get[String]("kilugda")
       )
     }
   }
