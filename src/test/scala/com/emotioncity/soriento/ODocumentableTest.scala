@@ -33,22 +33,6 @@ class ODocumentableTest
     val blogFromODocument = fromODocument[Blog](oDocument)
     
     blogFromODocument should be equals Blog("Alice", Record("Hi!"))
-
-    /*val oBlogWithLinkSetMessages = new ODocument("BlogWithLinkSetMessages")
-    oBlogWithLinkSetMessages.field("name", "Rabbit blog")
-    val messages = new util.ArrayList[ODocument]()
-    messages.add(new ODocument("Message"))
-    messages.add(new ODocument("Message2"))
-    oBlogWithLinkSetMessages.field("messages", messages)
-
-    println(s"oBlogWithLinkSetMessages: $oBlogWithLinkSetMessages")
-
-    val blogWithLinkSetMessagesFromODocument = fromODocument[BlogWithLinkSetMessages](oDocument)
-
-    blogWithLinkSetMessagesFromODocument should be equals BlogWithLinkSetMessages("Rabbit blog", Set(Message("Test"), Message("Test2")))
-*/
-
-
   }
 
 }
