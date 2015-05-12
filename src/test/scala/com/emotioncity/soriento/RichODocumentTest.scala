@@ -11,11 +11,12 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
  */
 
 class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with OrientDbSupport with ODb {
+
   import Implicits._
 
   test("RichODocument should be provide implicit methods for read case class from ODocument") {
     val brothers: java.util.List[ODocument] = new util.ArrayList[ODocument]()
-    brothers.add(new ODocument("Brother").field("name", "Blast").field("kulugda","Morf"))
+    brothers.add(new ODocument("Brother").field("name", "Blast").field("kulugda", "Morf"))
     brothers.add(new ODocument("Brother").field("name", "Faz").field("kulugda", "Morf2"))
     val oDocument = new ODocument("Blagda")
       .field("name", "Tost")

@@ -15,6 +15,14 @@ object RichODocumentImpl {
 
   implicit class RichODocument(oDocument: ODocument) {
 
+    /**
+     * Return ODocument field as case class
+     * @param fieldName name of document field
+     * @param reader implicit Reader viewed in scope
+     * @param db implicit ODatabaseDocumentTx
+     * @tparam T return type
+     * @return Option[T]
+     */
     def getAs[T](fieldName: String)(implicit reader: OReader[_ <: ODocument, T], db: ODatabaseDocumentTx): Option[T] = {
       get[ODocument](fieldName).flatMap { subDocument =>
         reader match {
@@ -26,6 +34,14 @@ object RichODocumentImpl {
       }
     }
 
+    /**
+     * Return List of case class instances by ODocuemnt field
+     * @param fieldName name of document field
+     * @param reader implicit reader
+     * @param db implicit ODatabase DocumentTx
+     * @tparam T generic type of List
+     * @return List[T]
+     */
     def listOfEmbedded[T](fieldName: String)(implicit reader: ODocumentReader[T], db: ODatabaseDocumentTx): List[T] = {
       get[java.util.List[ODocument]](fieldName) match {
         case Some(oDocumentList) =>
@@ -37,6 +53,12 @@ object RichODocumentImpl {
       }
     }
 
+    /**
+     * Return simple field represented as ODocument field
+     * @param key name of ODocument
+     * @tparam T return type
+     * @return T
+     */
     def get[T](key: String): Option[T] = Option(oDocument.field(key))
   }
 
