@@ -54,7 +54,8 @@ trait ODb {
       for (entity <- nameTypeMap) {
         val (name, field) = entity
         val oType = getOType(name, field, clazz)
-        if (oType == OType.LINK || oType == OType.LINKLIST || oType == OType.LINKMAP || oType == OType.EMBEDDED) {
+        if (oType == OType.LINK || oType == OType.LINKLIST || oType == OType.LINKMAP
+          || oType == OType.EMBEDDED || oType == OType.EMBEDDEDLIST || oType == OType.EMBEDDEDSET) {
           val subOClassName = field.getType.getSimpleName
           if (register.contains(subOClassName)) {
             oClass.createProperty(name, oType, register.get(subOClassName).get)

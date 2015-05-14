@@ -5,6 +5,7 @@ import java.util
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.scalatest.{Matchers, FunSuite}
+import org.scalatest._
 
 /**
  * Created by stream on 25.12.14.
@@ -12,10 +13,7 @@ import org.scalatest.{Matchers, FunSuite}
 
 
 class ODocumentableTest
-  extends FunSuite with Matchers with ODocumentable {
-
-  implicit val db: ODatabaseDocumentTx =
-    new ODatabaseDocumentTx("remote:localhost/emotioncity").open("root", "varlogr3_")
+  extends FunSuite with Matchers with BeforeAndAfter with ODb with  ODocumentable {
 
   test("ODocumentable should be convert ODocument to Map") {
     val oDocument = new ODocument("Blog")
@@ -34,5 +32,12 @@ class ODocumentableTest
     
     blogFromODocument should be equals Blog("Alice", Record("Hi!"))
   }
+
+  after{
+    dropOClass[Blog]
+    dropOClass[Record]
+  }
+
+  def initialize() = ???
 
 }
