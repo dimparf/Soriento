@@ -1,0 +1,27 @@
+[0m[[0minfo[0m] [0m[32mRichODocumentTest:[0m[0m
+[0m[[0minfo[0m] [0m[31m- RichODocument should be provide implicit methods for read case class from ODocument *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  java.util.NoSuchElementException: head of empty list[0m[0m
+[0m[[0minfo[0m] [0m[31m  at scala.collection.immutable.Nil$.head(List.scala:420)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at scala.collection.immutable.Nil$.head(List.scala:417)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.RichODocumentTest$$anonfun$1.apply$mcV$sp(RichODocumentTest.scala:33)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.RichODocumentTest$$anonfun$1.apply(RichODocumentTest.scala:17)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.RichODocumentTest$$anonfun$1.apply(RichODocumentTest.scala:17)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at org.scalatest.Transformer$$anonfun$apply$1.apply$mcV$sp(Transformer.scala:22)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at org.scalatest.OutcomeOf$class.outcomeOf(OutcomeOf.scala:85)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at org.scalatest.OutcomeOf$.outcomeOf(OutcomeOf.scala:104)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at org.scalatest.Transformer.apply(Transformer.scala:22)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at org.scalatest.Transformer.apply(Transformer.scala:20)[0m[0m
+[0m[[0minfo[0m] [0m[31m  ...[0m[0m
+[0m[[0minfo[0m] [0m[31mException encountered when attempting to run a suite with class name: com.emotioncity.soriento.RichODocumentTest *** ABORTED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  java.lang.IllegalStateException: Cannot drop a class inside a transaction[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.orientechnologies.orient.core.metadata.schema.OSchemaShared.dropClass(OSchemaShared.java:462)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.orientechnologies.orient.core.metadata.schema.OSchemaProxy.dropClass(OSchemaProxy.java:134)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.ODb$class.dropOClass(ODb.scala:41)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.RichODocumentTest.dropOClass(RichODocumentTest.scala:13)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.RichODocumentTest$$anonfun$2.apply$mcZ$sp(RichODocumentTest.scala:42)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.RichODocumentTest$$anonfun$2.apply(RichODocumentTest.scala:41)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.RichODocumentTest$$anonfun$2.apply(RichODocumentTest.scala:41)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at org.scalatest.BeforeAndAfter$class.runTest(BeforeAndAfter.scala:210)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.RichODocumentTest.runTest(RichODocumentTest.scala:13)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at org.scalatest.FunSuiteLike$$anonfun$runTests$1.apply(FunSuiteLike.scala:208)[0m[0m
+[0m[[0minfo[0m] [0m[31m  ...[0m[0m

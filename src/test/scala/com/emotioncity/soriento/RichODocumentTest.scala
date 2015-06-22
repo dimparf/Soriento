@@ -34,6 +34,10 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
       List(Brother("Blast", Some("Morf")), Brother("Faz", None))))
   }
 
+  /*test("") {
+
+  }*/
+
   after {
     dropOClass[Blagda]
     dropOClass[Brother]

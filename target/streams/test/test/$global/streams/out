@@ -1,0 +1,26 @@
+[0m[[0mdebug[0m] [0mRunning TaskDef(com.emotioncity.soriento.ODocumentableTest, org.scalatest.tools.Framework$$anon$1@811513, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mRunning TaskDef(com.emotioncity.soriento.ODbTest, org.scalatest.tools.Framework$$anon$1@811513, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mRunning TaskDef(com.emotioncity.soriento.RichODocumentTest, org.scalatest.tools.Framework$$anon$1@811513, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mRunning TaskDef(com.emotioncity.soriento.ReflectionTest, org.scalatest.tools.Framework$$anon$1@811513, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mRunning TaskDef(com.emotioncity.soriento.DslTest, org.scalatest.tools.Framework$$anon$1@811513, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mRunning TaskDef(com.emotioncity.soriento.UseCaseTest, org.scalatest.tools.Framework$$anon$1@811513, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mSummary for ScalaCheck not available.[0m
+[0m[[0mdebug[0m] [0mSummary for specs2 not available.[0m
+[0m[[0minfo[0m] [0mScalaTest[0m
+[0m[[0minfo[0m] [0m[36mRun completed in 36 seconds, 119 milliseconds.[0m[0m
+[0m[[0minfo[0m] [0m[36mTotal number of tests run: 7[0m[0m
+[0m[[0minfo[0m] [0m[36mSuites: completed 2, aborted 4[0m[0m
+[0m[[0minfo[0m] [0m[36mTests: succeeded 2, failed 5, canceled 0, ignored 0, pending 0[0m[0m
+[0m[[0minfo[0m] [0m[31m*** 4 SUITES ABORTED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m*** 5 TESTS FAILED ***[0m[0m
+[0m[[31merror[0m] [0mError: Total 11, Failed 5, Errors 4, Passed 2[0m
+[0m[[0mdebug[0m] [0mPassed tests:[0m
+[0m[[0mdebug[0m] [0m	com.emotioncity.soriento.ReflectionTest[0m
+[0m[[31merror[0m] [0mFailed tests:[0m
+[0m[[31merror[0m] [0m	com.emotioncity.soriento.DslTest[0m
+[0m[[31merror[0m] [0mError during tests:[0m
+[0m[[31merror[0m] [0m	com.emotioncity.soriento.UseCaseTest[0m
+[0m[[31merror[0m] [0m	com.emotioncity.soriento.ODocumentableTest[0m
+[0m[[31merror[0m] [0m	com.emotioncity.soriento.RichODocumentTest[0m
+[0m[[31merror[0m] [0m	com.emotioncity.soriento.ODbTest[0m
+[0m[[31merror[0m] [0m(soriento/test:[31mtest[0m) sbt.TestsFailedException: Tests unsuccessful[0m

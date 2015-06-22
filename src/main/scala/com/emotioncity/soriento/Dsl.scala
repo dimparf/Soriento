@@ -13,6 +13,7 @@ trait Dsl {
     val modelName = cc.getClass.getSimpleName
     val document = new ODocument(modelName)
     val values = cc.productIterator
+    println("Values " + values.toList)
     val fieldList = cc.getClass.getDeclaredFields.toList
     fieldList.foreach { field =>
       val fieldName = field.getName

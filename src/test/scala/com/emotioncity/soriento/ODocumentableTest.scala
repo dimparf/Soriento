@@ -13,7 +13,7 @@ import org.scalatest._
 
 
 class ODocumentableTest
-  extends FunSuite with Matchers with BeforeAndAfter with ODb with  ODocumentable {
+  extends FunSuite with Matchers with BeforeAndAfter with ODb with ODocumentable {
 
   test("ODocumentable should be convert ODocument to Map") {
     val oDocument = new ODocument("Blog")

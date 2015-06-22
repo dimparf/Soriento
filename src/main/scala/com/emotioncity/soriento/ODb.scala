@@ -28,6 +28,7 @@ trait ODb {
     } else schema.getClass(ccSimpleName)
   }
 
+
   /**
    * Drop OClass if it exists
    * @param tag

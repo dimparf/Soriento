@@ -2,6 +2,8 @@ package com.emotioncity.soriento
 
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.metadata.schema.OType
+import com.tinkerpop.blueprints.Vertex
+import com.tinkerpop.blueprints.impls.orient.OrientVertex
 import org.scalatest.{Matchers, FunSuite, BeforeAndAfter}
 
 
@@ -71,6 +73,10 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     dropped should be equals true
     val droppedAfterDropped = dropOClass[Test]
     droppedAfterDropped should be equals false
+  }
+
+  test("ODb should be create OClass extends V with name in OrientDb") {
+    //val vertexClass = createOClass[Test] inherit OrientVertex
   }
 
 }

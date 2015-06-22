@@ -1,0 +1,15 @@
+[0m[[0minfo[0m] [0m[32mUseCaseTest:[0m[0m
+[0m[[0minfo[0m] [0m[32m- Use case: create graph with linked and embedded documents in vertexes, navigate and extract case classes, save entity[0m[0m
+[0m[[0minfo[0m] [0m[31mException encountered when attempting to run a suite with class name: com.emotioncity.soriento.UseCaseTest *** ABORTED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m  java.lang.IllegalStateException: Cannot drop a class inside a transaction[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.orientechnologies.orient.core.metadata.schema.OSchemaShared.dropClass(OSchemaShared.java:462)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.orientechnologies.orient.core.metadata.schema.OSchemaProxy.dropClass(OSchemaProxy.java:134)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.ODb$class.dropOClass(ODb.scala:41)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.UseCaseTest.dropOClass(UseCaseTest.scala:25)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.UseCaseTest$$anonfun$2.apply$mcZ$sp(UseCaseTest.scala:49)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.UseCaseTest$$anonfun$2.apply(UseCaseTest.scala:45)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.UseCaseTest$$anonfun$2.apply(UseCaseTest.scala:45)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at org.scalatest.BeforeAndAfter$class.runTest(BeforeAndAfter.scala:210)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.UseCaseTest.runTest(UseCaseTest.scala:25)[0m[0m
+[0m[[0minfo[0m] [0m[31m  at org.scalatest.FunSuiteLike$$anonfun$runTests$1.apply(FunSuiteLike.scala:208)[0m[0m
+[0m[[0minfo[0m] [0m[31m  ...[0m[0m
