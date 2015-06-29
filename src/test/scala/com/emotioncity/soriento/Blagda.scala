@@ -13,10 +13,12 @@ object Blagda {
   implicit object BlagdaReader extends ODocumentReader[Blagda] {
 
     def read(oDocument: ODocument): Blagda = {
-      Blagda(
+      new Blagda(
         oDocument.get[String]("name").get,
         oDocument.getAs[Family]("bio").get
-      )
+      ) with Identifier {
+        override def id = oDocument.getIdentity
+      }
     }
   }
 }

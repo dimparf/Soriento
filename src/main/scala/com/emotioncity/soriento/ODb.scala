@@ -3,7 +3,7 @@ package com.emotioncity.soriento
 import java.lang.reflect.Field
 
 import com.emotioncity.soriento.annotations.{LinkSet, Linked, EmbeddedSet, Embedded}
-import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
+import com.orientechnologies.orient.core.db.document.ODatabaseDocument
 import com.orientechnologies.orient.core.exception.OSchemaException
 import com.orientechnologies.orient.core.metadata.schema.{OClass, OSchema, OType}
 
@@ -18,7 +18,7 @@ trait ODb {
 
   def initialize()
 
-  def createOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocumentTx): OClass = {
+  def createOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocument): OClass = {
     val schema = db.getMetadata.getSchema
     val clazz = tag.runtimeClass
     val ccSimpleName = clazz.getSimpleName
@@ -36,7 +36,7 @@ trait ODb {
    * @tparam T Associated case class
    * @return true if class dropped else false
    */
-  def dropOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocumentTx) = {
+  def dropOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocument) = {
     try {
       db.getMetadata.getSchema.dropClass(tag.runtimeClass.getSimpleName)
       true

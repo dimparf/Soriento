@@ -28,7 +28,7 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
           ), OType.EMBEDDED)
     orientDb.save(oDocument)
 
-    val blagdaList = orientDb.queryBySqlWithReader[Blagda]("select from Blagda")
+    val blagdaList = orientDb.queryBySql[Blagda]("select from Blagda")
 
     blagdaList.head should be equals Blagda("Tost", Family("Tata", "Rembo",
       List(Brother("Blast", Some("Morf")), Brother("Faz", None))))

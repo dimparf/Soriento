@@ -1,5 +1,5 @@
 [0m[[0minfo[0m] [0m[32mDslTest:[0m[0m
-[0m[[0minfo[0m] [0m[31m- Dsl should be convert Any with Product to ODocument *** FAILED ***[0m[0m
+[0m[[0minfo[0m] [0m[31m- Dsl should be convert Product to ODocument *** FAILED ***[0m[0m
 [0m[[0minfo[0m] [0m[31m  java.lang.IndexOutOfBoundsException: 2[0m[0m
 [0m[[0minfo[0m] [0m[31m  at com.emotioncity.soriento.Blog.productElement(TestModels.scala:17)[0m[0m
 [0m[[0minfo[0m] [0m[31m  at scala.runtime.ScalaRunTime$$anon$1.next(ScalaRunTime.scala:177)[0m[0m

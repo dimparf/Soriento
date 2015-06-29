@@ -15,11 +15,13 @@ object Family {
   implicit object FamilyReader extends ODocumentReader[Family] {
 
     def read(oDocument: ODocument): Family = {
-      Family(
+      new Family(
         oDocument.get[String]("mother").get,
         oDocument.get[String]("father").get,
         oDocument.listOfEmbedded[Brother]("brothers")
-      )
+      ) with Identifier {
+        override def id = oDocument.getIdentity
+      }
     }
   }
 

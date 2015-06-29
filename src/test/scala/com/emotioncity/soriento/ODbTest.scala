@@ -14,8 +14,7 @@ import org.scalatest.{Matchers, FunSuite, BeforeAndAfter}
 
 
 class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
-  //implicit val db: ODatabaseDocumentTx =
-    //new ODatabaseDocumentTx("remote:localhost/emotioncity").open("root", "varlogr3_")
+
   val schema = orientDb.getMetadata.getSchema
 
   override def initialize(): Unit = {}
