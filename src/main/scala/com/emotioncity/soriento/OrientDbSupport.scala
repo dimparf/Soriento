@@ -9,8 +9,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraph
  */
 trait OrientDbSupport {
   val oDatabaseDocumentPool = new OPartitionedDatabasePool("remote:localhost/emotiongraph", "root", "varlogr3_")
-  val orientGraph = new OrientGraph(oDatabaseDocumentPool.acquire())
-  implicit val orientDb: ODatabaseDocument = orientGraph.getRawGraph
+  implicit val orientDb = oDatabaseDocumentPool.acquire()
 }
 
 

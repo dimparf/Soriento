@@ -43,14 +43,10 @@ class UseCaseTest extends FunSuite with Matchers with BeforeAndAfter with ODb wi
   }
 
   after{
-
-    val owner = orientGraph.addVertex("class: Owner", "name", "OOO Studio Cafe")
-
     dropOClass[Owner]
     dropOClass[Address]
     dropOClass[Event]
     dropOClass[Place]
-
   }
 
   def initialize() = ???

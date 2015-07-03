@@ -14,7 +14,7 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
 
   import Implicits._
 
-  test("RichODocument should be provide implicit methods for read case class from ODocument") {
+  test("RichODocument should be provide implicit methods for read case class with @Emedded fields from ODocument") {
     val brothers: java.util.List[ODocument] = new util.ArrayList[ODocument]()
     brothers.add(new ODocument("Brother").field("name", "Blast").field("kulugda", "Morf"))
     brothers.add(new ODocument("Brother").field("name", "Faz").field("kulugda", "Morf2"))
@@ -30,8 +30,7 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
 
     val blagdaList = orientDb.queryBySql[Blagda]("select from Blagda")
 
-    blagdaList.head should be equals Blagda("Tost", Family("Tata", "Rembo",
-      List(Brother("Blast", Some("Morf")), Brother("Faz", None))))
+    blagdaList.head should be equals Blagda("Tost", Family("Tata", "Rembo", List(Brother("Blast", Some("Morf")), Brother("Faz", None))))
   }
 
   /*test("") {

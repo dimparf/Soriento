@@ -17,6 +17,7 @@ trait Dsl {
     val fieldList = cc.getClass.getDeclaredFields.toList
     fieldList.foreach { field =>
       val fieldName = field.getName
+      println("VALUES: " + values)
       val fieldValue = values.next() match {
         case p: Product if p.productArity > 0 =>
           p match {

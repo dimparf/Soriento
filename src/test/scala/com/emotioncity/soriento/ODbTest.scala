@@ -32,7 +32,7 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     assert(schema.getClass("Test").existsProperty("field"))
   }
 
-  test("ODb should be create OClass graph by case classes with @Linked or @Embedded annotated fields") {
+  test("ODb should be create OClass case classes with @Linked or @Embedded annotated fields") {
     createOClass[BlogWithLinkedMessages]
     assert(schema.existsClass("BlogWithLinkedMessages"))
     assert(schema.existsClass("Message"))
