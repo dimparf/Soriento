@@ -45,6 +45,14 @@ More examples in test directory.
 To run unit tests:
 
     sbt test
+
+## Contributing
+
+Welcome to contribute!
+You can always post an issue or (even better) fork the project, implement your idea or fix the bug you have found and send a pull request. 
+Just remember to test it when you are done. Here is how:
+
+Run sbt test to run and compile tests.
     
 ## License
 This software is available under the [New BSD License](LICENSE).    
