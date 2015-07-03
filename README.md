@@ -10,6 +10,7 @@ Soriento is an object-relational mapping framework from scala case classes to Or
  - Creating/deleting OrientDb classes by case classes.
  - Transparent CRUD for documents represented as case classes.
  - Linked or Embedded definitions for case classes.
+ - Support deserialization for case classes with @Embedded list/set of case classes.
  - Transactions support.
  - Query by SQL.
  
@@ -17,7 +18,6 @@ Supported types:
 - Long, Double, Int, Float, Short, String, case class.
 
 ##Coming soon
-- Support Lists of case classes.
 - LinkList, LinkSet, LinkMap.
 - EmbeddedList, EmbeddedSet, EmbeddedMap.
 
@@ -39,12 +39,12 @@ Simple example:
   deletOClass[Blog]
 ```
 
-More examples in test folder.
+More examples in test directory.
 
 ## Testing
 To run unit tests:
 
-    sbt/sbt test
+    sbt test
     
 ## License
 This software is available under the [New BSD License](LICENSE).    
