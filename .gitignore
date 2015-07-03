@@ -1,0 +1,7 @@
+.history
+.idea/
+.idea_modules/
+tmp/
+target/
+soriento/
+.lib
