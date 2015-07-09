@@ -49,5 +49,4 @@ class UseCaseTest extends FunSuite with Matchers with BeforeAndAfter with ODb wi
     dropOClass[Place]
   }
 
-  def initialize() = ???
 }

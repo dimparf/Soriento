@@ -14,9 +14,7 @@ object Brother {
       new Brother(
         oDocument.get[String]("name").get,
         oDocument.get[String]("kilugda")
-      ) with Identifier {
-        override def id = oDocument.getIdentity
-      }
+      )
     }
   }
 

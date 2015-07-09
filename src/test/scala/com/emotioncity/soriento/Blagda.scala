@@ -10,6 +10,7 @@ import RichODocumentImpl._
  */
 case class Blagda(name: String, @Embedded bio: Family)
 object Blagda {
+
   implicit object BlagdaReader extends ODocumentReader[Blagda] {
 
     def read(oDocument: ODocument): Blagda = {
@@ -21,4 +22,5 @@ object Blagda {
       }
     }
   }
+
 }

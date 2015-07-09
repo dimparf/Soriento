@@ -2,7 +2,7 @@ package com.emotioncity.soriento
 
 import java.lang.reflect.Field
 
-import com.emotioncity.soriento.annotations.{LinkSet, Linked, EmbeddedSet, Embedded}
+import com.emotioncity.soriento.ReflectionUtils._
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument
 import com.orientechnologies.orient.core.exception.OSchemaException
 import com.orientechnologies.orient.core.metadata.schema.{OClass, OSchema, OType}
@@ -16,7 +16,7 @@ import scala.reflect.ClassTag
 trait ODb {
   private var register: Map[String, OClass] = Map.empty
 
-  def initialize()
+  def initialize() {}
 
   def createOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocument): OClass = {
     val schema = db.getMetadata.getSchema
@@ -74,47 +74,5 @@ trait ODb {
       register.get(ccSimpleName).get
     }
   }
-
-  private def getOType[T](inName: String, field: Field)(implicit tag: ClassTag[T]): OType = {
-    getOType(inName, field, tag.runtimeClass)
-  }
-
-  private def getOType[T](inName: String, field: Field, clazz: Class[_]): OType = {
-    import com.emotioncity.soriento.ReflectionUtils._
-    val fieldClassName = field.getType.getName
-    println(s"Field type: $fieldClassName")
-    fieldClassName match {
-      //TODO add support for List[T]
-      case "java.lang.Boolean" | "boolean" => OType.BOOLEAN
-      case "java.lang.String" | "string" => OType.STRING
-      case "java.lang.Byte" | "byte" => OType.BYTE
-      case "java.lang.Short" | "short" => OType.SHORT
-      case "java.lang.Integer" | "int" => OType.INTEGER
-      case "java.lang.Long" | "long" => OType.LONG
-      case "java.lang.Float" | "float" => OType.FLOAT
-      case "java.lang.Double" | "double" => OType.DOUBLE
-      case "java.util.Date" => OType.DATE
-      case _ =>
-        val annotatedFields: List[(String, List[java.lang.annotation.Annotation])] = valNamesWithAnnotations(clazz)
-        annotatedFields.find {
-          case (name, listOfAnnotations) => name == inName
-        }.map {
-          case (name, listOfAnnotations) => listOfAnnotations.head // LINK or EMBEDDED or LINKSET
-        } match {
-          case Some(annotation) =>
-            annotation match {
-              case a: Embedded => OType.EMBEDDED
-              case a: Linked => OType.LINK
-              case a: LinkSet
-                if fieldClassName == "scala.collection.immutable.Set" || fieldClassName == "scala.collection.immutable.List" => OType.LINKSET //TODO what types is supported?
-              case a: EmbeddedSet
-                if fieldClassName == "scala.collection.immutable.Set" || fieldClassName == "scala.collection.immutable.List" => OType.EMBEDDEDSET
-              case _ => OType.ANY //TODO unsupported annotations
-            }
-          case None => OType.ANY
-        }
-    }
-  }
-
 
 }

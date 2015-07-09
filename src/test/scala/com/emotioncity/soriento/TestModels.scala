@@ -15,7 +15,5 @@ case class BlogWithLinkSetMessages(name: String, @LinkSet messages: Set[Message]
 case class BlogWithEmbeddedSetMessages(name: String, @EmbeddedSet messages: Set[Message])
 case class Record(content: String)
 case class Blog(author: String, @Embedded message: Record)
-case class Simple(sField: String)
-case class Complex(iField: Int, simple: Simple)
 case class Checkin(location: String)
-case class User(name: String, checkins: List[Checkin])
+case class User(name: String, @EmbeddedSet checkins: List[Checkin])

@@ -1,8 +1,12 @@
 package com.emotioncity.soriento
 
+import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 
 import scala.collection.JavaConverters._
+import scala.reflect.runtime.universe._
+import com.emotioncity.soriento.ReflectionUtils._
+
 
 /**
  * Created by stream on 31.10.14.
@@ -13,11 +17,9 @@ trait Dsl {
     val modelName = cc.getClass.getSimpleName
     val document = new ODocument(modelName)
     val values = cc.productIterator
-    println("Values " + values.toList)
     val fieldList = cc.getClass.getDeclaredFields.toList
     fieldList.foreach { field =>
       val fieldName = field.getName
-      println("VALUES: " + values)
       val fieldValue = values.next() match {
         case p: Product if p.productArity > 0 =>
           p match {
@@ -49,7 +51,8 @@ trait Dsl {
           }
       }
       if (fieldValue != None) {
-        document.field(fieldName, fieldValue) // use case class annotation for detect field OType
+        val oType = getOType(fieldName, field, field.getDeclaringClass)
+        document.field(fieldName, fieldValue, oType)
       }
     }
     document

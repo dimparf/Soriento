@@ -1,6 +1,6 @@
 package com.emotioncity.soriento
 
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.{BeforeAndAfter, Matchers, FunSuite}
 import com.emotioncity.soriento.ReflectionUtils._
 
 /**
@@ -8,16 +8,22 @@ import com.emotioncity.soriento.ReflectionUtils._
  */
 
 
-class ReflectionTest extends FunSuite with Matchers {
+class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter{
 
   test("it should be create instance of case class by name simple and recursively") {
     val simpleMap = Map("sField" -> "Test field")
     val simpleCaseClass = createCaseClass[Simple](simpleMap)
-    simpleCaseClass should be equals Simple("Test field")
+    simpleCaseClass should equal(Simple("Test field"))
 
-    val complexMap = Map("iField" -> 2, "simple" -> Map("sField" -> "Simple"))
+    val complexMap = Map("iField" -> 2, "sField" -> "tt", "simple" -> Map("sField" -> "Simple"), "listField" -> List(Simple("Simple")))
     val complexCaseClass = createCaseClass[Complex](complexMap)
-    complexCaseClass should be equals Complex(2, Simple("Simple"))
+    val simple = Simple("Simple")
+    complexCaseClass should equal(Complex(2, simple, sField = "tt", List(simple)))
+  }
+
+  after {
+    dropOClass[Simple]
+    dropOClass[Complex]
   }
 
 }

@@ -30,18 +30,39 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
 
     val blagdaList = orientDb.queryBySql[Blagda]("select from Blagda")
 
-    blagdaList.head should be equals Blagda("Tost", Family("Tata", "Rembo", List(Brother("Blast", Some("Morf")), Brother("Faz", None))))
+    blagdaList.head should equal(Blagda("Tost", Family("Tata", "Rembo", List(Brother("Blast", Some("Morf")), Brother("Faz", None)))))
   }
 
-  /*test("") {
+  test("RichODocument should be provide determinate type of field and map it to case class field") {
+    val simple = Simple("stringField")
+    val complex = Complex(2, simple, "string", List(simple))
 
-  }*/
+    val simpleODoc = new ODocument("Simple").field("sField", "stringField", OType.STRING).save()
+
+    println("SimpleODoc sField Type: " + simpleODoc.fieldType("sField"))
+
+    val dbSimple = orientDb.queryBySql[Simple]("select from Simple").head
+    println(s"Simple from DB: $dbSimple")
+
+    val simples: java.util.List[ODocument] = new util.ArrayList[ODocument]()
+    simples.add(new ODocument("Simple").field("sField", "stringField", OType.STRING))
+    val oDocument = new ODocument("Complex")
+    .field("iField", 2)
+    .field("simple", simple)
+    .field("sField", "string")
+    .field("listField", simples)
+    orientDb.save(oDocument)
+    val dbComplex = orientDb.queryBySql[Complex]("select from Complex").head
+    println(dbComplex)
+  }
+
 
   after {
     dropOClass[Blagda]
     dropOClass[Brother]
     dropOClass[Family]
+    dropOClass[Simple]
+    dropOClass[Complex]
   }
 
-  def initialize() = ???
 }
