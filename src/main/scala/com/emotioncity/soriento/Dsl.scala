@@ -15,6 +15,7 @@ trait Dsl {
 
   implicit def productToDocument[T >: Any](cc: Product): ODocument = {
     val modelName = cc.getClass.getSimpleName
+    println(s"Product name: $modelName")
     val document = new ODocument(modelName)
     val values = cc.productIterator
     val fieldList = cc.getClass.getDeclaredFields.toList

@@ -1,6 +1,7 @@
 package com.emotioncity.soriento
 
 import com.orientechnologies.orient.core.db.record.ORecordLazyList
+import com.orientechnologies.orient.core.id.ORecordId
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.scalatest.{BeforeAndAfter, Matchers, FunSuite}
@@ -61,6 +62,17 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     userDoc.fieldType("checkins") should equal(OType.EMBEDDEDSET)
   }
 
+  test("It should update ODocument if field of case class constructor annotated with javax.persistent.Id") {
+    createOClass[Complex]
+    val user = Complex(12, Simple("test"), "testString", List(Simple("test2"), Simple("test3")))
+    val userDoc = productToDocument(user)
+    println(userDoc)
+    println("Identity for new ODocument: " + new ODocument().getIdentity)
+    userDoc.getIdentity.getClusterId should equal(-1)
+    userDoc.getIdentity.getClusterPosition should equal(-1)
+    user.save()
+  }
+
   test("Simple field test") {
     val simple = Simple("TesT")
     val simpleDoc = productToDocument(simple)
@@ -74,7 +86,7 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     dropOClass[Record]
     dropOClass[User]
     dropOClass[Checkin]
-    dropOClass[Simple]
+    //dropOClass[Simple]
   }
 
 }

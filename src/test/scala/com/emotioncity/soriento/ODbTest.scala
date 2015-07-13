@@ -37,15 +37,16 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     assert(schema.existsClass("BlogWithLinkedMessages"))
     assert(schema.existsClass("Message"))
     assert(schema.getClass("BlogWithLinkedMessages").existsProperty("message"))
-    val linkedMessageProperty = schema.getClass("BlogWithLinkedMessages").getProperty("message")
-    linkedMessageProperty should be equals OType.LINK
+    val linkedMessageProperty = schema.getClass("BlogWithLinkedMessages").getProperty("message").getType
+    println(s"Property OType: $linkedMessageProperty")
+    linkedMessageProperty should equal(OType.LINK)
 
     createOClass[BlogWithEmbeddedMessages]
     assert(schema.existsClass("BlogWithEmbeddedMessages"))
     assert(schema.existsClass("Message"))
     assert(schema.getClass("BlogWithEmbeddedMessages").existsProperty("message"))
-    val embeddedMessageProperty = schema.getClass("BlogWithEmbeddedMessages").getProperty("message")
-    embeddedMessageProperty should be equals OType.EMBEDDED
+    val embeddedMessageProperty = schema.getClass("BlogWithEmbeddedMessages").getProperty("message").getType
+    embeddedMessageProperty should equal(OType.EMBEDDED)
   }
 
   test("ODb should be create OClass by case classes with @LinkSet type of connections") {
@@ -53,8 +54,8 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     assert(schema.existsClass("BlogWithLinkSetMessages"))
     assert(schema.existsClass("Message"))
     assert(schema.getClass("BlogWithLinkSetMessages").existsProperty("messages"))
-    val linkedMessageProperty = schema.getClass("BlogWithLinkSetMessages").getProperty("messages")
-    linkedMessageProperty should be equals OType.LINKSET
+    val linkedMessageProperty = schema.getClass("BlogWithLinkSetMessages").getProperty("messages").getType
+    linkedMessageProperty should equal(OType.LINKSET)
   }
 
   test("ODb should be drop OClass from OrientDb") {
@@ -69,13 +70,13 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
 
     createOClass[Test]
     val dropped = dropOClass[Test]
-    dropped should be equals true
+    dropped should equal(true)
     val droppedAfterDropped = dropOClass[Test]
-    droppedAfterDropped should be equals false
+    droppedAfterDropped should equal(false)
   }
 
-  test("ODb should be create OClass extends V with name in OrientDb") {
-    //val vertexClass = createOClass[Test] inherit OrientVertex
-  }
+ /* test("ODb should be create OClass extends V with name in OrientDb") {
+    val vertexClass = createOClass[Test] inherit OrientVertex
+  }*/
 
 }
