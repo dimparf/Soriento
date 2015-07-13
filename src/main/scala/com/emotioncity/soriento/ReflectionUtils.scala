@@ -16,19 +16,19 @@ import scala.reflect.runtime.universe._
  */
 object ReflectionUtils {
 
- def constructorOld(t: Type): MethodMirror = {
+ def constructor(t: Type): MethodMirror = {
     val m = runtimeMirror(getClass.getClassLoader)
     m.reflectClass(t.typeSymbol.asClass).reflectConstructor(t.decl(termNames.CONSTRUCTOR).asMethod)
   }
 
-  def constructor(t: Type): Option[MethodMirror] = {
+  /*def constructorNew(t: Type): Option[MethodMirror] = {
     val m = runtimeMirror(getClass.getClassLoader)
     t.decl(
       termNames.CONSTRUCTOR
     ).asTerm.alternatives.collect {
       case ctor: MethodSymbol if ctor.isCaseAccessor => ctor
     }.map(ms => m.reflectClass(t.typeSymbol.asClass).reflectConstructor(ms)).headOption
-  }
+  }*/
 
   def createCaseClass[T](map: Map[String, Any])(implicit tag: TypeTag[T]): T = {
     val tpe = typeOf[T]
@@ -37,13 +37,13 @@ object ReflectionUtils {
 
   def createCaseClassByType(tpe: Type, map : Map[String, Any]): Any = {
     val constr = constructor(tpe)
-    val params = constr.get.symbol.paramLists.flatten // get constructor params
+    val params = constr.symbol.paramLists.flatten // get constructor params
     val input = map.map {
       case (k: String, m: Map[String, Any]) =>
         k -> createCaseClassByType(params.find(_.name.toString == k).get.typeSignature, m)
       case x => x
     }
-    constr.get(params.map(_.name.toString).map(input).toSeq: _*) // invoke constructor
+    constr(params.map(_.name.toString).map(input).toSeq: _*) // invoke constructor
   }
 
   def valNamesWithAnnotations[T](tag: ClassTag[T]): List[(String, List[java.lang.annotation.Annotation])] = {
