@@ -30,7 +30,7 @@ Simple example:
   createOClass[Message]
   createOClass[Blog]
   
-  val blog = Blog("Dim", content = Message("Hi"))
+  val blog = Blog("Dim", message = Message("Hi")) //or without named params Blog("Dim", Message("Hi))
   blog.save
   
   val blogs: List[Blog] = db.queryBySql[Blog]("select from blog")
