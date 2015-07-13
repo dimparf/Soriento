@@ -22,6 +22,15 @@ Supported types:
 - LinkList, LinkSet, LinkMap.
 - EmbeddedList, EmbeddedSet, EmbeddedMap.
 
+##Add to you project
+```scala
+ lazy val youProject = Project("YouProject", file("."))
+  .settings(commonSettings: _*)
+  .dependsOn(sorientoProject)
+  
+ lazy val sorientoProject = RootProject(uri("https://github.com/dimparf/Soriento.git#master"))
+```
+
 ##Usage
 Simple example:
 ```scala
@@ -39,7 +48,7 @@ Simple example:
   val blogs: List[Blog] = db.queryBySql[Blog]("select from blog")
   
   deleteOClass[Message]
-  deletOClass[Blog]
+  deleteOClass[Blog]
 ```
 
 More examples in test directory.
