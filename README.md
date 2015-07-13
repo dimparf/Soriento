@@ -25,6 +25,8 @@ Supported types:
 ##Usage
 Simple example:
 ```scala
+  import com.emotioncity.Dsl._ // or extends Dsl trait
+
   case class Message(content: String)
   case class Blog(author: String, @Embedded message: Message) // or @Linked
   
