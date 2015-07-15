@@ -38,6 +38,7 @@ object RichODocumentImpl {
     def getAsS[T](fieldName: String)(implicit tag: TypeTag[T]): Option[T] = {
       oDocument.fieldType(fieldName) match {
         case OType.STRING => get[T](fieldName)
+          //ANY, BINARY, BOOLEAN, BYTE, CUSTOM, DATE, DATETIME, DECIMAL, EMBEDDEDLIST, EMBEDDEDMAP, EMBEDDEDSET, FLOAT, INTEGER, LINK, LINKBAG, LINKLIST, LINKSET, LONG, SHORT, TRANSIENT
       }
     }
 
