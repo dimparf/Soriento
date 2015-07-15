@@ -39,10 +39,10 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
 
     val simpleODoc = new ODocument("Simple").field("sField", "stringField", OType.STRING).save()
 
-    println("SimpleODoc sField Type: " + simpleODoc.fieldType("sField"))
+    //println("SimpleODoc sField Type: " + simpleODoc.fieldType("sField"))
 
     val dbSimple = orientDb.queryBySql[Simple]("select from Simple").head
-    println(s"Simple from DB: $dbSimple")
+    //println(s"Simple from DB: $dbSimple")
 
     val simples: java.util.List[ODocument] = new util.ArrayList[ODocument]()
     simples.add(new ODocument("Simple").field("sField", "stringField", OType.STRING))
@@ -53,7 +53,7 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
     .field("listField", simples)
     orientDb.save(oDocument)
     val dbComplex = orientDb.queryBySql[Complex]("select from Complex").head
-    println(dbComplex)
+    //println(dbComplex)
   }
 
 

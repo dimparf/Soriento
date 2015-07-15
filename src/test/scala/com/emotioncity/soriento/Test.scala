@@ -1,6 +1,7 @@
 package com.emotioncity.soriento
 
-import com.emotioncity.soriento.annotations.{Embedded, LinkSet}
+import com.emotioncity.soriento.annotations.{EmbeddedList, Embedded, LinkSet}
+import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
 
 import scala.reflect.runtime.universe._
 import com.emotioncity.soriento.ReflectionUtils._
@@ -8,35 +9,11 @@ import com.emotioncity.soriento.ReflectionUtils._
 /**
  * Created by stream on 14.07.15.
  */
-case class E(field: String)
-
-case class TestTest(@Embedded tt: E, @javax.persistence.Id @LinkSet lt: Int, withoutAnn: String)
-
-object TestApp extends App {
-  /*  val typeOfTestTest = typeOf[TestTest]
-    val companionSymbol = typeOfTestTest.typeSymbol.companion
-    val applyAnno = companionSymbol
-      .typeSignature
-      .members
-      .collectFirst { case method: MethodSymbol if method.name.toString == "apply" =>
-      method.paramLists.head.collect { case p if p.annotations.exists(a => a.tree.tpe == typeOf[Embedded]) =>
-        p.name.toString
-      }
-    }.get
-    println(applyAnno)*/
- /* def fieldsWithAnnotations[T: TypeTag] = {
-    val typeOfClazz = typeOf[T]
-    val companionSymbol = typeOfClazz.typeSymbol.companion
-    companionSymbol
-      .typeSignature
-      .members
-      .collectFirst { case method: MethodSymbol if method.name.toString == "apply" =>
-      method.paramLists.head.map(p => p.name.toString -> p.annotations)
-    }
-  }*/
-
-
-  val typeOfTest = getTypeForClass(TestTest(E("ff"), 12, "tttt").getClass)
-  println(fieldsWithAnnotations(typeOfTest))
-
+object TestApp extends App with Dsl with ODb {
+  ODatabaseRecordThreadLocal.INSTANCE.set(orientDb)
+  createOClass[Complex]
+  val complex = Complex(12, Simple("test"), "testString", List(Simple("test2"), Simple("test3")))
+  val complexDoc = productToDocument(complex)
+  println("Generated complexDoc: " + complexDoc)
+  complexDoc.save()
 }

@@ -45,11 +45,11 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     }}
     val expectedDocument = new ODocument("User")
       .field("name", "Elena")
-      .field("checkins", checkinsDocuments, OType.EMBEDDEDSET).save()
+      .field("checkins", checkinsDocuments, OType.EMBEDDEDLIST).save()
 
     userDoc.getClassName should equal("User")
     userDoc.field[String]("name") should equal("Elena")
-    userDoc.fieldType("checkins") should equal(OType.EMBEDDEDSET) //TODO Support other OTypes with annotations
+    userDoc.fieldType("checkins") should equal(OType.EMBEDDEDLIST) //TODO Support other OTypes with annotations
     //println("Checkins value: " + userDoc.field[ORecordLazyList]("checkins"))
     //val checkinsFromExpected =  userDoc.field[ORecordLazyList]("checkins").iterator().toList
     //TODO implement it test
@@ -59,18 +59,19 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     val user = User("Dmitriy", List(Checkin("Paris"), Checkin("Saint Francisco")))
     val userDoc = productToDocument(user)
     userDoc.fieldType("name") should equal(OType.STRING)
-    userDoc.fieldType("checkins") should equal(OType.EMBEDDEDSET)
+    userDoc.fieldType("checkins") should equal(OType.EMBEDDEDLIST)
   }
 
   test("It should update ODocument if field of case class constructor annotated with javax.persistent.Id") {
-    createOClass[Complex]
-    val user = Complex(12, Simple("test"), "testString", List(Simple("test2"), Simple("test3")))
-    val userDoc = productToDocument(user)
-    println(userDoc)
-    println("Identity for new ODocument: " + new ODocument().getIdentity)
-    userDoc.getIdentity.getClusterId should equal(-1)
-    userDoc.getIdentity.getClusterPosition should equal(-1)
-    user.save()
+    createOClass[BlogWithLinkListMessages]
+    val blog = BlogWithLinkListMessages(name ="MyBlog", messages = List(Message("Hi"), Message("Here are you?")))
+    val blogDoc = productToDocument(blog)
+    println("Generated complexDoc: " + blogDoc)
+    println(s"Gen, messages field OType: ${blogDoc.fieldType("messages")}")
+    println(s"Gen, messages : ${blogDoc.field("messages")}")
+    blogDoc.getIdentity.getClusterId should equal(-1)
+    blogDoc.getIdentity.getClusterPosition should equal(-1)
+    blogDoc.save()
   }
 
   test("Simple field test") {
@@ -86,7 +87,9 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     dropOClass[Record]
     dropOClass[User]
     dropOClass[Checkin]
-    //dropOClass[Simple]
+    dropOClass[Simple]
+    dropOClass[BlogWithLinkListMessages]
+    dropOClass[Message]
   }
 
 }

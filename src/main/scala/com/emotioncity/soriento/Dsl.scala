@@ -53,6 +53,7 @@ trait Dsl {
       }
       if (fieldValue != None) {
         val oType = getOType(fieldName, field, field.getDeclaringClass)
+        println(s"Field metadata: Name: $fieldName, Value: $fieldValue, OType: $oType")
         document.field(fieldName, fieldValue, oType)
       }
     }

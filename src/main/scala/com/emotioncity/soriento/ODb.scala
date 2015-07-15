@@ -22,8 +22,7 @@ trait ODb {
     val schema = db.getMetadata.getSchema
     val clazz = tag.runtimeClass
     val ccSimpleName = clazz.getSimpleName
-    if (!schema.existsClass(ccSimpleName)) {
-      //TODO isExists ???
+    if (!schema.existsClass(ccSimpleName)) { //TODO isExists ???
       createOClassByName(schema, clazz.getName, ccSimpleName)
     } else schema.getClass(ccSimpleName)
   }
@@ -55,12 +54,15 @@ trait ODb {
       for (entity <- nameTypeMap) {
         val (name, field) = entity
         val oType = getOType(name, field, clazz)
+        println(s"OType in createOClass $field, $name, $oType")
         if (oType == OType.LINK || oType == OType.LINKLIST || oType == OType.LINKMAP
           || oType == OType.EMBEDDED || oType == OType.EMBEDDEDLIST || oType == OType.EMBEDDEDSET) {
           val subOClassName = field.getType.getSimpleName
+          println("GENERIC IS: " + field.getType)
           if (register.contains(subOClassName)) {
             oClass.createProperty(name, oType, register.get(subOClassName).get)
           } else {
+            //TODO BUG! for List create linked class with name List! but create linked class of Generic (List[T] => T)
             val subOClass = createOClassByName(schema, field.getType.getName, field.getType.getSimpleName)
             oClass.createProperty(name, oType, subOClass)
             register += subOClassName -> subOClass

@@ -38,7 +38,6 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     assert(schema.existsClass("Message"))
     assert(schema.getClass("BlogWithLinkedMessages").existsProperty("message"))
     val linkedMessageProperty = schema.getClass("BlogWithLinkedMessages").getProperty("message").getType
-    println(s"Property OType: $linkedMessageProperty")
     linkedMessageProperty should equal(OType.LINK)
 
     createOClass[BlogWithEmbeddedMessages]

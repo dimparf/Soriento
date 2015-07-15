@@ -1,6 +1,6 @@
 package com.emotioncity.soriento
 
-import com.emotioncity.soriento.annotations.{LinkSet, Linked, EmbeddedSet, Embedded}
+import com.emotioncity.soriento.annotations._
 
 /*
  *
@@ -13,7 +13,8 @@ case class BlogWithLinkedMessages(name: String, @Linked message: Message)
 case class BlogWithEmbeddedMessages(name: String, @Embedded message: Message)
 case class BlogWithLinkSetMessages(name: String, @LinkSet messages: Set[Message])
 case class BlogWithEmbeddedSetMessages(name: String, @EmbeddedSet messages: Set[Message])
+case class BlogWithLinkListMessages(name: String, @EmbeddedList messages: List[Message])
 case class Record(content: String)
 case class Blog(author: String, @Embedded message: Record)
 case class Checkin(location: String)
-case class User(name: String, @EmbeddedSet checkins: List[Checkin])
+case class User(name: String, @EmbeddedList checkins: List[Checkin])

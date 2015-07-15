@@ -58,6 +58,8 @@ object ReflectionUtils {
    */
   def typeStringByTypeTag[T: TypeTag] = typeOf[T].typeArgs.head
 
+  def typeStringByType(t: Type) = t.typeArgs.head
+
   def getTypeForClass[T](clazz: Class[T]): Type = {
     val runtimeMirrorT = runtimeMirror(clazz.getClassLoader)
     runtimeMirrorT.classSymbol(clazz).toType
