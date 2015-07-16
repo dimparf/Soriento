@@ -1,6 +1,6 @@
 package com.emotioncity.soriento
 
-import java.lang.reflect.Field
+import java.lang.reflect.{ParameterizedType, Field}
 
 import com.emotioncity.soriento.annotations._
 import com.orientechnologies.orient.core.metadata.schema.OType
@@ -131,6 +131,22 @@ object ReflectionUtils {
             }
           case None => OType.ANY
         }
+    }
+  }
+
+  def getGenericTypeClass(field: Field): Option[Class[_]] = {
+    val genericType = field.getGenericType
+    genericType match {
+      case parametrizedType: ParameterizedType =>
+        val parameterType = parametrizedType.getActualTypeArguments()(0)
+        parameterType match {
+          case value: Class[_] =>
+            Option(value)
+          case _ =>
+            None
+        }
+      case _ =>
+        None
     }
   }
 
