@@ -55,11 +55,9 @@ trait ODb {
       for (entity <- nameTypeMap) {
         val (name, field) = entity
         val oType = getOType(name, field, clazz)
-        println(s"OType in createOClass $name, $oType")
         if (oType == OType.LINK || oType == OType.LINKLIST || oType == OType.LINKMAP
           || oType == OType.EMBEDDED || oType == OType.EMBEDDEDLIST || oType == OType.EMBEDDEDSET) {
           val genericOpt = getGenericTypeClass(field)
-          println(s"Generic type: $genericOpt")
           val subOClass = if (genericOpt.isDefined) genericOpt.get else field.getType
           val subOClassName = subOClass.getName
           val subOClassSimpleName = subOClass.getSimpleName

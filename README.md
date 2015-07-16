@@ -38,12 +38,17 @@ Simple example:
 
   case class Message(content: String)
   case class Blog(author: String, @Embedded message: Message) // or @Linked
+  case class BlogWithEmbeddedMessages(author: String, @EmbeddedSet messages: List[Message])
   
-  createOClass[Message]
+  //schema-full (use com.emotioncity.soriento.ODb trait) mode or without this lines - schema less
+  createOClass[Message] 
   createOClass[Blog]
+  createOClass[BlogWithEmbeddedMessages]
   
   val blog = Blog("Dim", message = Message("Hi")) //or without named params Blog("Dim", Message("Hi))
+  val blogWithEmbeddedMessages = BlogWithEmbeddedMessages("John", List(Message("Hi"), Message("New blog note")))
   blog.save
+  blogWithEmbeddedMessages.save
   
   val blogs: List[Blog] = db.queryBySql[Blog]("select from blog")
   
