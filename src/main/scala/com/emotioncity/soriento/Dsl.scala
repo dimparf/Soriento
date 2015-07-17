@@ -13,7 +13,7 @@ trait Dsl {
 
   implicit def productToDocument[T >: Any](cc: Product): ODocument = {
     val modelName = cc.getClass.getSimpleName
-    println(s"Product name: $modelName")
+    //println(s"Product name: $modelName")
     val ridOpt = rid(cc)
     val document = if (ridOpt.isDefined) new ODocument(modelName, ridOpt.get) else new ODocument(modelName)
     val values = cc.productIterator
@@ -52,7 +52,7 @@ trait Dsl {
       }
       if (fieldValue != None) {
         val oType = getOType(fieldName, field, field.getDeclaringClass)
-        println(s"Field metadata: Name: $fieldName, Value: $fieldValue, OType: $oType")
+        //println(s"Field metadata: Name: $fieldName, Value: $fieldValue, OType: $oType")
         document.field(fieldName, fieldValue, oType)
       }
     }

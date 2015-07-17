@@ -24,8 +24,8 @@ case class Place(
 
 class UseCaseTest extends FunSuite with Matchers with BeforeAndAfter with ODb with Dsl {
 
-  test("Use case: create graph with linked and embedded documents in vertexes, navigate and extract case classes, save entity") {
-    /*createOClass[Owner]
+  /*test("Use case: create graph with linked and embedded documents in vertexes, navigate and extract case classes, save entity") {
+    createOClass[Owner]
     val addressOClass = createOClass[Address]
     println(s"ADDRESS: $addressOClass")
     createOClass[Event]
@@ -39,8 +39,8 @@ class UseCaseTest extends FunSuite with Matchers with BeforeAndAfter with ODb wi
     place.setProperty("address", address)
     place.setProperty("events", events)
     place.addEdge("owner", owner)
-    place.save*/
-  }
+    place.save
+  }*/
 
   after{
     dropOClass[Owner]

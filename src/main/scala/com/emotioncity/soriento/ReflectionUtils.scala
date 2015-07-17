@@ -128,7 +128,7 @@ object ReflectionUtils {
               case tpe if tpe =:= typeOf[EmbeddedList] =>
                 OType.EMBEDDEDLIST
               case _ =>
-                println("Unsupported annotation! " + annotation.tree.tpe)
+                //println("Unsupported annotation! " + annotation.tree.tpe)
                 OType.ANY //TODO unsupported annotations
             }
           case None => OType.ANY
