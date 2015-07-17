@@ -82,6 +82,7 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     oClass.getProperty("messages") should not be (null)
     oClass.getProperty("name") should not be (null)
     dropOClass[BlogWithEmbeddedListMessages]
+    dropOClass[Message]
   }
 
  /* test("ODb should be create OClass extends V with name in OrientDb") {

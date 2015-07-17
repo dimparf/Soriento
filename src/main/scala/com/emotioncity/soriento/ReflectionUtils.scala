@@ -1,9 +1,10 @@
 package com.emotioncity.soriento
 
-import java.lang.reflect.{ParameterizedType, Field}
+import java.lang.reflect.{Field, ParameterizedType}
 import javax.persistence.Id
 
 import com.emotioncity.soriento.annotations._
+import com.orientechnologies.orient.core.id.ORID
 import com.orientechnologies.orient.core.metadata.schema.OType
 
 import scala.reflect.ClassTag
@@ -139,6 +140,28 @@ object ReflectionUtils {
     val typeOfClass = getTypeForClass(clazz)
     val fieldsWithAnnotations: List[(String, List[Annotation])] = onlyFieldsWithAnnotations(typeOfClass).get
     fieldsWithAnnotations.exists(pair => pair._1 == name && pair._2.exists(annotation => annotation.tree.tpe =:= typeOf[Id]))
+  }
+
+  /**
+   * Get RID if it present in object
+   * TODO: More type safe!
+   * @param cc case class
+   * @return None if RID does not exist else Some(rid)
+   */
+  def rid(cc: Product): Option[ORID] = {
+    val clazz = cc.getClass
+    val fieldList: List[Field] = cc.getClass.getDeclaredFields.toList
+    val idFieldOpt = fieldList.find(field => isId(field.getName, clazz))
+    idFieldOpt match {
+      case Some(idField) =>
+        idField.setAccessible(true)
+        getGenericTypeClass(idField) match {           //TODO check Option ?
+          case Some(generic) => idField.get(cc).asInstanceOf[Option[ORID]]
+          case None => Option(idField.get(cc).asInstanceOf[ORID])
+        }
+      case None =>
+        None
+    }
   }
 
   def getGenericTypeClass(field: Field): Option[Class[_]] = {

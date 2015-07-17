@@ -81,6 +81,7 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     val savedDoc = blogDoc.save
     savedDoc.getIdentity.getClusterId should not equal (-1)
     savedDoc.getIdentity.getClusterPosition should not equal (-1)
+
     val extractedDoc = orientDb
       .query[java.util.List[ODocument]](new OSQLSynchQuery[ODocument](s"select from ${savedDoc.getIdentity}"), Nil: _*).head
     extractedDoc.field[String]("name") should equal(savedDoc.field[String]("name"))
@@ -88,7 +89,13 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     extractedMessages.filter(document => document.field[String]("text") == "Hi") should not be empty
     extractedMessages.filter(document => document.field[String]("text") == "Here are you?") should not be empty
     savedDoc.getIdentity should equal(extractedDoc.getIdentity)
-    val simpleUpdateBlog = BlogWithEmbeddedListMessages(name = "Super blog", messages = List(Message("Hi"), Message("Here are you?")))
+    val simpleUpdateBlog = BlogWithEmbeddedListMessages(Option(extractedDoc.getIdentity), name = "Super blog", messages = List(Message("Hi"), Message("Here are you?")))
+    val updatedBlogIdentity = simpleUpdateBlog.save.getIdentity
+    val updatedBlog = orientDb
+      .query[java.util.List[ODocument]](new OSQLSynchQuery[ODocument](s"select from $updatedBlogIdentity"), Nil: _*).head
+    updatedBlog.getIdentity.getClusterId should equal(savedDoc.getIdentity.getClusterId)
+    updatedBlog.getIdentity.getClusterPosition should equal(savedDoc.getIdentity.getClusterPosition)
+    updatedBlog.field[String]("name") should equal("Super blog")
   }
 
 

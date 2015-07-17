@@ -1,11 +1,9 @@
 package com.emotioncity.soriento
 
-import com.orientechnologies.orient.core.metadata.schema.OType
+import com.emotioncity.soriento.ReflectionUtils._
 import com.orientechnologies.orient.core.record.impl.ODocument
 
 import scala.collection.JavaConverters._
-import scala.reflect.runtime.universe._
-import com.emotioncity.soriento.ReflectionUtils._
 
 
 /**
@@ -16,7 +14,8 @@ trait Dsl {
   implicit def productToDocument[T >: Any](cc: Product): ODocument = {
     val modelName = cc.getClass.getSimpleName
     println(s"Product name: $modelName")
-    val document = new ODocument(modelName)
+    val ridOpt = rid(cc)
+    val document = if (ridOpt.isDefined) new ODocument(modelName, ridOpt.get) else new ODocument(modelName)
     val values = cc.productIterator
     val fieldList = cc.getClass.getDeclaredFields.toList
     fieldList.foreach { field =>
