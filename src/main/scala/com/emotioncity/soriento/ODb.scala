@@ -70,7 +70,9 @@ trait ODb {
             register += subOClassName -> subOClass
           }
         } else {
-          oClass.createProperty(name, oType)
+          if (!isId(name, clazz)) {
+            oClass.createProperty(name, oType)
+          }
         }
       }
       oClass

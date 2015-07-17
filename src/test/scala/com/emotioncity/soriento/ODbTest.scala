@@ -74,6 +74,16 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     droppedAfterDropped should equal(false)
   }
 
+  test("ODb should be create schema without field annotated with @javax.persistent.Id") {
+    createOClass[BlogWithEmbeddedListMessages]
+    schema.existsClass("BlogWithEmbeddedListMessages")
+    val oClass = schema.getClass("BlogWithEmbeddedListMessages")
+    oClass.getProperty("id") should be (null)
+    oClass.getProperty("messages") should not be (null)
+    oClass.getProperty("name") should not be (null)
+    dropOClass[BlogWithEmbeddedListMessages]
+  }
+
  /* test("ODb should be create OClass extends V with name in OrientDb") {
     val vertexClass = createOClass[Test] inherit OrientVertex
   }*/

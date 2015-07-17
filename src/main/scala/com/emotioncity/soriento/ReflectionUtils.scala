@@ -1,6 +1,7 @@
 package com.emotioncity.soriento
 
 import java.lang.reflect.{ParameterizedType, Field}
+import javax.persistence.Id
 
 import com.emotioncity.soriento.annotations._
 import com.orientechnologies.orient.core.metadata.schema.OType
@@ -132,6 +133,12 @@ object ReflectionUtils {
           case None => OType.ANY
         }
     }
+  }
+
+  def isId(name: String, clazz: Class[_]): Boolean = {
+    val typeOfClass = getTypeForClass(clazz)
+    val fieldsWithAnnotations: List[(String, List[Annotation])] = onlyFieldsWithAnnotations(typeOfClass).get
+    fieldsWithAnnotations.exists(pair => pair._1 == name && pair._2.exists(annotation => annotation.tree.tpe =:= typeOf[Id]))
   }
 
   def getGenericTypeClass(field: Field): Option[Class[_]] = {
