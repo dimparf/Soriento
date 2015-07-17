@@ -55,7 +55,7 @@ Simple example:
   blogWithEmbeddedMessages.save
   
   val blogs: List[Blog] = db.queryBySql[Blog]("select from blog")
-  
+    
   deleteOClass[Message]
   deleteOClass[Blog]
   deleteOClass[BlogWithEmbeddedMessages]
