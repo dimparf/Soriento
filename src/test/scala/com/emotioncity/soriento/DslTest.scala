@@ -1,12 +1,12 @@
 package com.emotioncity.soriento
 
-import com.orientechnologies.orient.core.db.record.ORecordLazyList
-import com.orientechnologies.orient.core.id.ORecordId
+import com.orientechnologies.orient.core.db.document.{ODatabaseDocumentPool, ODatabaseDocumentTx}
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
-import org.scalatest.{BeforeAndAfter, Matchers, FunSuite}
-import collection.JavaConversions._
-import com.orientechnologies.orient.core.db.document.{ODatabaseDocumentPool, ODatabaseDocumentTx}
+import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
+import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
+
+import scala.collection.JavaConversions._
 
 /**
  * Created by stream on 25.12.14.
@@ -39,10 +39,12 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     val checkin2 = Checkin("Vladivostok")
     val user = User("Elena", List(checkin1, checkin2))
     val userDoc = productToDocument(user)
-    val checkinsDocuments: java.util.List[ODocument] = new java.util.ArrayList[ODocument] {{
-      add(new ODocument("Checkin").field("location", "Paris"))
-      add(new ODocument("Checkin").field("location", "Vladivostok"))
-    }}
+    val checkinsDocuments: java.util.List[ODocument] = new java.util.ArrayList[ODocument] {
+      {
+        add(new ODocument("Checkin").field("location", "Paris"))
+        add(new ODocument("Checkin").field("location", "Vladivostok"))
+      }
+    }
     val expectedDocument = new ODocument("User")
       .field("name", "Elena")
       .field("checkins", checkinsDocuments, OType.EMBEDDEDLIST).save()
@@ -62,17 +64,33 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     userDoc.fieldType("checkins") should equal(OType.EMBEDDEDLIST)
   }
 
-  test("It should update ODocument if field of case class constructor annotated with javax.persistent.Id") {
-    createOClass[BlogWithLinkListMessages]
-    val blog = BlogWithLinkListMessages(name ="MyBlog", messages = List(Message("Hi"), Message("Here are you?")))
+  test("Should save case class instances with schema-full mode") {
+    createOClass[BlogWithEmbeddedListMessages]
+    val blog = BlogWithEmbeddedListMessages(name = "MyBlog", messages = List(Message("Hi"), Message("Here are you?")))
     val blogDoc = productToDocument(blog)
-    println("Generated complexDoc: " + blogDoc)
-    println(s"Gen, messages field OType: ${blogDoc.fieldType("messages")}")
-    println(s"Gen, messages : ${blogDoc.field("messages")}")
-    blogDoc.getIdentity.getClusterId should equal(-1)
-    blogDoc.getIdentity.getClusterPosition should equal(-1)
     blogDoc.save()
   }
+
+
+  test("It should update ODocument if field of case class constructor annotated with javax.persistent.Id") {
+    createOClass[BlogWithEmbeddedListMessages]
+    val blog = BlogWithEmbeddedListMessages(name = "MyBlog", messages = List(Message("Hi"), Message("Here are you?")))
+    val blogDoc = productToDocument(blog)
+    blogDoc.getIdentity.getClusterId should equal(-1)
+    blogDoc.getIdentity.getClusterPosition should equal(-1)
+    val savedDoc = blogDoc.save
+    savedDoc.getIdentity.getClusterId should not equal (-1)
+    savedDoc.getIdentity.getClusterPosition should not equal (-1)
+    val extractedDoc = orientDb
+      .query[java.util.List[ODocument]](new OSQLSynchQuery[ODocument](s"select from ${savedDoc.getIdentity}"), Nil: _*).head
+    extractedDoc.field[String]("name") should equal(savedDoc.field[String]("name"))
+    val extractedMessages = extractedDoc.field[java.util.List[ODocument]]("messages")
+    extractedMessages.filter(document => document.field[String]("text") == "Hi") should not be empty
+    extractedMessages.filter(document => document.field[String]("text") == "Here are you?") should not be empty
+    savedDoc.getIdentity should equal(extractedDoc.getIdentity)
+    val simpleUpdateBlog = BlogWithEmbeddedListMessages(name = "Super blog", messages = List(Message("Hi"), Message("Here are you?")))
+  }
+
 
   test("Simple field test") {
     val simple = Simple("TesT")
@@ -88,7 +106,7 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     dropOClass[User]
     dropOClass[Checkin]
     dropOClass[Simple]
-    dropOClass[BlogWithLinkListMessages]
+    dropOClass[BlogWithEmbeddedListMessages]
     dropOClass[Message]
   }
 

@@ -14,7 +14,7 @@ import scala.reflect.ClassTag
  *
  */
 trait ODb {
-  private var register: Map[String, OClass] = Map.empty
+   var register: Map[String, OClass] = Map.empty
 
   def initialize() {}
 
@@ -39,6 +39,7 @@ trait ODb {
   def dropOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocument) = {
     try {
       db.getMetadata.getSchema.dropClass(tag.runtimeClass.getSimpleName)
+      register -= tag.runtimeClass.getName
       true
     } catch {
       case ose: OSchemaException =>
