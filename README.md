@@ -77,4 +77,4 @@ Just remember to test it when you are done. Here is how:
 Run sbt test to run and compile tests.
     
 ## License
-This software is available under the [New BSD License](LICENSE).    
+This software is available under the [Apache License, Version 2.0](LICENSE).    
