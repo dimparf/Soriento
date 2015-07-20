@@ -7,7 +7,7 @@ Soriento is an object-relational mapping framework from scala case classes to Or
 ##News
  - Update documents with field annotated as javax.persistent.Id
  - Bug fixes
- - ##Warning: deserialization mechanism is broken in this commit
+ - <strong>Warning:</strong> deserialization mechanism is broken in this commit
 
 ## Features
 
