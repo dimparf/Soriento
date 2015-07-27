@@ -5,22 +5,23 @@ import java.util
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
+import RichODatabaseDocumentImpl._
 
-/**
+
+/**../
  * Created by stream on 31.03.15.
  */
 
 class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with OrientDbSupport with ODb {
 
-  import Implicits._
 
   test("RichODocument should be provide implicit methods for read case class with @Emedded fields from ODocument") {
     val brothers: java.util.List[ODocument] = new util.ArrayList[ODocument]()
     brothers.add(new ODocument("Brother").field("name", "Blast").field("kulugda", "Morf"))
     brothers.add(new ODocument("Brother").field("name", "Faz").field("kulugda", "Morf2"))
-    val oDocument = new ODocument("Blagda")
+    val oDocument = new ODocument("Home")
       .field("name", "Tost")
-      .field("bio",
+      .field("family",
         new ODocument("Family")
           .field("mother", "Tata")
           .field("father", "Rembo")
@@ -28,12 +29,12 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
           ), OType.EMBEDDED)
     orientDb.save(oDocument)
 
-    val blagdaList = orientDb.queryBySql[Blagda]("select from Blagda")
+    val blagdaList = orientDb.queryBySql[Home]("select from Home")
 
-    blagdaList.head should equal(Blagda("Tost", Family("Tata", "Rembo", List(Brother("Blast", Some("Morf")), Brother("Faz", None)))))
+    blagdaList.head should equal(Home("Tost", Family("Tata", "Rembo", List(Brother("Blast", Some("Morf")), Brother("Faz", None)))))
   }
 
-  test("RichODocument should be provide determinate type of field and map it to case class field") {
+  test("RichODocument should be determinate type of field and map it to case class field") {
     val simple = Simple("stringField")
     val complex = Complex(2, simple, "string", List(simple))
 
@@ -58,7 +59,7 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
 
 
   after {
-    dropOClass[Blagda]
+    dropOClass[Home]
     dropOClass[Brother]
     dropOClass[Family]
     dropOClass[Simple]

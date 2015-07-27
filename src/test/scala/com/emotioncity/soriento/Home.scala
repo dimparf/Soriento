@@ -8,15 +8,15 @@ import RichODocumentImpl._
 /**
  * Created by stream on 31.03.15.
  */
-case class Blagda(name: String, @Embedded bio: Family)
-object Blagda {
+case class Home(name: String, @Embedded family: Family)
+object Home {
 
-  implicit object BlagdaReader extends ODocumentReader[Blagda] {
+  implicit object HomeReader extends ODocumentReader[Home] {
 
-    def read(oDocument: ODocument): Blagda = {
-      new Blagda(
+    def read(oDocument: ODocument): Home = {
+      new Home(
         oDocument.get[String]("name").get,
-        oDocument.getAs[Family]("bio").get
+        oDocument.getAs[Family]("family").get
       )
     }
   }

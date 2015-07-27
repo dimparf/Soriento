@@ -39,6 +39,8 @@ Supported types:
 Simple example:
 ```scala
   import com.emotioncity.Dsl._ // or extends Dsl trait
+  
+  implicit orientDb: ODatabaseDocumentTx = ...
 
   case class Message(content: String)
   case class Blog(author: String, @Embedded message: Message) // or @Linked
@@ -51,8 +53,13 @@ Simple example:
   
   val blog = Blog("Dim", message = Message("Hi")) //or without named params Blog("Dim", Message("Hi))
   val blogWithEmbeddedMessages = BlogWithEmbeddedMessages("John", List(Message("Hi"), Message("New blog note")))
+  //ActiveRecord style
   blog.save
   blogWithEmbeddedMessages.save
+  
+  //...or
+  orientDb.save(blog)
+  
   
   val blogs: List[Blog] = db.queryBySql[Blog]("select from blog")
     

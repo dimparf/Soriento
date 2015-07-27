@@ -11,7 +11,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocument
 /**
  * Created by stream on 31.03.15.
  */
-object Implicits {
+object RichODatabaseDocumentImpl {
 
   implicit class RichODatabaseDocumentTx(db: ODatabaseDocument) {
 
