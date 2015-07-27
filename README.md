@@ -40,7 +40,7 @@ Simple example:
 ```scala
   import com.emotioncity.Dsl._ // or extends Dsl trait
   
-  implicit orientDb: ODatabaseDocumentTx = ...
+  implicit val orientDb: ODatabaseDocumentTx = ???
 
   case class Message(content: String)
   case class Blog(author: String, @Embedded message: Message) // or @Linked
@@ -57,7 +57,7 @@ Simple example:
   blog.save
   blogWithEmbeddedMessages.save
   
-  //...or
+  //..or
   orientDb.save(blog)
   
   
