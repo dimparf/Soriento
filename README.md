@@ -42,9 +42,42 @@ Simple example:
   
   implicit val orientDb: ODatabaseDocumentTx = ???
 
+  //create case classes with ODocumentReader for it
   case class Message(content: String)
+  object Message {
+    implicit object MessageReader extends ODocumentReader[Message] {
+      def read(oDocument: ODocument): Message = {
+        Message(
+          oDocument.get[String]("content").get
+        )
+      }
+    }
+  }
+  
   case class Blog(author: String, @Embedded message: Message) // or @Linked
+  object Blog {
+     implicit object BlogReader extends ODocumentReader[Blog] {
+       def read(oDocument: ODocument): Blog = {
+         Blog(
+           oDocument.get[String]("author").get,
+           oDocument.getAs[Message]("message").get
+         )
+       }
+     }
+  }
+  
   case class BlogWithEmbeddedMessages(author: String, @EmbeddedSet messages: List[Message])
+  object BlogWithEmbeddedMessages {
+     implicit object BlogWithEmbeddedMessagesReader extends ODocumentReader[BlogWithEmbeddedMessages] {
+        def read(oDocument: ODocument): BlogWithEmbeddedMessages = {
+           BlogWithEmbeddedMessages(
+             oDocument.get[String]("author").get,
+             oDocument.getAs[Message, List[Message]]("message").get
+           )
+        }
+     }
+  }
+
   
   //schema-full (use com.emotioncity.soriento.ODb trait) mode or without this lines - schema less
   createOClass[Message] 
