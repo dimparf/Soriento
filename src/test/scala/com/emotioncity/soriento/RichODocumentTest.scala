@@ -54,9 +54,9 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
 
 
   after {
-    /*dropOClass[Home]
+    dropOClass[Home]
     dropOClass[Brother]
-    dropOClass[Family]*/
+    dropOClass[Family]
     dropOClass[Simple]
     dropOClass[Complex]
   }
