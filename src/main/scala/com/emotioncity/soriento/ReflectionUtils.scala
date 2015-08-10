@@ -60,7 +60,7 @@ object ReflectionUtils {
    */
   def typeStringByTypeTag[T: TypeTag] = typeOf[T].typeArgs.head
 
-  def typeStringByType(t: Type) = t.typeArgs.head
+  def typeStringByType(t: Type): Option[Type] = t.typeArgs.headOption
 
   def getTypeForClass[T](clazz: Class[T]): Type = {
     val runtimeMirrorT = runtimeMirror(clazz.getClassLoader)

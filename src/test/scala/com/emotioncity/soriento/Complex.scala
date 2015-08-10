@@ -18,10 +18,10 @@ object Complex {
 
     def read(oDocument: ODocument): Complex = {
       new Complex(
-        oDocument.getAsS[String]("iField").asInstanceOf[Int],
-        oDocument.getAsS[Simple]("simple").asInstanceOf[Simple],
-        oDocument.getAsS[String]("sField").asInstanceOf[String],
-        oDocument.getAsS[Simple]("listField").asInstanceOf[List[Simple]]
+        oDocument.get[Int]("iField").get,
+        oDocument.getAs[Simple]("simple").get,
+        oDocument.get[String]("sField").get,
+        oDocument.listOfEmbedded[Simple]("listField")
       )
     }
   }

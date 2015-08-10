@@ -7,6 +7,7 @@ import com.emotioncity.soriento.RichODocumentImpl._
  * Created by stream on 07.07.15.
  */
 case class Simple(sField: String)
+
 object Simple {
 
   implicit object SimpleReader extends ODocumentReader[Simple] {
@@ -14,7 +15,7 @@ object Simple {
     def read(oDocument: ODocument): Simple = {
       println("sField in SimpleReader: " + oDocument.fieldType("sField") + " : " + oDocument.field("sField"))
       Simple(
-        oDocument.getAsS[String]("sField").get //TODO stub
+        oDocument.get[String]("sField").get //TODO stub
       )
     }
   }

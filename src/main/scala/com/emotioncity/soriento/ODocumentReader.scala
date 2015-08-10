@@ -1,11 +1,15 @@
 package com.emotioncity.soriento
 
+import java.util.{List => JList}
+
 import com.orientechnologies.orient.core.record.impl.ODocument
 
-import java.util.{List => JList}
+import scala.collection.JavaConversions._
 import scala.collection.generic.CanBuildFrom
 import scala.util.Try
-import scala.collection.JavaConversions._
+import ReflectionUtils._
+import scala.reflect.runtime.universe._
+
 
 /**
  * Created by stream on 30.03.15.
@@ -21,6 +25,8 @@ trait OReader[B <: ODocument, T] {
    */
   def read(oDocument: B): T
 
+  def readCollection(oDocumentCollection: List[ODocument]): T = ???
+
   /** Tries to produce an instance of `T` from the `oDocument` value, returns `None` if an error occurred. */
   def readOpt(oDocument: B): Option[T] = readTry(oDocument).toOption
 
@@ -28,3 +34,26 @@ trait OReader[B <: ODocument, T] {
   def readTry(oDocument: B): Try[T] = Try(read(oDocument))
 
 }
+
+object DefaultReaders {
+
+  class ODocumentCollectionReader[M[_], T](implicit cbf: CanBuildFrom[M[_], T, M[T]], reader: ODocumentReader[T]) extends ODocumentReader[M[T]] {
+
+    override def readCollection(collection: List[ODocument]): M[T] = {
+      collection.map { v =>
+        reader.read(v)
+      }.to[M]
+    }
+
+    def read(oDocument: ODocument) = ???
+
+  }
+
+  //class ODocumentCollectionReader extends ODocumentCollectionReader
+
+  implicit def collectionToReader[M[_], T](implicit cbf: CanBuildFrom[M[_], T, M[T]], reader: ODocumentReader[T]): ODocumentCollectionReader[M, T] = new ODocumentCollectionReader[M, T]()
+
+
+}
+
+

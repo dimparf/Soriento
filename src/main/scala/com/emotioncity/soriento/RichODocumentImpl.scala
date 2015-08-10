@@ -15,8 +15,10 @@ import scala.reflect.runtime.universe._
  */
 object RichODocumentImpl {
 
-  implicit class RichODocument(oDocument: ODocument) {
+  implicit class RichODocument(oDocument: ODocument)  {
 
+    import DefaultReaders._
+    import DefaultReaders.collectionToReader
     /**
      * Return ODocument field as case class
      * @param fieldName name of document field
@@ -24,21 +26,44 @@ object RichODocumentImpl {
      * @tparam T return type
      * @return Option[T]
      */
-    def getAs[T](fieldName: String)(implicit reader: OReader[_ <: ODocument, T], tag: TypeTag[T]): Option[T] = {
-      get[ODocument](fieldName).flatMap { subDocument =>
-        reader match {
-          case r: ODocumentReader[T] =>
-            r.readOpt(subDocument)
-          case _ =>
-            None
-        }
-      }
-    }
-
-    def getAsS[T](fieldName: String)(implicit tag: TypeTag[T]): Option[T] = {
+    def getAs[T](fieldName: String)(implicit reader: ODocumentReader[T], tag: TypeTag[T]): Option[T] = {
+      val tpe = typeOf[T]
+      val gen = typeString(tpe)
+      println(s"Generic type: $gen")
       oDocument.fieldType(fieldName) match {
         case OType.STRING => get[T](fieldName)
-          //ANY, BINARY, BOOLEAN, BYTE, CUSTOM, DATE, DATETIME, DECIMAL, EMBEDDEDLIST, EMBEDDEDMAP, EMBEDDEDSET, FLOAT, INTEGER, LINK, LINKBAG, LINKLIST, LINKSET, LONG, SHORT, TRANSIENT
+        case OType.INTEGER => get[T](fieldName)
+        case OType.FLOAT => get[T](fieldName)
+        case OType.DOUBLE => get[T](fieldName)
+        case OType.BOOLEAN => get[T](fieldName)
+        case OType.LONG => get[T](fieldName)
+        case OType.SHORT => get[T](fieldName)
+        case OType.EMBEDDED =>
+          println(s"Embedded read - $fieldName")
+          reader.readOpt(oDocument.field[ODocument](fieldName))
+        case OType.EMBEDDEDLIST =>
+          get[java.util.List[ODocument]](fieldName) match {
+            case Some(oDocumentList) =>
+              Option(oDocumentList.toList.map(doc => reader.read(doc)).asInstanceOf[T])//STUB
+            case None =>
+              println(s"EmbeddedList not read - $fieldName")
+              None
+          }
+        case OType.EMBEDDEDSET =>
+          get[java.util.Set[ODocument]](fieldName) match {
+            case Some(oDocumentList) =>
+              Option(oDocumentList.toList.map(doc => reader.read(doc)).asInstanceOf[T])
+            case None =>
+              println(s"EmbeddedSet not read - $fieldName")
+              None
+          }
+        case OType.ANY =>
+          println(s"getAs ANY detected - $fieldName")
+          None
+        case _ =>
+          println(s"getAs unsupported type detected - $fieldName")
+          None //unsupported type
+        //ANY, BINARY, BOOLEAN, BYTE, CUSTOM, DATE, DATETIME, DECIMAL, EMBEDDEDLIST, EMBEDDEDMAP, EMBEDDEDSET, FLOAT, INTEGER, LINK, LINKBAG, LINKLIST, LINKSET, LONG, SHORT, TRANSIENT
       }
     }
 
@@ -54,9 +79,9 @@ object RichODocumentImpl {
     def listOfEmbedded[T](fieldName: String)(implicit reader: ODocumentReader[T], tag: TypeTag[T]): List[T] = {
       get[java.util.List[ODocument]](fieldName) match {
         case Some(oDocumentList) =>
-          oDocumentList.toList.map { oDocument =>
+          oDocumentList.toList.flatMap { oDocument =>
             reader.readOpt(oDocument)
-          }.flatten
+          }
         case None =>
           Nil
       }
@@ -72,4 +97,3 @@ object RichODocumentImpl {
   }
 
 }
-

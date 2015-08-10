@@ -15,12 +15,13 @@ import RichODatabaseDocumentImpl._
 class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with OrientDbSupport with ODb {
 
 
-  test("RichODocument should be provide implicit methods for read case class with @Emedded fields from ODocument") {
+  test("RichODocument should be provide implicit methods for read case class with @Embedded fields from ODocument") {
+    createOClass[Home]
     val brothers: java.util.List[ODocument] = new util.ArrayList[ODocument]()
-    brothers.add(new ODocument("Brother").field("name", "Blast").field("kulugda", "Morf"))
-    brothers.add(new ODocument("Brother").field("name", "Faz").field("kulugda", "Morf2"))
+    brothers.add(new ODocument("Brother").field("name", "Blast").field("fooBar", "Morf"))
+    brothers.add(new ODocument("Brother").field("name", "Faz"))//.field("fooBar", "Morf2"))
     val oDocument = new ODocument("Home")
-      .field("name", "Tost")
+      .field("name", "Sweet home")
       .field("family",
         new ODocument("Family")
           .field("mother", "Tata")
@@ -29,39 +30,33 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
           ), OType.EMBEDDED)
     orientDb.save(oDocument)
 
-    val blagdaList = orientDb.queryBySql[Home]("select from Home")
+    val homeList = orientDb.queryBySql[Home]("select from Home")
 
-    blagdaList.head should equal(Home("Tost", Family("Tata", "Rembo", List(Brother("Blast", Some("Morf")), Brother("Faz", None)))))
-  }
+    homeList.head should equal(Home("Sweet home", Family("Tata", "Rembo", List(Brother("Blast", Some("Morf")), Brother("Faz", None)))))
+    createOClass[Complex]
+    createOClass[Simple]
+    val simpleDoc = new ODocument("Simple").field("sField", "sField")
+    val listField: util.List[ODocument] = new util.ArrayList[ODocument]()
+    listField.add(new ODocument("Simple").field("sField", "sFiesdfgdafgld"))
+    listField.add(new ODocument("Simple").field("sField", "asdfasdf"))
 
-  test("RichODocument should be determinate type of field and map it to case class field") {
-    val simple = Simple("stringField")
-    val complex = Complex(2, simple, "string", List(simple))
+    val complex = new ODocument("Complex")
+      .field("iField", 2)
+      .field("simple", simpleDoc, OType.EMBEDDED)
+      .field("sField", "sField")
+      .field("listField", listField, OType.EMBEDDEDLIST)
+    orientDb.save(complex)
 
-    val simpleODoc = new ODocument("Simple").field("sField", "stringField", OType.STRING).save()
+    val complexList = orientDb.queryBySql[Complex]("select from Complex")
 
-    //println("SimpleODoc sField Type: " + simpleODoc.fieldType("sField"))
-
-    val dbSimple = orientDb.queryBySql[Simple]("select from Simple").head
-    //println(s"Simple from DB: $dbSimple")
-
-    val simples: java.util.List[ODocument] = new util.ArrayList[ODocument]()
-    simples.add(new ODocument("Simple").field("sField", "stringField", OType.STRING))
-    val oDocument = new ODocument("Complex")
-    .field("iField", 2)
-    .field("simple", simple)
-    .field("sField", "string")
-    .field("listField", simples)
-    orientDb.save(oDocument)
-    val dbComplex = orientDb.queryBySql[Complex]("select from Complex").head
-    //println(dbComplex)
+    complexList.head should equal(Complex(2, Simple("sField"), "sField", List(Simple("sFiesdfgdafgld"), Simple("asdfasdf"))))
   }
 
 
   after {
-    dropOClass[Home]
+    /*dropOClass[Home]
     dropOClass[Brother]
-    dropOClass[Family]
+    dropOClass[Family]*/
     dropOClass[Simple]
     dropOClass[Complex]
   }

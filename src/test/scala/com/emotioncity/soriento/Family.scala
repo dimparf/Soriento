@@ -3,6 +3,7 @@ package com.emotioncity.soriento
 import com.emotioncity.soriento.RichODocumentImpl._
 import com.emotioncity.soriento.annotations.EmbeddedSet
 import com.orientechnologies.orient.core.record.impl.ODocument
+import DefaultReaders._
 
 
 /**
