@@ -41,7 +41,7 @@ object RichODocumentImpl {
         case OType.EMBEDDEDLIST =>
           get[java.util.List[ODocument]](fieldName) match {
             case Some(oDocumentList) =>
-              Option(oDocumentList.toList.map(doc => reader.read(doc)).asInstanceOf[T])//STUB
+              Option(oDocumentList.toList.map(doc => reader.read(doc)).asInstanceOf[T])//TODO STUB, use getAs[T, _ <: Traversable[T]]
             case None =>
               println(s"EmbeddedList not read - $fieldName")
               None
