@@ -49,7 +49,34 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
 
     val complexList = orientDb.queryBySql[Complex]("select from Complex")
 
-    complexList.head should equal(Complex(2, Simple("sField"), "sField", List(Simple("sFiesdfgdafgld"), Simple("asdfasdf"))))
+    val complexFromDb = complexList.head
+
+    complexFromDb should equal(Complex(2, Simple("sField"), "sField", List(Simple("sFiesdfgdafgld"), Simple("asdfasdf"))))
+
+  }
+
+  test("RichODocument should retrieve object by id, and update it") {
+    createOClass[ComplexWithRid]
+    val simpleDoc = new ODocument("Simple").field("sField", "sField")
+    val listField: util.List[ODocument] = new util.ArrayList[ODocument]()
+    listField.add(new ODocument("Simple").field("sField", "sFiesdfgdafgld"))
+    listField.add(new ODocument("Simple").field("sField", "asdfasdf"))
+    val complexWithRidDoc = new ODocument("ComplexWithRid")
+    .field("iField", 3)
+    .field("simple", simpleDoc, OType.EMBEDDED)
+    .field("listField", listField, OType.EMBEDDEDLIST)
+    orientDb.save(complexWithRidDoc)
+
+    val complexWithRid = ComplexWithRid(complexWithRidDoc.getIdentity, 3, Simple("sField"), "sField", List(Simple("sFiesdfgdafgld"), Simple("asdfasdf")))
+    val updated = complexWithRid.copy(simple = Simple("New Value"))
+    val updatedDoc = updated.save()
+    updatedDoc.field[ODocument]("simple").field[String]("sField") should equal("New Value")
+
+    val extractedObjects: List[ComplexWithRid] = orientDb.queryBySql[ComplexWithRid](s"select from ComplexWithRid where @rid = ${complexWithRidDoc.getIdentity}")
+
+    extractedObjects.headOption should not be empty
+    val extractedObject = extractedObjects.head
+    extractedObject.id should equal(complexWithRidDoc.getIdentity)
   }
 
 
