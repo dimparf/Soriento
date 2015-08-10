@@ -34,26 +34,3 @@ trait OReader[B <: ODocument, T] {
   def readTry(oDocument: B): Try[T] = Try(read(oDocument))
 
 }
-
-object DefaultReaders {
-
-  class ODocumentCollectionReader[M[_], T](implicit cbf: CanBuildFrom[M[_], T, M[T]], reader: ODocumentReader[T]) extends ODocumentReader[M[T]] {
-
-    override def readCollection(collection: List[ODocument]): M[T] = {
-      collection.map { v =>
-        reader.read(v)
-      }.to[M]
-    }
-
-    def read(oDocument: ODocument) = ???
-
-  }
-
-  //class ODocumentCollectionReader extends ODocumentCollectionReader
-
-  implicit def collectionToReader[M[_], T](implicit cbf: CanBuildFrom[M[_], T, M[T]], reader: ODocumentReader[T]): ODocumentCollectionReader[M, T] = new ODocumentCollectionReader[M, T]()
-
-
-}
-
-

@@ -8,6 +8,8 @@ import com.orientechnologies.orient.core.exception.OSchemaException
 import com.orientechnologies.orient.core.metadata.schema.{OClass, OSchema, OType}
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe._
+
 
 /**
  * Created by stream on 13.12.14.

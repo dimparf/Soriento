@@ -1,13 +1,12 @@
 package com.emotioncity.soriento
 
-import java.util.{List => JList}
-
 import com.emotioncity.soriento.ReflectionUtils._
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 
 import scala.collection.JavaConversions._
 import scala.reflect.runtime.universe._
+import java.util.{List => JList}
 
 
 /**
@@ -17,8 +16,6 @@ object RichODocumentImpl {
 
   implicit class RichODocument(oDocument: ODocument)  {
 
-    import DefaultReaders._
-    import DefaultReaders.collectionToReader
     /**
      * Return ODocument field as case class
      * @param fieldName name of document field
@@ -67,23 +64,15 @@ object RichODocumentImpl {
       }
     }
 
-    /**
-     * Return List of case class instances by ODocuemnt field
-     * @param fieldName name of document field
-     * @param reader implicit reader
-     * @tparam T generic type of List
-     * @return List[T]
-     *         Find fieldName in case class and determinate it Type
-     *         Use information of Type for convert Type to ODocument or it part
-     */
-    def listOfEmbedded[T](fieldName: String)(implicit reader: ODocumentReader[T], tag: TypeTag[T]): List[T] = {
-      get[java.util.List[ODocument]](fieldName) match {
+    def getAs[T, _ <: Traversable[T]](fieldName: String)(implicit reader: ODocumentReader[T]): Option[scala.List[T]] = {
+      get[JList[ODocument]](fieldName) match {
         case Some(oDocumentList) =>
-          oDocumentList.toList.flatMap { oDocument =>
+          val listOfT: scala.List[T] = oDocumentList.toList.flatMap { oDocument =>
             reader.readOpt(oDocument)
           }
+          Option(listOfT)
         case None =>
-          Nil
+          None
       }
     }
 

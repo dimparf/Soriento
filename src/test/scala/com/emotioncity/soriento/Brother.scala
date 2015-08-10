@@ -2,7 +2,6 @@ package com.emotioncity.soriento
 
 import com.orientechnologies.orient.core.record.impl.ODocument
 import RichODocumentImpl._
-import DefaultReaders._
 
 /**
  * Created by stream on 31.03.15.

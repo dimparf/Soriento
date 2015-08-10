@@ -104,6 +104,16 @@ object ReflectionUtils {
       case "java.lang.Float" | "float" => OType.FLOAT
       case "java.lang.Double" | "double" => OType.DOUBLE
       case "java.util.Date" => OType.DATE
+      /*case "scala.Option" =>
+        val genericOpt = getGenericTypeClass(field)
+        genericOpt match {
+          case Some(t) =>
+            println(s"Type for class: ${t.getSimpleName}")
+            val propertyName = t.getSimpleName
+
+          case None =>
+            OType.ANY
+        }*///TODO support Option type not implemented yet, but in progress
       case _ =>
         val typeOfClass = getTypeForClass(clazz)
         val annotatedFields: List[(String, List[Annotation])] = onlyFieldsWithAnnotations(typeOfClass).get
@@ -131,7 +141,8 @@ object ReflectionUtils {
                 //println("Unsupported annotation! " + annotation.tree.tpe)
                 OType.ANY //TODO unsupported annotations
             }
-          case None => OType.ANY
+          case None =>
+            OType.ANY
         }
     }
   }

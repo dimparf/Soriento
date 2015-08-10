@@ -21,7 +21,7 @@ object Complex {
         oDocument.get[Int]("iField").get,
         oDocument.getAs[Simple]("simple").get,
         oDocument.get[String]("sField").get,
-        oDocument.listOfEmbedded[Simple]("listField")
+        oDocument.getAs[Simple, List[Simple]]("listField").get
       )
     }
   }
