@@ -87,9 +87,4 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     dropOClass[Message]
   }
 
- after{
-   dropOClass[Message]
-   dropOClass[BlogWithLinkedMessage]
- }
-
 }

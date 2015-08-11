@@ -24,9 +24,9 @@ object RichODocumentImpl {
      * @return Option[T]
      */
     def getAs[T](fieldName: String)(implicit reader: ODocumentReader[T], tag: TypeTag[T]): Option[T] = {
-      val tpe = typeOf[T]
+     /* val tpe = typeOf[T]
       val gen = typeString(tpe)
-      println(s"Generic type: $gen")
+      println(s"Generic type: $gen")*/
       oDocument.fieldType(fieldName) match {
         case OType.STRING => get[T](fieldName)
         case OType.INTEGER => get[T](fieldName)
@@ -55,6 +55,8 @@ object RichODocumentImpl {
               None
           }
         case OType.LINK =>
+          println(s"Linked read - $fieldName")
+          reader.readOpt(oDocument.field[ODocument](fieldName))
           //TODO YOU WORK HERE ! <<=================
         case OType.ANY =>
           println(s"getAs ANY detected - $fieldName")

@@ -15,8 +15,7 @@ object Home {
   implicit object HomeReader extends ODocumentReader[Home] {
 
     def read(oDocument: ODocument): Home = {
-      println(s"Family field OType: ${oDocument.fieldType("family")}")
-      new Home(
+      Home(
         oDocument.get[String]("name").get,
         oDocument.getAs[Family]("family").get
       )
