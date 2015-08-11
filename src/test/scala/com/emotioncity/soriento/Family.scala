@@ -18,7 +18,7 @@ object Family {
       new Family(
         oDocument.get[String]("mother").get,
         oDocument.get[String]("father").get,
-        oDocument.getAs[Brother, List[Brother]]("brothers").get
+        oDocument.getAsList[Brother]("brothers").get
       )
     }
   }

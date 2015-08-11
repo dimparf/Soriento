@@ -21,7 +21,8 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
 
   after {
     dropOClass[Test]
-    dropOClass[BlogWithLinkedMessages]
+    dropOClass[Message]
+    dropOClass[BlogWithLinkedMessage]
     dropOClass[BlogWithEmbeddedMessages]
     dropOClass[BlogWithLinkSetMessages]
   }
@@ -33,11 +34,11 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
   }
 
   test("ODb should be create OClass case classes with @Linked or @Embedded annotated fields") {
-    createOClass[BlogWithLinkedMessages]
-    assert(schema.existsClass("BlogWithLinkedMessages"))
+    createOClass[BlogWithLinkedMessage]
+    assert(schema.existsClass("BlogWithLinkedMessage"))
     assert(schema.existsClass("Message"))
-    assert(schema.getClass("BlogWithLinkedMessages").existsProperty("message"))
-    val linkedMessageProperty = schema.getClass("BlogWithLinkedMessages").getProperty("message").getType
+    assert(schema.getClass("BlogWithLinkedMessage").existsProperty("message"))
+    val linkedMessageProperty = schema.getClass("BlogWithLinkedMessage").getProperty("message").getType
     linkedMessageProperty should equal(OType.LINK)
 
     createOClass[BlogWithEmbeddedMessages]
@@ -49,6 +50,7 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
   }
 
   test("ODb should be create OClass by case classes with @LinkSet type of connections") {
+    createOClass[Message]
     createOClass[BlogWithLinkSetMessages]
     assert(schema.existsClass("BlogWithLinkSetMessages"))
     assert(schema.existsClass("Message"))
@@ -60,11 +62,11 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
   test("ODb should be drop OClass from OrientDb") {
     dropOClass[Test]
     dropOClass[Message]
-    dropOClass[BlogWithLinkedMessages]
+    dropOClass[BlogWithLinkedMessage]
     dropOClass[BlogWithEmbeddedMessages]
     schema.existsClass("Test") should not be true
     schema.existsClass("Message") should not be true
-    schema.existsClass("BlogWithLinkedMessages") should not be true
+    schema.existsClass("BlogWithLinkedMessage") should not be true
     schema.existsClass("BlogWithEmbeddedMessages") should not be true
 
     createOClass[Test]
@@ -85,8 +87,9 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     dropOClass[Message]
   }
 
- /* test("ODb should be create OClass extends V with name in OrientDb") {
-    val vertexClass = createOClass[Test] inherit OrientVertex
-  }*/
+ after{
+   dropOClass[Message]
+   dropOClass[BlogWithLinkedMessage]
+ }
 
 }

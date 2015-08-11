@@ -54,6 +54,8 @@ object RichODocumentImpl {
               println(s"EmbeddedSet not read - $fieldName")
               None
           }
+        case OType.LINK =>
+          //TODO YOU WORK HERE ! <<=================
         case OType.ANY =>
           println(s"getAs ANY detected - $fieldName")
           None
@@ -64,7 +66,7 @@ object RichODocumentImpl {
       }
     }
 
-    def getAs[T, _ <: Traversable[T]](fieldName: String)(implicit reader: ODocumentReader[T]): Option[scala.List[T]] = {
+    def getAsList[T](fieldName: String)(implicit reader: ODocumentReader[T]): Option[scala.List[T]] = {
       get[JList[ODocument]](fieldName) match {
         case Some(oDocumentList) =>
           val listOfT: scala.List[T] = oDocumentList.toList.flatMap { oDocument =>

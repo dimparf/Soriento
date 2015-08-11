@@ -4,6 +4,9 @@ import javax.persistence.Id
 
 import com.emotioncity.soriento.annotations._
 import com.orientechnologies.orient.core.id.{ORID, ORecordId}
+import com.orientechnologies.orient.core.record.impl.ODocument
+import com.emotioncity.soriento.RichODocumentImpl._
+
 
 /*
  *
@@ -11,8 +14,6 @@ import com.orientechnologies.orient.core.id.{ORID, ORecordId}
 */
 
 case class Test(field: String)
-case class Message(text: String)
-case class BlogWithLinkedMessages(name: String, @Linked message: Message)
 case class BlogWithEmbeddedMessages(name: String, @Embedded message: Message)
 case class BlogWithLinkSetMessages(name: String, @LinkSet messages: Set[Message])
 case class BlogWithEmbeddedSetMessages(name: String, @EmbeddedSet messages: Set[Message])

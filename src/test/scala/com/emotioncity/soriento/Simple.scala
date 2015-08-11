@@ -13,9 +13,8 @@ object Simple {
   implicit object SimpleReader extends ODocumentReader[Simple] {
 
     def read(oDocument: ODocument): Simple = {
-      println("sField in SimpleReader: " + oDocument.fieldType("sField") + " : " + oDocument.field("sField"))
       Simple(
-        oDocument.get[String]("sField").get //TODO stub
+        oDocument.get[String]("sField").get
       )
     }
   }

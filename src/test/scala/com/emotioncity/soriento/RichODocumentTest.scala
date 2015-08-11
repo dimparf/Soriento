@@ -79,6 +79,17 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
     extractedObject.id should equal(complexWithRidDoc.getIdentity)
   }
 
+  test("select documents with @Linked document") {
+    createOClass[BlogWithLinkedMessage]
+    val blogWithLinkedMessage = BlogWithLinkedMessage(name = "Test", Message("FooBar"))
+    blogWithLinkedMessage.save()
+    val extractedBlogs = orientDb.queryBySql[BlogWithLinkedMessage]("select from BlogWithLinkedMessage where name = 'Test'")
+    val extractedBlogOpt = extractedBlogs.headOption
+    extractedBlogOpt should not be empty
+    val extractedBlog = extractedBlogOpt.get
+    extractedBlog.message should equal(Message("FooBar"))
+  }
+
 
   after {
     dropOClass[Home]
@@ -86,6 +97,8 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
     dropOClass[Family]
     dropOClass[Simple]
     dropOClass[Complex]
+    dropOClass[ComplexWithRid]
+    dropOClass[BlogWithLinkedMessage]
   }
 
 }
