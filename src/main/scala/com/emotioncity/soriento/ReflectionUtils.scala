@@ -113,7 +113,8 @@ object ReflectionUtils {
 
           case None =>
             OType.ANY
-        }*///TODO support Option type not implemented yet, but in progress
+        }*/
+      //TODO support Option type not implemented yet, but in progress
       case _ =>
         val typeOfClass = getTypeForClass(clazz)
         val annotatedFields: List[(String, List[Annotation])] = onlyFieldsWithAnnotations(typeOfClass).get
@@ -166,7 +167,8 @@ object ReflectionUtils {
     idFieldOpt match {
       case Some(idField) =>
         idField.setAccessible(true)
-        getGenericTypeClass(idField) match {           //TODO check Option ?
+        getGenericTypeClass(idField) match {
+          //TODO check Option ?
           case Some(generic) => idField.get(cc).asInstanceOf[Option[ORID]]
           case None => Option(idField.get(cc).asInstanceOf[ORID])
         }

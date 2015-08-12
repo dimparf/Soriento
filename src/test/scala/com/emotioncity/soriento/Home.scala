@@ -1,8 +1,8 @@
 package com.emotioncity.soriento
 
+import com.emotioncity.soriento.RichODocumentImpl._
 import com.emotioncity.soriento.annotations.Embedded
 import com.orientechnologies.orient.core.record.impl.ODocument
-import RichODocumentImpl._
 
 
 /**

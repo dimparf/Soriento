@@ -1,16 +1,14 @@
-package com.emotioncity.soriento
+package com.emotioncity.soriento.support
 
 import com.orientechnologies.orient.core.db.OPartitionedDatabasePool
-import com.orientechnologies.orient.core.db.document.{ODatabaseDocument, ODatabaseDocumentTx}
-import com.tinkerpop.blueprints.impls.orient.OrientGraph
 
-/*
- * Copyright (c) 2014 Dmitriy Parenskiy aka stream (dimparf@gmail.com)
+/**
+ * Created by b0c1 on 2015.08.12..
  */
+/*
+  * Copyright (c) 2014 Dmitriy Parenskiy aka stream (dimparf@gmail.com)
+  */
 trait OrientDbSupport {
   val oDatabaseDocumentPool = new OPartitionedDatabasePool("memory:Test", "admin", "admin").setAutoCreate(true)
   implicit val orientDb = oDatabaseDocumentPool.acquire()
 }
-
-
-

@@ -4,11 +4,7 @@ import java.util.{List => JList}
 
 import com.orientechnologies.orient.core.record.impl.ODocument
 
-import scala.collection.JavaConversions._
-import scala.collection.generic.CanBuildFrom
 import scala.util.Try
-import ReflectionUtils._
-import scala.reflect.runtime.universe._
 
 
 /**

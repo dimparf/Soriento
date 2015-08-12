@@ -1,6 +1,6 @@
 package com.emotioncity.soriento
 
-import com.orientechnologies.orient.core.db.document.{ODatabaseDocumentPool, ODatabaseDocumentTx}
+import com.emotioncity.soriento.support.OrientDbSupport
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
@@ -13,10 +13,7 @@ import scala.collection.JavaConversions._
  */
 
 
-class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with ODb {
-
-  implicit val orientDb: ODatabaseDocumentTx =
-    ODatabaseDocumentPool.global().acquire("remote:localhost/emotiongraph", "root", "varlogr3_")
+class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with ODb with OrientDbSupport {
 
   test("Dsl should be convert Product to ODocument") {
     val blog = Blog(author = "Arnold", message = Record("Agrh!"))

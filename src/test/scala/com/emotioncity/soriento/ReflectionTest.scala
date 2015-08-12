@@ -1,14 +1,14 @@
 package com.emotioncity.soriento
 
-import org.scalatest.{BeforeAndAfter, Matchers, FunSuite}
 import com.emotioncity.soriento.ReflectionUtils._
+import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 /**
  * Created by stream on 25.12.14.
  */
 
 
-class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter{
+class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter {
 
   test("it should be create instance of case class by name simple and recursively") {
     val simpleMap = Map("sField" -> "Test field")

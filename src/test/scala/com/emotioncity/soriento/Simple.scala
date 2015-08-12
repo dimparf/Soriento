@@ -1,7 +1,7 @@
 package com.emotioncity.soriento
 
-import com.orientechnologies.orient.core.record.impl.ODocument
 import com.emotioncity.soriento.RichODocumentImpl._
+import com.orientechnologies.orient.core.record.impl.ODocument
 
 /**
  * Created by stream on 07.07.15.

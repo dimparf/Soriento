@@ -8,8 +8,9 @@ import com.orientechnologies.orient.core.sql.OCommandSQL
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
 
 import scala.collection.JavaConversions._
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
-import ExecutionContext.Implicits.global
+
 /**
  * Created by stream on 31.03.15.
  */
@@ -35,6 +36,7 @@ object RichODatabaseDocumentImpl {
       val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](sql))
       results.toList
     }
+
     protected def asyncCall[T](x: ODatabaseDocumentTx => T): Future[T] = {
       val instance = ODatabaseRecordThreadLocal.INSTANCE.get
       Future {

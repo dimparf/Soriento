@@ -1,10 +1,7 @@
 package com.emotioncity.soriento
 
-import javax.persistence.Id
-
 import com.emotioncity.soriento.RichODocumentImpl._
-import com.emotioncity.soriento.annotations.{EmbeddedList, Embedded, EmbeddedSet}
-import com.orientechnologies.orient.core.id.ORecordId
+import com.emotioncity.soriento.annotations.{Embedded, EmbeddedList}
 import com.orientechnologies.orient.core.record.impl.ODocument
 
 /**

@@ -1,8 +1,8 @@
 package com.emotioncity.soriento
 
+import com.emotioncity.soriento.RichODocumentImpl._
 import com.emotioncity.soriento.annotations.Linked
 import com.orientechnologies.orient.core.record.impl.ODocument
-import com.emotioncity.soriento.RichODocumentImpl._
 
 
 /**
@@ -11,6 +11,7 @@ import com.emotioncity.soriento.RichODocumentImpl._
 case class BlogWithLinkedMessage(name: String, @Linked message: Message)
 
 object BlogWithLinkedMessage {
+
   implicit object BlogWithLinkedMessagesReader extends ODocumentReader[BlogWithLinkedMessage] {
 
     def read(oDocument: ODocument): BlogWithLinkedMessage = {
@@ -20,4 +21,5 @@ object BlogWithLinkedMessage {
       )
     }
   }
+
 }
