@@ -8,7 +8,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraph
  * Copyright (c) 2014 Dmitriy Parenskiy aka stream (dimparf@gmail.com)
  */
 trait OrientDbSupport {
-  val oDatabaseDocumentPool = new OPartitionedDatabasePool("remote:localhost/emotiongraph", "root", "varlogr3_")
+  val oDatabaseDocumentPool = new OPartitionedDatabasePool("memory:Test", "admin", "admin").setAutoCreate(true)
   implicit val orientDb = oDatabaseDocumentPool.acquire()
 }
 
