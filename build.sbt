@@ -1,6 +1,5 @@
+import sbt.Keys._
 import sbt._
-import Process._
-import Keys._
 
 lazy val commonSettings = Seq(
   name := "Soriento",
@@ -19,16 +18,15 @@ lazy val commonSettings = Seq(
     "Typesafe Maven releases" at "http://repo.typesafe.com/typesafe/maven-releases/",
     "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/"
   ),
-libraryDependencies ++= Seq(
-  "com.tinkerpop.blueprints" % "blueprints-core" % "2.3.0",
-  "com.orientechnologies" % "orient-commons" % "2.0-M1",
-  "com.orientechnologies" % "orientdb-core" % "2.0",
-  "com.orientechnologies" % "orientdb-graphdb" % "2.0",
-  "org.scala-lang" % "scalap" % "2.11.6", //TODO fix scala dep on scalaVersion
-  "org.mockito" % "mockito-core" % "1.9.5" % "test",
-  "org.scalatest" %% "scalatest" % "2.2.3" % "test",
-  "org.specs2" %% "specs2" % "2.3.12" % "test"
-)
+  libraryDependencies ++= Seq(
+    "com.tinkerpop.blueprints" % "blueprints-core" % "2.3.0",
+    "com.orientechnologies" % "orientdb-core" % "2.1.0",
+    "com.orientechnologies" % "orientdb-graphdb" % "2.1.0",
+    "org.scala-lang" % "scalap" % "2.11.6", //TODO fix scala dep on scalaVersion
+    "org.mockito" % "mockito-core" % "1.9.5" % "test",
+    "org.scalatest" %% "scalatest" % "2.2.3" % "test",
+    "org.specs2" %% "specs2" % "2.3.12" % "test"
+  )
 )
 
 lazy val root = (project in file(".")).settings(commonSettings: _*)
