@@ -92,6 +92,14 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
     extractedBlog.message should equal(Message("FooBar"))
   }
 
+  test("") {
+    createOClass[BlogWithLinkSetMessages]
+    val messageOne = Message("This is my first message")
+    val messageTwo = Message("last")
+    val blogWithLinkSetMessages = BlogWithLinkSetMessages("MyBlog", Set(messageOne, messageTwo))
+    blogWithLinkSetMessages.save
+  }
+
 
   after {
     dropOClass[Home]
