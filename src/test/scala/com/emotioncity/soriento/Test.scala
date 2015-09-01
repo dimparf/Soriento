@@ -1,10 +1,7 @@
 package com.emotioncity.soriento
 
-import com.emotioncity.soriento.annotations.{EmbeddedList, Embedded, LinkSet}
+import com.emotioncity.soriento.test.{Complex, Simple}
 import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
-
-import scala.reflect.runtime.universe._
-import com.emotioncity.soriento.ReflectionUtils._
 
 /**
  * Created by stream on 14.07.15.

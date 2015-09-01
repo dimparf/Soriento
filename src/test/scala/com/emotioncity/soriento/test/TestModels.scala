@@ -1,11 +1,9 @@
-package com.emotioncity.soriento
+package com.emotioncity.soriento.test
 
 import javax.persistence.Id
 
 import com.emotioncity.soriento.annotations._
-import com.orientechnologies.orient.core.id.{ORID, ORecordId}
-import com.orientechnologies.orient.core.record.impl.ODocument
-import com.emotioncity.soriento.RichODocumentImpl._
+import com.orientechnologies.orient.core.id.ORID
 
 
 /*

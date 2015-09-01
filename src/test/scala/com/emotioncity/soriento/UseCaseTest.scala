@@ -2,18 +2,19 @@ package com.emotioncity.soriento
 
 import java.util.Date
 
-import com.emotioncity.soriento.annotations.{EmbeddedSet, Embedded, Linked}
-import com.orientechnologies.orient.core.db.document.{ODatabaseDocumentTx, ODatabaseDocumentPool}
-import com.tinkerpop.blueprints.impls.orient.OrientGraph
-import org.scalatest.{BeforeAndAfter, Matchers, FunSuite}
+import com.emotioncity.soriento.annotations.{Embedded, EmbeddedSet, Linked}
+import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 /**
  * Created by stream on 13.05.15.
  */
 
 case class Owner(name: String)
+
 case class Address(location: String)
+
 case class Event(name: String, date: Date)
+
 case class Place(
   name: String,
   @Linked owner: Owner,
@@ -42,7 +43,7 @@ class UseCaseTest extends FunSuite with Matchers with BeforeAndAfter with ODb wi
     place.save
   }*/
 
-  after{
+  after {
     dropOClass[Owner]
     dropOClass[Address]
     dropOClass[Event]

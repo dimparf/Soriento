@@ -1,10 +1,8 @@
 package com.emotioncity.soriento
 
-import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
+import com.emotioncity.soriento.test._
 import com.orientechnologies.orient.core.metadata.schema.OType
-import com.tinkerpop.blueprints.Vertex
-import com.tinkerpop.blueprints.impls.orient.OrientVertex
-import org.scalatest.{Matchers, FunSuite, BeforeAndAfter}
+import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 
 /**
@@ -80,7 +78,7 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     createOClass[BlogWithEmbeddedListMessages]
     schema.existsClass("BlogWithEmbeddedListMessages")
     val oClass = schema.getClass("BlogWithEmbeddedListMessages")
-    oClass.getProperty("id") should be (null)
+    oClass.getProperty("id") should be(null)
     oClass.getProperty("messages") should not be (null)
     oClass.getProperty("name") should not be (null)
     dropOClass[BlogWithEmbeddedListMessages]

@@ -1,7 +1,8 @@
-package com.emotioncity.soriento
+package com.emotioncity.soriento.test
 
+import com.emotioncity.soriento.RichODocumentImpl._
+import com.emotioncity.soriento.ODocumentReader
 import com.orientechnologies.orient.core.record.impl.ODocument
-import RichODocumentImpl._
 
 /**
  * Created by stream on 31.03.15.
