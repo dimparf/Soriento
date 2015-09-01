@@ -3,6 +3,7 @@ import sbt._
 
 lazy val commonSettings = Seq(
   name := "Soriento",
+  coverageEnabled := true,
   organization := "com.emotioncity",
   version := "0.1.0-SNAPSHOT",
   scalaVersion := "2.11.6",
