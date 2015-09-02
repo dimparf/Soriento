@@ -2,6 +2,13 @@ language: scala
 
 scala:
    - 2.11.7
+branches:
+  only:
+    - master
+notifications:
+  email:
+    recipients:
+      - emotioncitydev@gmail.com
 
 script: "sbt clean coverage test"
 after_success: "sbt coveralls"
