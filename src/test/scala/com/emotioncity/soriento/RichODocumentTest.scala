@@ -3,6 +3,7 @@ package com.emotioncity.soriento
 import java.util
 
 
+import com.emotioncity.soriento.support.OrientDbSupport
 import com.emotioncity.soriento.test._
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
