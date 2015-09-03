@@ -1,6 +1,6 @@
 package com.emotioncity.soriento
 
-import com.emotioncity.soriento.test.{Simple, ComplexWithRid, Complex, ClassWithOptionalRid}
+import com.emotioncity.soriento.testmodels.{Simple, ComplexWithRid, Complex, ClassWithOptionalRid}
 import com.emotioncity.soriento.annotations.{EmbeddedList, Embedded}
 import com.orientechnologies.orient.core.id.ORecordId
 import org.scalatest.{BeforeAndAfter, Matchers, FunSuite}

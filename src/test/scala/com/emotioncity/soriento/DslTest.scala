@@ -1,7 +1,7 @@
 package com.emotioncity.soriento
 
 import com.emotioncity.soriento.support.OrientDbSupport
-import com.emotioncity.soriento.test._
+import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.db.document.{ODatabaseDocumentPool, ODatabaseDocumentTx}
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument

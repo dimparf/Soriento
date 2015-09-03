@@ -1,4 +1,4 @@
-package com.emotioncity.soriento.test
+package com.emotioncity.soriento.testmodels
 
 import com.emotioncity.soriento.ODocumentReader
 import com.emotioncity.soriento.annotations.Embedded

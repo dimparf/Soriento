@@ -1,4 +1,4 @@
-package com.emotioncity.soriento.test
+package com.emotioncity.soriento.testmodels
 
 import javax.persistence.Id
 

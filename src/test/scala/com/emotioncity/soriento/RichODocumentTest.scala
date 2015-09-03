@@ -1,10 +1,11 @@
 package com.emotioncity.soriento
 
 import java.util
+import java.util.Locale
 
 
 import com.emotioncity.soriento.support.OrientDbSupport
-import com.emotioncity.soriento.test._
+import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -93,13 +94,13 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
     extractedBlog.message should equal(Message("FooBar"))
   }
 
-  test("") {
+ /* test("select document with @LinkedSet documents") {
     createOClass[BlogWithLinkSetMessages]
     val messageOne = Message("This is my first message")
     val messageTwo = Message("last")
     val blogWithLinkSetMessages = BlogWithLinkSetMessages("MyBlog", Set(messageOne, messageTwo))
     blogWithLinkSetMessages.save
-  }
+  }*/
 
 
   after {
