@@ -6,6 +6,7 @@ import java.util.Locale
 
 import com.emotioncity.soriento.support.OrientDbSupport
 import com.emotioncity.soriento.testmodels._
+import com.orientechnologies.orient.core.db.OPartitionedDatabasePool
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -94,13 +95,17 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
     extractedBlog.message should equal(Message("FooBar"))
   }
 
- /* test("select document with @LinkedSet documents") {
+  test("select document with @LinkedSet documents") {
     createOClass[BlogWithLinkSetMessages]
-    val messageOne = Message("This is my first message")
-    val messageTwo = Message("last")
+    val messageOne = LinkedMessage("This is my first message")
+    val messageOneId = messageOne.save.getIdentity.toString()
+    val messageTwo = LinkedMessage("last")
+    messageTwo.save.getIdentity.toString()
     val blogWithLinkSetMessages = BlogWithLinkSetMessages("MyBlog", Set(messageOne, messageTwo))
     blogWithLinkSetMessages.save
-  }*/
+    val extractedBlogs = orientDb.queryBySql[BlogWithLinkSetMessages]("select from BlogWithLinkSetMessages where name = 'MyBlog'")
+    extractedBlogs should equal(List(BlogWithLinkSetMessages("MyBlog",Set(LinkedMessage("This is my first message"), LinkedMessage("last")))))
+  }
 
 
   after {
@@ -110,7 +115,9 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
     dropOClass[Simple]
     dropOClass[Complex]
     dropOClass[ComplexWithRid]
+    dropOClass[LinkedMessage]
     dropOClass[BlogWithLinkedMessage]
+    dropOClass[BlogWithLinkSetMessages]
   }
 
 }
