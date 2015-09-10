@@ -41,7 +41,7 @@ object RichODocumentImpl {
         case OType.EMBEDDEDLIST =>
           get[java.util.List[ODocument]](fieldName) match {
             case Some(oDocumentList) =>
-              Option(oDocumentList.toList.map(doc => reader.read(doc)).asInstanceOf[T]) //TODO STUB, use getAs[T, _ <: Traversable[T]]
+              Option(oDocumentList.toList.map(doc => reader.read(doc)).asInstanceOf[T]) //TODO STUB, use getAsList[T]
             case None =>
               println(s"EmbeddedList not read - $fieldName")
               None
@@ -57,14 +57,16 @@ object RichODocumentImpl {
         case OType.LINK =>
           println(s"Linked read - $fieldName")
           reader.readOpt(oDocument.field[ODocument](fieldName))
-        //TODO YOU WORK HERE ! <<=================
         case OType.ANY =>
-          println(s"getAs ANY detected - $fieldName")
+          println(s"getAs ANY unsupported type detected - $fieldName")
           None
         case _ =>
           println(s"getAs unsupported type detected - $fieldName")
           None //unsupported type
-        //ANY, BINARY, BOOLEAN, BYTE, CUSTOM, DATE, DATETIME, DECIMAL, EMBEDDEDLIST, EMBEDDEDMAP, EMBEDDEDSET, FLOAT, INTEGER, LINK, LINKBAG, LINKLIST, LINKSET, LONG, SHORT, TRANSIENT
+        /*
+         ANY, BINARY, BOOLEAN, BYTE, CUSTOM, DATE, DATETIME, DECIMAL, EMBEDDEDMAP, EMBEDDEDSET, LINKBAG, LINKLIST,
+         LINKSET, TRANSIENT
+         */
       }
     }
 

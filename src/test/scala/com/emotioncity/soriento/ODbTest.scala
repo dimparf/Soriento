@@ -1,5 +1,6 @@
 package com.emotioncity.soriento
 
+import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.metadata.schema.OType
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
@@ -13,8 +14,6 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
 
   val schema = orientDb.getMetadata.getSchema
-
-  override def initialize(): Unit = {}
 
   after {
     dropOClass[Test]
@@ -47,7 +46,6 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
   }
 
   test("ODb should be create OClass by case classes with @LinkSet type of connections") {
-    createOClass[Message]
     createOClass[BlogWithLinkSetMessages]
     assert(schema.existsClass("BlogWithLinkSetMessages"))
     assert(schema.existsClass("Message"))

@@ -1,7 +1,8 @@
-package com.emotioncity.soriento
+package com.emotioncity.soriento.testmodels
 
 import javax.persistence.Id
 
+import com.emotioncity.soriento.ODocumentReader
 import com.emotioncity.soriento.RichODocumentImpl._
 import com.emotioncity.soriento.annotations.{Embedded, EmbeddedList}
 import com.orientechnologies.orient.core.id.ORID

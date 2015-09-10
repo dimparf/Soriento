@@ -1,8 +1,10 @@
-package com.emotioncity.soriento
+package com.emotioncity.soriento.testmodels
 
-import com.emotioncity.soriento.RichODocumentImpl._
+import com.emotioncity.soriento.ODocumentReader
 import com.emotioncity.soriento.annotations.Embedded
 import com.orientechnologies.orient.core.record.impl.ODocument
+import com.emotioncity.soriento.RichODocumentImpl._
+
 
 
 /**

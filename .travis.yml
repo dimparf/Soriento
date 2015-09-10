@@ -1,7 +1,20 @@
 language: scala
 
+jdk: oraclejdk8
+
 scala:
    - 2.11.7
 
+branches:
+  only:
+    - master
+notifications:
+  email:
+    recipients:
+      - emotioncitydev@gmail.com
+
 script: "sbt clean coverage test"
 after_success: "sbt coveralls"
+cache:
+  directories:
+  - $HOME/.ivy2/cache

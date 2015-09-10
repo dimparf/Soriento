@@ -1,5 +1,6 @@
 package com.emotioncity.soriento
 
+import com.emotioncity.soriento.testmodels.{Complex, Simple}
 import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
 
 /**
