@@ -8,9 +8,7 @@ Soriento
 
 Soriento is an object-relational mapping framework from scala case classes to OrientDb ODocument.
 ##News
- - Now support linked documents
- - Update documents with field annotated as javax.persistent.Id
- - Bug fixes
+ - Support LinkSet, LinkList annotated fields
 
 ## Features
 
@@ -23,10 +21,10 @@ Soriento is an object-relational mapping framework from scala case classes to Or
  - Query by SQL.
  
 Supported types:
-- Long, Double, Int, Float, Short, String, case classes: Embedded, EmbeddedList, EmbeddedSet, Link.
+- Long, Double, Int, Float, Short, String, case classes: Embedded, EmbeddedList, EmbeddedSet, Link, LinkList, LinkSet
 
 ##Coming soon
-- LinkList, LinkSet, LinkMap.
+- LinkMap.
 - EmbeddedMap.
 
 ##Add to you project
@@ -98,10 +96,34 @@ Simple example:
   
   
   val blogs: List[Blog] = db.queryBySql[Blog]("select from blog")
+  
+  //Save object graph (from test code, use scalatest)
+  val messageOne = LinkedMessage("This is my first message")
+  val messageOneSaved = messageOne.save.as[LinkedMessage].get
+  val messageTwo = LinkedMessage("last")
+  val messageTwoSaved = messageTwo.save.as[LinkedMessage].get
+  
+  //Warning: Soriento use immutable case classes, unsaved messages don't have id. Save your values and get saved object with id with as[T] method.
+  val blogWithLinkSetMessages = BlogWithLinkSetMessages("MyBlog", Set(messageOneSaved, messageTwoSaved))
+  blogWithLinkSetMessages.save
+  
+  val extractedBlogsOpt = orientDb.queryBySql[BlogWithLinkSetMessages]("select from BlogWithLinkSetMessages where name = 'MyBlog'").headOption
+    extractedBlogsOpt match {
+      case Some(extractedBlog) =>
+        inside(extractedBlog) { case BlogWithLinkSetMessages(name, messages) =>
+          name should equal("MyBlog")
+          messages should have size 2
+          messages should contain(LinkedMessage("This is my first message", messageOneId))
+          messages should contain(LinkedMessage("last", messageTwoId))
+        }
+      case None => fail("Model not saved or retrieved")
+    }
+  }
     
   deleteOClass[Message]
   deleteOClass[Blog]
   deleteOClass[BlogWithEmbeddedMessages]
+  deleteOClass[BlogWithLinkSetMessages]
 ```
 
 More examples in test directory.

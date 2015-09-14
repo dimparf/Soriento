@@ -1,6 +1,6 @@
 package com.emotioncity.soriento
 
-import com.emotioncity.soriento.testmodels.{Simple, ComplexWithRid, Complex, ClassWithOptionalRid}
+import com.emotioncity.soriento.testmodels._
 import com.emotioncity.soriento.annotations.{EmbeddedList, Embedded}
 import com.orientechnologies.orient.core.id.ORecordId
 import org.scalatest.{BeforeAndAfter, Matchers, FunSuite}
@@ -11,7 +11,7 @@ import com.emotioncity.soriento.ReflectionUtils._
  */
 
 
-class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter{
+class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter {
 
   test("it should be create instance of case class by name simple and recursively") {
     val simpleMap = Map("sField" -> "Test field")
@@ -31,7 +31,8 @@ class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter
     computedRid.get should equal(ORecordId.EMPTY_RECORD_ID)
   }
 
-  test("detect Option[ORID] in case class instance") {
+  test("detect Option[ORID], ORID representation of @rid in case class instance") {
+    //------- Option[ORID]
     val classWithOptionalRid = ClassWithOptionalRid(rid = Option(ORecordId.EMPTY_RECORD_ID), "name")
     rid(classWithOptionalRid) should not be empty
     val computedRid1 = rid(classWithOptionalRid)
@@ -41,6 +42,17 @@ class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter
     rid(classWithOptionalRidNone) shouldBe empty
     val computedRid2 = rid(classWithOptionalRidNone)
     computedRid2 should equal(None)
+
+    //------ ORID
+    val classWithRid = ClassWithRid(rid = ORecordId.EMPTY_RECORD_ID, "name")
+    rid(classWithRid) should not be empty
+    val computedRid3 = rid(classWithRid)
+    computedRid3.get should equal(ORecordId.EMPTY_RECORD_ID)
+
+    val classWitRidNull = ClassWithRid(name = "name2")
+    rid(classWitRidNull) shouldBe empty
+    val computedRid4 = rid(classWitRidNull)
+    computedRid4 should equal(None)
   }
 
   after {

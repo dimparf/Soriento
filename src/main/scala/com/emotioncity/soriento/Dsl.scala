@@ -16,6 +16,7 @@ trait Dsl {
     //println(s"Product name: $modelName")
     val ridOpt = rid(cc)
     val document = if (ridOpt.isDefined) new ODocument(modelName, ridOpt.get) else new ODocument(modelName)
+    //println(s"document rid: ${document.getIdentity}")
     val values = cc.productIterator
     val fieldList = cc.getClass.getDeclaredFields.toList
     fieldList.foreach { field =>

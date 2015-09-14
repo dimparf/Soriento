@@ -1,6 +1,6 @@
 package com.emotioncity.soriento
 
-import java.util.{List => JList}
+import java.util.{List => JList, Set => JSet}
 
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
@@ -81,6 +81,20 @@ object RichODocumentImpl {
           None
       }
     }
+
+    def getAsSet[T](fieldName: String)(implicit reader: ODocumentReader[T]): Option[Set[T]] = {
+      get[JSet[ODocument]](fieldName) match {
+        case Some(oDocumentSet) =>
+          val setOfT: Set[T] = oDocumentSet.toSet.flatMap { oDocument: ODocument =>
+            reader.readOpt(oDocument)
+          }
+          Option(setOfT)
+        case None =>
+          None
+      }
+    }
+
+    def as[T](implicit reader: ODocumentReader[T]): Option[T] = reader.readOpt(oDocument)
 
     /**
      * Return simple field represented as ODocument field

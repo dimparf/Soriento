@@ -48,7 +48,7 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
   test("ODb should be create OClass by case classes with @LinkSet type of connections") {
     createOClass[BlogWithLinkSetMessages]
     assert(schema.existsClass("BlogWithLinkSetMessages"))
-    assert(schema.existsClass("Message"))
+    assert(schema.existsClass("LinkedMessage"))
     assert(schema.getClass("BlogWithLinkSetMessages").existsProperty("messages"))
     val linkedMessageProperty = schema.getClass("BlogWithLinkSetMessages").getProperty("messages").getType
     linkedMessageProperty should equal(OType.LINKSET)
@@ -76,8 +76,8 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     schema.existsClass("BlogWithEmbeddedListMessages")
     val oClass = schema.getClass("BlogWithEmbeddedListMessages")
     oClass.getProperty("id") should be(null)
-    oClass.getProperty("messages") should not be (null)
-    oClass.getProperty("name") should not be (null)
+    oClass.getProperty("messages") should not be null
+    oClass.getProperty("name") should not be null
     dropOClass[BlogWithEmbeddedListMessages]
     dropOClass[Message]
   }

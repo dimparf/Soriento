@@ -168,9 +168,15 @@ object ReflectionUtils {
       case Some(idField) =>
         idField.setAccessible(true)
         getGenericTypeClass(idField) match {
-          //TODO check Option ?
-          case Some(generic) => idField.get(cc).asInstanceOf[Option[ORID]]
-          case None => Option(idField.get(cc).asInstanceOf[ORID])
+          case Some(generic) => //Option[ORID]
+            idField.get(cc).asInstanceOf[Option[ORID]]
+          case None => //ORID
+            getTypeForClass(idField.getType) match {
+              case tpe if tpe =:= typeOf[ORID] =>
+                Option(idField.get(cc).asInstanceOf[ORID])
+              case _ =>
+                None
+            }
         }
       case None =>
         None
