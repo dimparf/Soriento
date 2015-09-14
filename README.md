@@ -97,28 +97,28 @@ Simple example:
   
   val blogs: List[Blog] = db.queryBySql[Blog]("select from blog")
   
-  //Save object graph
-   val messageOne = LinkedMessage("This is my first message")
-   val messageOneSaved = messageOne.save.as[LinkedMessage].get
-   val messageTwo = LinkedMessage("last")
-   val messageTwoSaved = messageTwo.save.as[LinkedMessage].get
+  //Save object graph (from test code, use scalatest)
+  val messageOne = LinkedMessage("This is my first message")
+  val messageOneSaved = messageOne.save.as[LinkedMessage].get
+  val messageTwo = LinkedMessage("last")
+  val messageTwoSaved = messageTwo.save.as[LinkedMessage].get
   
-   //Warning: Soriento use immutable case classes, unsaved messages don't have id. Save your values and get saved object with id with as[T] method.
-   val blogWithLinkSetMessages = BlogWithLinkSetMessages("MyBlog", Set(messageOneSaved, messageTwoSaved))
-   blogWithLinkSetMessages.save
+  //Warning: Soriento use immutable case classes, unsaved messages don't have id. Save your values and get saved object with id with as[T] method.
+  val blogWithLinkSetMessages = BlogWithLinkSetMessages("MyBlog", Set(messageOneSaved, messageTwoSaved))
+  blogWithLinkSetMessages.save
   
-   val extractedBlogsOpt = orientDb.queryBySql[BlogWithLinkSetMessages]("select from BlogWithLinkSetMessages where name = 'MyBlog'").headOption
-     extractedBlogsOpt match {
-       case Some(extractedBlog) =>
-         inside(extractedBlog) { case BlogWithLinkSetMessages(name, messages) =>
-           name should equal("MyBlog")
-           messages should have size 2
-           messages should contain(LinkedMessage("This is my first message", messageOneId))
-           messages should contain(LinkedMessage("last", messageTwoId))
-         }
-       case None => fail("Model not saved or retrieved")
-     }
-   }
+  val extractedBlogsOpt = orientDb.queryBySql[BlogWithLinkSetMessages]("select from BlogWithLinkSetMessages where name = 'MyBlog'").headOption
+    extractedBlogsOpt match {
+      case Some(extractedBlog) =>
+        inside(extractedBlog) { case BlogWithLinkSetMessages(name, messages) =>
+          name should equal("MyBlog")
+          messages should have size 2
+          messages should contain(LinkedMessage("This is my first message", messageOneId))
+          messages should contain(LinkedMessage("last", messageTwoId))
+        }
+      case None => fail("Model not saved or retrieved")
+    }
+  }
     
   deleteOClass[Message]
   deleteOClass[Blog]
