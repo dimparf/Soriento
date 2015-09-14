@@ -76,8 +76,8 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     schema.existsClass("BlogWithEmbeddedListMessages")
     val oClass = schema.getClass("BlogWithEmbeddedListMessages")
     oClass.getProperty("id") should be(null)
-    oClass.getProperty("messages") should not be (null)
-    oClass.getProperty("name") should not be (null)
+    oClass.getProperty("messages") should not be null
+    oClass.getProperty("name") should not be null
     dropOClass[BlogWithEmbeddedListMessages]
     dropOClass[Message]
   }

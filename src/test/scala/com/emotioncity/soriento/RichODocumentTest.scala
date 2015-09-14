@@ -1,38 +1,37 @@
 package com.emotioncity.soriento
 
 import java.util
-import java.util.Locale
 
-
+import com.emotioncity.soriento.RichODatabaseDocumentImpl._
+import com.emotioncity.soriento.RichODocumentImpl._
 import com.emotioncity.soriento.support.OrientDbSupport
 import com.emotioncity.soriento.testmodels._
-import com.orientechnologies.orient.core.db.OPartitionedDatabasePool
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
-import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
-import RichODatabaseDocumentImpl._
+import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
 
 
-/**../
- * Created by stream on 31.03.15.
- */
 
-class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with OrientDbSupport with ODb {
+/** ../
+  * Created by stream on 31.03.15.
+  */
+
+class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with Inside with Dsl with OrientDbSupport with ODb {
 
 
   test("RichODocument should be provide implicit methods for read case class with @Embedded fields from ODocument") {
     createOClass[Home]
     val brothers: java.util.List[ODocument] = new util.ArrayList[ODocument]()
     brothers.add(new ODocument("Brother").field("name", "Blast").field("fooBar", "Morf"))
-    brothers.add(new ODocument("Brother").field("name", "Faz"))//.field("fooBar", "Morf2"))
+    brothers.add(new ODocument("Brother").field("name", "Faz")) //.field("fooBar", "Morf2"))
     val oDocument = new ODocument("Home")
-      .field("name", "Sweet home")
-      .field("family",
-        new ODocument("Family")
-          .field("mother", "Tata")
-          .field("father", "Rembo")
-          .field("brothers", brothers, OType.EMBEDDEDLIST
-          ), OType.EMBEDDED)
+        .field("name", "Sweet home")
+        .field("family",
+          new ODocument("Family")
+            .field("mother", "Tata")
+            .field("father", "Rembo")
+            .field("brothers", brothers, OType.EMBEDDEDLIST
+            ), OType.EMBEDDED)
     orientDb.save(oDocument)
 
     val homeList = orientDb.queryBySql[Home]("select from Home")
@@ -67,12 +66,12 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
     listField.add(new ODocument("Simple").field("sField", "sFiesdfgdafgld"))
     listField.add(new ODocument("Simple").field("sField", "asdfasdf"))
     val complexWithRidDoc = new ODocument("ComplexWithRid")
-    .field("iField", 3)
-    .field("simple", simpleDoc, OType.EMBEDDED)
-    .field("listField", listField, OType.EMBEDDEDLIST)
-    orientDb.save(complexWithRidDoc)
+      .field("iField", 3)
+      .field("simple", simpleDoc, OType.EMBEDDED)
+      .field("listField", listField, OType.EMBEDDEDLIST)
+    complexWithRidDoc.save()
 
-    val complexWithRid = ComplexWithRid(complexWithRidDoc.getIdentity, 3, Simple("sField"), "sField", List(Simple("sFiesdfgdafgld"), Simple("asdfasdf")))
+    val complexWithRid = ComplexWithRid(complexWithRidDoc.getIdentity, 3, Simple("sField"), "s2Field", List(Simple("sFiesdfgdafgld"), Simple("asdfasdf")))
     val updated = complexWithRid.copy(simple = Simple("New Value"))
     val updatedDoc = updated.save()
     updatedDoc.field[ODocument]("simple").field[String]("sField") should equal("New Value")
@@ -97,14 +96,40 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
 
   test("select document with @LinkedSet documents") {
     createOClass[BlogWithLinkSetMessages]
+
     val messageOne = LinkedMessage("This is my first message")
-    val messageOneId = messageOne.save.getIdentity.toString()
+    val messageOneSaved = messageOne.save.as[LinkedMessage].get
+    val messageOneId = messageOneSaved.id
     val messageTwo = LinkedMessage("last")
-    messageTwo.save.getIdentity.toString()
-    val blogWithLinkSetMessages = BlogWithLinkSetMessages("MyBlog", Set(messageOne, messageTwo))
+    val messageTwoSaved = messageTwo.save.as[LinkedMessage].get
+    val messageTwoId = messageTwoSaved.id
+
+    val blogWithLinkSetMessages = BlogWithLinkSetMessages("MyBlog", Set(messageOneSaved, messageTwoSaved))
     blogWithLinkSetMessages.save
-    val extractedBlogs = orientDb.queryBySql[BlogWithLinkSetMessages]("select from BlogWithLinkSetMessages where name = 'MyBlog'")
-    extractedBlogs should equal(List(BlogWithLinkSetMessages("MyBlog",Set(LinkedMessage("This is my first message"), LinkedMessage("last")))))
+
+    val extractedBlogsOpt = orientDb.queryBySql[BlogWithLinkSetMessages]("select from BlogWithLinkSetMessages where name = 'MyBlog'").headOption
+    extractedBlogsOpt match {
+      case Some(extractedBlog) =>
+        inside(extractedBlog) { case BlogWithLinkSetMessages(name, messages) =>
+          name should equal("MyBlog")
+          messages should have size 2
+          messages should contain(LinkedMessage("This is my first message", messageOneId))
+          messages should contain(LinkedMessage("last", messageTwoId))
+        }
+      case None => fail("Model not saved or retrieved")
+    }
+  }
+
+
+  test("convert document to object class explicity") {
+    val message = LinkedMessage("Hi all")
+    val savedMessageDoc = message.save
+    val converted = savedMessageDoc.as[LinkedMessage]
+    converted should not be empty
+    converted should contain(LinkedMessage("Hi all", Option(savedMessageDoc.getIdentity)))
+
+    val broken = savedMessageDoc.as[Complex]
+    broken shouldBe empty
   }
 
 
