@@ -100,6 +100,7 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
     val messageOne = LinkedMessage("This is my first message")
     val messageOneSaved = messageOne.save.as[LinkedMessage].get
     val messageOneId = messageOneSaved.id
+
     val messageTwo = LinkedMessage("last")
     val messageTwoSaved = messageTwo.save.as[LinkedMessage].get
     val messageTwoId = messageTwoSaved.id
