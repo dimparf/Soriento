@@ -32,11 +32,6 @@ object RichODatabaseDocumentImpl {
       db.command[OCommandRequest](new OCommandSQL(query)).execute() //type annotation of return?
     }
 
-    def queryDoc(sql: String): List[ODocument] = {
-      val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](sql))
-      results.toList
-    }
-
     protected def asyncCall[T](x: ODatabaseDocumentTx => T): Future[T] = {
       val instance = ODatabaseRecordThreadLocal.INSTANCE.get
       Future {
