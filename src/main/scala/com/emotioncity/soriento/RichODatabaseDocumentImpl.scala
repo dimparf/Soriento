@@ -16,12 +16,12 @@ object RichODatabaseDocumentImpl {
   implicit class RichODatabaseDocumentTx(db: ODatabaseDocument) {
 
     def queryBySql(sql: String): List[ODocument] = {
-      val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](sql))
+      val results: java.util.List[ODocument] = db.query[java.util.List[ODocument]](new OSQLSynchQuery[ODocument](sql))
       results.toList
     }
 
     def queryBySql[T](query: String)(implicit reader: ODocumentReader[T]): List[T] = {
-      val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](query))
+      val results: java.util.List[ODocument] = db.query[java.util.List[ODocument]](new OSQLSynchQuery[ODocument](query))
       results.toList.map(document => reader.read(document))
     }
 
@@ -30,7 +30,7 @@ object RichODatabaseDocumentImpl {
     }
 
     def queryDoc(sql: String): List[ODocument] = {
-      val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](sql))
+      val results: java.util.List[ODocument] = db.query[java.util.List[ODocument]](new OSQLSynchQuery[ODocument](sql))
       results.toList
     }
 

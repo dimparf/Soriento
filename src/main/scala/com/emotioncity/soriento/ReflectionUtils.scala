@@ -1,11 +1,14 @@
 package com.emotioncity.soriento
 
 import java.lang.reflect.{Field, ParameterizedType}
+import java.util
 import javax.persistence.Id
 
 import com.emotioncity.soriento.annotations._
+import com.orientechnologies.orient.core.db.record.OTrackedSet
 import com.orientechnologies.orient.core.id.ORID
 import com.orientechnologies.orient.core.metadata.schema.OType
+import com.orientechnologies.orient.core.record.impl.ODocument
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -15,6 +18,8 @@ import scala.reflect.runtime.universe._
  * Created by stream on 14.12.14.
  */
 object ReflectionUtils {
+
+  import scala.collection.JavaConverters._
 
   def constructor(t: Type): MethodMirror = {
     val m = runtimeMirror(getClass.getClassLoader)
@@ -30,7 +35,7 @@ object ReflectionUtils {
     val constr = constructor(tpe)
     val params = constr.symbol.paramLists.flatten // get constructor params
     val input = map.map {
-        case (k: String, m: Map[String, Any]) =>
+        case (k: String, m: Map[String, Any] @unchecked) =>
           k -> createCaseClassByType(params.find(_.name.toString == k).get.typeSignature, m)
         case x => x
       }

@@ -3,6 +3,7 @@ package com.emotioncity.soriento
 import com.emotioncity.soriento.ReflectionUtils._
 import com.orientechnologies.orient.core.record.impl.ODocument
 
+import scala.language.implicitConversions
 import scala.collection.JavaConverters._
 
 
@@ -20,7 +21,7 @@ trait Dsl {
     val fieldList = cc.getClass.getDeclaredFields.toList
     fieldList.foreach { field =>
       val fieldName = field.getName
-      val fieldValue = values.next() match {
+      val fieldValue = if (!values.hasNext) None else values.next() match {
         case p: Product if p.productArity > 0 =>
           p match {
             case Some(value) =>

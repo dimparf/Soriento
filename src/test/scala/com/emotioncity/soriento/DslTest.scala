@@ -16,7 +16,7 @@ import scala.collection.JavaConversions._
 class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with ODb {
 
   implicit val orientDb: ODatabaseDocumentTx =
-    ODatabaseDocumentPool.global().acquire("remote:localhost/emotiongraph", "root", "varlogr3_")
+    ODatabaseDocumentPool.global().acquire("remote:localhost/emotiongraph", "root", "poweron")
 
   test("Dsl should be convert Product to ODocument") {
     val blog = Blog(author = "Arnold", message = Record("Agrh!"))

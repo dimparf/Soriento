@@ -24,6 +24,9 @@ case class Place(
 
 class UseCaseTest extends FunSuite with Matchers with BeforeAndAfter with ODb with Dsl {
 
+  test("Testing nothing in UseCaseTest") {
+    println("nothing to test here")
+  }
   /*test("Use case: create graph with linked and embedded documents in vertexes, navigate and extract case classes, save entity") {
     createOClass[Owner]
     val addressOClass = createOClass[Address]
