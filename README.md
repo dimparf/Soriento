@@ -75,11 +75,13 @@ Simple example:
   val messageTwo = LinkedMessage("last")
   val messageTwoSaved = messageTwo.save.as[LinkedMessage].get
   
-  //Warning: Soriento use immutable case classes, unsaved messages don't have id. Save your values and get saved object with id with as[T] method.
+  //Warning: Soriento use immutable case classes,
+  //unsaved messages don't have id. Save your values and get saved object with id with as[T] method.
   val blogWithLinkSetMessages = BlogWithLinkSetMessages("MyBlog", Set(messageOneSaved, messageTwoSaved))
   blogWithLinkSetMessages.save
   
-  val extractedBlogsOpt = orientDb.queryBySql[BlogWithLinkSetMessages]("select from BlogWithLinkSetMessages where name = 'MyBlog'").headOption
+  val extractedBlogsOpt = orientDb
+  .queryBySql[BlogWithLinkSetMessages]("select from BlogWithLinkSetMessages where name = 'MyBlog'").headOption
     extractedBlogsOpt match {
       case Some(extractedBlog) =>
         inside(extractedBlog) { case BlogWithLinkSetMessages(name, messages) =>
