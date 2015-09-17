@@ -12,7 +12,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 
 class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
-
+  import ODocumentReader._
   val schema = orientDb.getMetadata.getSchema
 
   after {

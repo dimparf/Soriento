@@ -11,13 +11,13 @@ import com.orientechnologies.orient.core.record.impl.ODocument
 import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
 
 
-
 /** ../
   * Created by stream on 31.03.15.
   */
 
 class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with Inside with Dsl with OrientDbSupport with ODb {
 
+  import ODocumentReader._
 
   test("RichODocument should be provide implicit methods for read case class with @Embedded fields from ODocument") {
     createOClass[Home]

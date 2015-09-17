@@ -11,7 +11,7 @@ branches:
 notifications:
   email:
     recipients:
-      - emotioncitydev@gmail.com
+      - boci.boci@gmail.com
 
 script: "sbt clean coverage test"
 after_success: "sbt coveralls"

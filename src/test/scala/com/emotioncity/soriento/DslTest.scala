@@ -17,6 +17,8 @@ import scala.collection.JavaConversions._
 
 class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with ODb with OrientDbSupport {
 
+  import ODocumentReader._
+
   test("Dsl should be convert Product to ODocument") {
     val blog = Blog(author = "Arnold", message = Record("Agrh!"))
     val blogDoc = productToDocument(blog)

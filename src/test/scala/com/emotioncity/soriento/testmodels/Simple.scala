@@ -9,15 +9,3 @@ import com.orientechnologies.orient.core.record.impl.ODocument
  */
 case class Simple(sField: String)
 
-object Simple {
-
-  implicit object SimpleReader extends ODocumentReader[Simple] {
-
-    def read(oDocument: ODocument): Simple = {
-      Simple(
-        oDocument.get[String]("sField").get
-      )
-    }
-  }
-
-}
