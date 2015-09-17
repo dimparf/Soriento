@@ -2,13 +2,15 @@ Soriento
 ========
 
 [![Join the chat at https://gitter.im/dimparf/Soriento](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dimparf/Soriento?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/b0c1/Soriento.svg)](https://travis-ci.org/b0c1/Soriento)
+[![Build Status](https://travis-ci.org/dimparf/Soriento.svg)](https://travis-ci.org/dimparf/Soriento)
 
 ## Scala OrientDb object mapping library
 
 Soriento is an object-relational mapping framework from scala case classes to OrientDb ODocument.
 ##News
  - Support LinkSet, LinkList annotated fields
+ - ODocumentReader auto creation (thanks b0c1)
+ - Async query support (thanks b0c1)
 
 ## Features
 
@@ -39,47 +41,17 @@ Supported types:
 ##Usage
 Simple example:
 ```scala
-  import com.emotioncity.Dsl._ // or extends Dsl trait
-  
+  import com.emotioncity.soriento.Dsl._ // or extends Dsl trait
+  import com.emotioncity.soriento.ODocumentReader._
+
   implicit val orientDb: ODatabaseDocumentTx = ???
 
-  //create case classes with ODocumentReader for it
   case class Message(content: String)
-  object Message {
-    implicit object MessageReader extends ODocumentReader[Message] {
-      def read(oDocument: ODocument): Message = {
-        Message(
-          oDocument.get[String]("content").get
-        )
-      }
-    }
-  }
   
   case class Blog(author: String, @Embedded message: Message) // or @Linked
-  object Blog {
-     implicit object BlogReader extends ODocumentReader[Blog] {
-       def read(oDocument: ODocument): Blog = {
-         Blog(
-           oDocument.get[String]("author").get,
-           oDocument.getAs[Message]("message").get
-         )
-       }
-     }
-  }
   
   case class BlogWithEmbeddedMessages(author: String, @EmbeddedSet messages: List[Message])
-  object BlogWithEmbeddedMessages {
-     implicit object BlogWithEmbeddedMessagesReader extends ODocumentReader[BlogWithEmbeddedMessages] {
-        def read(oDocument: ODocument): BlogWithEmbeddedMessages = {
-           BlogWithEmbeddedMessages(
-             oDocument.get[String]("author").get,
-             oDocument.getAs[Message, List[Message]]("message").get
-           )
-        }
-     }
-  }
 
-  
   //schema-full (use com.emotioncity.soriento.ODb trait) mode or without this lines - schema less
   createOClass[Message] 
   createOClass[Blog]
@@ -126,12 +98,36 @@ Simple example:
   deleteOClass[BlogWithLinkSetMessages]
 ```
 
+You can also create custom readers for models:
+```scala
+  object BlogWithEmbeddedMessages {
+    implicit object BlogWithEmbeddedMessagesReader extends ODocumentReader[BlogWithEmbeddedMessages] {
+       def read(oDocument: ODocument): BlogWithEmbeddedMessages = {
+          BlogWithEmbeddedMessages(
+            oDocument.get[String]("author").get,
+            oDocument.getAs[Message, List[Message]]("message").get
+          )
+       }
+     }
+  }
+  
+```
+and import it:
+```scala
+import BlogWithEmbeddedMessages._
+
+```
+
 More examples in test directory.
 
 ## Testing
 To run unit tests:
 
     sbt test
+
+## Contributors
+* Dmitriy Parenskiy <https://github.com/dimparf>
+* Janos Haber <https://github.com/b0c1>
 
 ## Contributing
 
