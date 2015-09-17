@@ -11,17 +11,3 @@ import com.emotioncity.soriento.RichODocumentImpl._
  * Created by stream on 31.03.15.
  */
 case class Home(name: String, @Embedded family: Family)
-
-object Home {
-
-  implicit object HomeReader extends ODocumentReader[Home] {
-
-    def read(oDocument: ODocument): Home = {
-      Home(
-        oDocument.get[String]("name").get,
-        oDocument.getAs[Family]("family").get
-      )
-    }
-  }
-
-}

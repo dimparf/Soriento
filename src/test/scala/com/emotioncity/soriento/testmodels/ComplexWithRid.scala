@@ -13,11 +13,11 @@ import com.orientechnologies.orient.core.record.impl.ODocument
  * Created by stream on 10.08.15.
  */
 case class ComplexWithRid(
-  @Id id: ORID,
-  iField: Int,
-  @Embedded simple: Simple,
-  sField: String,
-  @EmbeddedList listField: List[Simple])
+                           @Id id: ORID,
+                           iField: Int,
+                           @Embedded simple: Simple,
+                           sField: String,
+                           @EmbeddedList listField: List[Simple])
 
 object ComplexWithRid {
 

@@ -8,7 +8,6 @@ import com.orientechnologies.orient.core.exception.OSchemaException
 import com.orientechnologies.orient.core.metadata.schema.{OClass, OSchema, OType}
 
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe._
 
 
 /**
@@ -16,7 +15,7 @@ import scala.reflect.runtime.universe._
  *
  */
 trait ODb {
-   var register: Map[String, OClass] = Map.empty
+  var register: Map[String, OClass] = Map.empty
 
   def initialize() {}
 

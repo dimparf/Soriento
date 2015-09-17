@@ -1,11 +1,14 @@
 package com.emotioncity.soriento
 
 import java.lang.reflect.{Field, ParameterizedType}
+import java.util
 import javax.persistence.Id
 
 import com.emotioncity.soriento.annotations._
+import com.orientechnologies.orient.core.db.record.OTrackedSet
 import com.orientechnologies.orient.core.id.ORID
 import com.orientechnologies.orient.core.metadata.schema.OType
+import com.orientechnologies.orient.core.record.impl.ODocument
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -16,25 +19,69 @@ import scala.reflect.runtime.universe._
  */
 object ReflectionUtils {
 
+  import scala.collection.JavaConverters._
+
   def constructor(t: Type): MethodMirror = {
     val m = runtimeMirror(getClass.getClassLoader)
     m.reflectClass(t.typeSymbol.asClass).reflectConstructor(t.decl(termNames.CONSTRUCTOR).asMethod)
   }
 
-  def createCaseClass[T](map: Map[String, Any])(implicit tag: TypeTag[T]): T = {
+  def createCaseClass[T](map: ODocument)(implicit tag: TypeTag[T]): T = {
     val tpe = typeOf[T]
     createCaseClassByType(tpe, map).asInstanceOf[T]
   }
 
-  def createCaseClassByType(tpe: Type, map: Map[String, Any]): Any = {
+  def createCaseClassByType(tpe: Type, document: ODocument): Any = {
     val constr = constructor(tpe)
     val params = constr.symbol.paramLists.flatten // get constructor params
-    val input = map.map {
-        case (k: String, m: Map[String, Any]) =>
-          k -> createCaseClassByType(params.find(_.name.toString == k).get.typeSignature, m)
-        case x => x
+    val typeMap = params.map(symbol => symbol.name.toString -> symbol.typeSignature).toMap
+    val input = document.toMap.asScala.map {
+      case (k, v) =>
+        typeMap.get(k) match {
+          case None => (k, v)
+          case Some(originalSignature) =>
+            val (signature, optional) = if (originalSignature.<:<(typeOf[Option[_]])) {
+              (originalSignature.typeArgs.head, true)
+            } else {
+              (originalSignature, false)
+            }
+            val valueType = v match {
+              case m: ODocument =>
+                if (signature.<:<(typeOf[ORID])) {
+                  m.getIdentity
+                } else if (signature.<:<(typeOf[ODocument])) {
+                  m
+                } else {
+                  createCaseClassByType(signature, m)
+                }
+              case m: OTrackedSet[ODocument] =>
+                m.asScala.map(item => createCaseClassByType(signature.typeArgs.head, item)).toSet
+              case m: util.ArrayList[ODocument] =>
+                m.asScala.toList.map(item => createCaseClassByType(signature.typeArgs.head, item))
+              case m => m
+            }
+            k -> (if (optional) Some(valueType) else valueType)
+        }
+    }
+
+    constr(params.map(_.name.toString).map(name => {
+      input.get(name) match {
+        case Some(value) => value
+        case None =>
+          val (signature, optional) = if (typeMap(name).<:<(typeOf[Option[_]])) {
+            (typeMap(name).typeArgs.head, true)
+          } else {
+            (typeMap(name), false)
+          }
+          val xxx = if (signature.<:<(typeOf[ORID])) {
+            document.getIdentity
+          } else {
+            null
+          }
+          if (optional) Option(xxx) else xxx
       }
-    constr(params.map(_.name.toString).map(input).toSeq: _*) // invoke constructor
+    }).toSeq: _*) // invoke constructor
+
   }
 
   // return a human-readable type string for type argument 'T'

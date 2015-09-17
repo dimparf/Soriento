@@ -3,17 +3,23 @@ package com.emotioncity.soriento
 import java.util.{List => JList}
 
 import com.orientechnologies.orient.core.record.impl.ODocument
-
-import scala.collection.JavaConversions._
-import scala.collection.generic.CanBuildFrom
-import scala.util.Try
-import ReflectionUtils._
 import scala.reflect.runtime.universe._
+import scala.util.Try
+
+object ODocumentReader {
+
+  import scala.collection.JavaConverters._
+
+  implicit def createReader[T](implicit tag: TypeTag[T]): ODocumentReader[T] = {
+    new ODocumentReader[T] {
+      override def read(oDocument: ODocument): T = {
+        ReflectionUtils.createCaseClass[T](oDocument)(tag)
+      }
+    }
+  }
+}
 
 
-/**
- * Created by stream on 30.03.15.
- */
 trait ODocumentReader[T] extends OReader[ODocument, T]
 
 trait OReader[B <: ODocument, T] {
