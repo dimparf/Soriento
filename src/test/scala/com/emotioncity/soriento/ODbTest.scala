@@ -82,4 +82,13 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     dropOClass[Message]
   }
 
+  test("should create OClass by case class with Option[T] fields") {
+    createOClass[ClassWithOptionalField]
+    schema.existsClass("ClassWithOptionalField") shouldBe true
+    val createdOClass = schema.getClass("ClassWithOptionalField")
+    createdOClass.existsProperty("optField") shouldBe true
+    val optFieldType = createdOClass.getProperty("optField").getType
+    optFieldType should equal(OType.STRING)
+  }
+
 }

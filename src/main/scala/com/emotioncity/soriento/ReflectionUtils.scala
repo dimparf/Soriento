@@ -141,6 +141,16 @@ object ReflectionUtils {
 
   def getOType[T](inName: String, field: Field, clazz: Class[_]): OType = {
     val fieldClassName = field.getType.getName
+    val genericOpt = getGenericTypeClass(field)
+    genericOpt match {
+      case Some(generic) =>
+        simpleFieldOType(clazz, inName, generic.getName)
+      case None =>
+        simpleFieldOType(clazz, inName,fieldClassName)
+    }
+  }
+
+  private def simpleFieldOType[T](clazz: Class[_], inName: String, fieldClassName: String): OType = {
     fieldClassName match {
       case "java.lang.Boolean" | "boolean" => OType.BOOLEAN
       case "java.lang.String" | "string" => OType.STRING
@@ -151,16 +161,6 @@ object ReflectionUtils {
       case "java.lang.Float" | "float" => OType.FLOAT
       case "java.lang.Double" | "double" => OType.DOUBLE
       case "java.util.Date" => OType.DATE
-      /*case "scala.Option" =>
-        val genericOpt = getGenericTypeClass(field)
-        genericOpt match {
-          case Some(t) =>
-            println(s"Type for class: ${t.getSimpleName}")
-            val propertyName = t.getSimpleName
-
-          case None =>
-            OType.ANY
-        }*/
       //TODO support Option type not implemented yet, but in progress
       case _ =>
         val typeOfClass = getTypeForClass(clazz)
