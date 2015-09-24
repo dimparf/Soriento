@@ -71,9 +71,9 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     droppedAfterDropped should equal(false)
   }
 
-  test("ODb should be create schema without field annotated with @javax.persistent.Id") {
+  test("ODb should be create schema with field annotated with @javax.persistent.Id") {
     createOClass[BlogWithEmbeddedListMessages]
-    schema.existsClass("BlogWithEmbeddedListMessages")
+    schema.existsClass("BlogWithEmbeddedListMessages") shouldBe true
     val oClass = schema.getClass("BlogWithEmbeddedListMessages")
     oClass.getProperty("id") should be(null)
     oClass.getProperty("messages") should not be null
@@ -81,6 +81,17 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     dropOClass[BlogWithEmbeddedListMessages]
     dropOClass[Message]
   }
+
+ /* test("should create schema with Option[T] link annotated fields") {
+    createOClass[ClassWithOptionalLinkedField]
+    schema.existsClass("ClassWithOptionalLinkedField") shouldBe true
+    val createdOClass = schema.getClass("ClassWithOptionalLinkedField")
+    createdOClass.existsProperty("simpleOptList") shouldBe true
+    val simpleOptListType = createdOClass.getProperty("simpleOptList").getType
+    val className = createdOClass.getProperty("simpleOptList").getLinkedClass
+    className should equal("Simple")
+    simpleOptListType should equal(OType.EMBEDDEDSET)
+  }*/
 
   test("should create OClass by case class with Option[T] fields") {
     createOClass[ClassWithOptionalField]
