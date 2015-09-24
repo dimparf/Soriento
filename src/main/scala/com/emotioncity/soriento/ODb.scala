@@ -38,18 +38,19 @@ trait ODb {
    */
   def dropOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocument) = {
     try {
-      db.getMetadata.getSchema.dropClass(tag.runtimeClass.getSimpleName)
-      register -= tag.runtimeClass.getName
+      val oClassName = tag.runtimeClass.getSimpleName
+      db.getMetadata.getSchema.dropClass(oClassName)
+      register -= oClassName
       true
     } catch {
-      case ose: OSchemaException =>
-        false
+      case ose: OSchemaException => false
     }
   }
 
   private def createOClassByName(schema: OSchema, ccName: String, ccSimpleName: String): OClass = {
     if (!register.contains(ccSimpleName)) {
       val oClass = schema.createClass(ccSimpleName)
+      register += ccSimpleName -> oClass
       val clazz = Class.forName(ccName)
       val fieldList = clazz.getDeclaredFields.toList
       val nameTypeMap: Map[String, Field] = fieldList.map(field => field.getName -> field).toMap
@@ -65,7 +66,6 @@ trait ODb {
           if (register.contains(subOClassName)) {
             oClass.createProperty(name, oType, register.get(subOClassName).get)
           } else {
-            println(s"Register: $register, reg $subOClassSimpleName")
             val subOClass = createOClassByName(schema, subOClassName, subOClassSimpleName)
             oClass.createProperty(name, oType, subOClass)
             register += subOClassSimpleName -> subOClass
