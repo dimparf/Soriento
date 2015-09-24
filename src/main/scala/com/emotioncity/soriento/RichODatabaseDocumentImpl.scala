@@ -18,7 +18,7 @@ object RichODatabaseDocumentImpl {
 
   implicit class RichODatabaseDocumentTx(db: ODatabaseDocument) {
 
-    def queryBySql(sql: String): List[ODocument] = {
+    def queryDocumentsBySql(sql: String): List[ODocument] = {
       val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](sql))
       results.toList
     }
