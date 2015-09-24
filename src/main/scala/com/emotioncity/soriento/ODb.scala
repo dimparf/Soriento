@@ -68,7 +68,7 @@ trait ODb {
           } else {
             val subOClass = createOClassByName(schema, subOClassName, subOClassSimpleName)
             oClass.createProperty(name, oType, subOClass)
-            register += subOClassName -> subOClass
+            register += subOClassSimpleName -> subOClass
           }
         } else {
           if (!isId(name, clazz)) {
