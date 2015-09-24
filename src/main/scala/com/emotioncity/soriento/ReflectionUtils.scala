@@ -144,6 +144,8 @@ object ReflectionUtils {
     val genericOpt = getGenericTypeClass(field)
     genericOpt match {
       case Some(generic) =>
+        println(s"InDATA: $field")
+        println(s"Generic name: ${generic.getName}")
         simpleFieldOType(clazz, inName, generic.getName)
       case None =>
         simpleFieldOType(clazz, inName,fieldClassName)
