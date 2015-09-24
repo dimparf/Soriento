@@ -66,6 +66,7 @@ trait ODb {
           if (register.contains(subOClassName)) {
             oClass.createProperty(name, oType, register.get(subOClassName).get)
           } else {
+            println(s"Attempt to create class: $subOClassName - $subOClassSimpleName")
             val subOClass = createOClassByName(schema, subOClassName, subOClassSimpleName)
             oClass.createProperty(name, oType, subOClass)
             register += subOClassSimpleName -> subOClass
