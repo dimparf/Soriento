@@ -11,6 +11,9 @@ Soriento is an object-relational mapping framework from scala case classes to Or
  - Support LinkSet, LinkList annotated fields
  - ODocumentReader auto creation (thanks b0c1)
  - Async query support (thanks b0c1)
+ 
+##Note
+Please use develop branch for development and master as production version of library.
 
 ## Features
 
