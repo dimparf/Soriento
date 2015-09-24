@@ -49,7 +49,7 @@ trait ODb {
   }
 
   private def createOClassByName(schema: OSchema, ccName: String, ccSimpleName: String): OClass = {
-    if (!register.contains(ccSimpleName)) {
+    if (!register.contains(ccSimpleName) && !schema.existsClass(ccSimpleName)) {
       val oClass = schema.createClass(ccSimpleName)
       val clazz = Class.forName(ccName)
       val fieldList = clazz.getDeclaredFields.toList
