@@ -24,7 +24,6 @@ trait ODb {
     val clazz = tag.runtimeClass
     val ccSimpleName = clazz.getSimpleName
     if (!schema.existsClass(ccSimpleName)) {
-      //TODO isExists ???
       createOClassByName(schema, clazz.getName, ccSimpleName)
     } else schema.getClass(ccSimpleName)
   }
@@ -66,6 +65,7 @@ trait ODb {
           if (register.contains(subOClassName)) {
             oClass.createProperty(name, oType, register.get(subOClassName).get)
           } else {
+            println(s"Register: $register")
             val subOClass = createOClassByName(schema, subOClassName, subOClassSimpleName)
             oClass.createProperty(name, oType, subOClass)
             register += subOClassSimpleName -> subOClass
