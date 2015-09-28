@@ -7,4 +7,4 @@ import com.orientechnologies.orient.core.id.ORID
 /**
  * Created by stream on 24.09.15.
  */
-case class ClassWithOptionalPrimitiveField(@Id id: ORID, doubleOpt: Option[Double])
+case class ClassWithOptionalPrimitiveField(@Id id: ORID, doubleOpt: Option[Double], longValue: Long)

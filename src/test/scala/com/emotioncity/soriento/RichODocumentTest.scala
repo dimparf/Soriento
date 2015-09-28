@@ -15,7 +15,8 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
   * Created by stream on 31.03.15.
   */
 
-class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with Inside with Dsl with OrientDbSupport with ODb {
+class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with Inside with Dsl with OrientDbSupport
+with ODb {
 
   import ODocumentReader._
 
@@ -131,6 +132,9 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
 
     val broken = savedMessageDoc.as[Complex]
     broken shouldBe empty
+
+    //createOClass[ClassWithOptionalPrimitiveField]
+
   }
 
 
@@ -144,6 +148,7 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
     dropOClass[LinkedMessage]
     dropOClass[BlogWithLinkedMessage]
     dropOClass[BlogWithLinkSetMessages]
+    //dropOClass[ClassWithOptionalPrimitiveField]
   }
 
 }

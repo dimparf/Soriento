@@ -8,8 +8,6 @@ import scala.util.Try
 
 object ODocumentReader {
 
-  import scala.collection.JavaConverters._
-
   implicit def createReader[T](implicit tag: TypeTag[T]): ODocumentReader[T] = {
     new ODocumentReader[T] {
       override def read(oDocument: ODocument): T = {

@@ -153,14 +153,14 @@ object ReflectionUtils {
 
   private def simpleFieldOType[T](clazz: Class[_], inName: String, fieldClassName: String): OType = {
     fieldClassName match {
-      case "java.lang.Boolean" | "Boolean" => OType.BOOLEAN
+      case "java.lang.Boolean" | "boolean" | "Boolean" => OType.BOOLEAN
       case "java.lang.String" | "String" => OType.STRING
-      case "java.lang.Byte" | "Byte" => OType.BYTE
-      case "java.lang.Short" | "Short" => OType.SHORT
-      case "java.lang.Integer" | "Int" => OType.INTEGER
-      case "java.lang.Long" | "Long" => OType.LONG
-      case "java.lang.Float" | "Float" => OType.FLOAT
-      case "java.lang.Double" | "Double" => OType.DOUBLE
+      case "java.lang.Byte" | "byte" | "Byte" => OType.BYTE
+      case "java.lang.Short" | "short" | "Short" => OType.SHORT
+      case "java.lang.Integer" |"int" | "Int" => OType.INTEGER
+      case "java.lang.Long" | "long" | "Long" => OType.LONG
+      case "java.lang.Float" | "float" | "Float" => OType.FLOAT
+      case "java.lang.Double" | "double" | "Double" => OType.DOUBLE
       case "java.util.Date" => OType.DATE
       //TODO support Option type not implemented yet, but in progress
       case _ =>
