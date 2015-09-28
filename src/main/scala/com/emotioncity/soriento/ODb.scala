@@ -47,11 +47,11 @@ trait ODb {
     }
   }
 
-  private def createOClassByName(schema: OSchema, ccName: String, ccSimpleName: String): OClass = {
+  private[soriento] def createOClassByName(schema: OSchema, ccName: String, ccSimpleName: String): OClass = {
     if (!register.contains(ccSimpleName)) {
       val oClass = schema.createClass(ccSimpleName)
       register += ccSimpleName -> oClass
-      val clazz = Class.forName(ccName)
+      val clazz: Class[_] = Class.forName(ccName)
       val fieldList = clazz.getDeclaredFields.toList
       val nameTypeMap: Map[String, Field] = fieldList.map(field => field.getName -> field).toMap
       for (entity <- nameTypeMap) {
@@ -59,14 +59,12 @@ trait ODb {
         val oType = getOType(name, field, clazz)
         if (oType == OType.LINK || oType == OType.LINKLIST  || oType == OType.LINKSET || oType == OType.LINKMAP
           || oType == OType.EMBEDDED || oType == OType.EMBEDDEDLIST || oType == OType.EMBEDDEDSET) {
-          val genericOpt = getGenericTypeClass(field)
-          val subOClass = if (genericOpt.isDefined) genericOpt.get else field.getType
-          val subOClassName = subOClass.getName
-          val subOClassSimpleName = subOClass.getSimpleName
+          val genericOpt = getScalaGenericTypeClass(name, clazz)//getGenericTypeClass(field)
+          val subOClassName = if (genericOpt.isDefined) genericOpt.get.typeSymbol.fullName else field.getType.getName
+          val subOClassSimpleName = subOClassName.substring(subOClassName.lastIndexOf(".") + 1)
           if (register.contains(subOClassName)) {
-            oClass.createProperty(name, oType, register.get(subOClassName).get)
+            oClass.createProperty(name, oType, register.get(subOClassSimpleName).get)
           } else {
-            println(s"Attempt to create class: $subOClassName - $subOClassSimpleName")
             val subOClass = createOClassByName(schema, subOClassName, subOClassSimpleName)
             oClass.createProperty(name, oType, subOClass)
             register += subOClassSimpleName -> subOClass

@@ -104,6 +104,15 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     createdOClass.existsProperty("optField") shouldBe true
     val optFieldType = createdOClass.getProperty("optField").getType
     optFieldType should equal(OType.STRING)
+
+    createOClass[ClassWithOptionalPrimitiveField]
+    schema.existsClass("ClassWithOptionalPrimitiveField") shouldBe true
+    val createdOClassP = schema.getClass("ClassWithOptionalPrimitiveField")
+
+    createdOClassP.existsProperty("doubleOpt") shouldBe true
+    val optFieldTypeP = createdOClassP.getProperty("doubleOpt").getType
+    optFieldTypeP should equal(OType.DOUBLE)
+
   }
 
 }

@@ -4,6 +4,8 @@ import com.emotioncity.soriento.ReflectionUtils._
 import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.id.ORecordId
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
+import org.scalatest.OptionValues._
+import scala.reflect.runtime.universe._
 
 /**
  * Created by stream on 25.12.14.
@@ -53,6 +55,20 @@ class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter
     rid(classWitRidNull) shouldBe empty
     val computedRid4 = rid(classWitRidNull)
     computedRid4 should equal(None)
+  }
+
+  test("should return parameter of type") {
+    val clz = Class.forName("com.emotioncity.soriento.testmodels.Blah")
+    val sFieldTpe = getScalaGenericTypeClass("sField", clz)
+    sFieldTpe shouldBe None
+
+    val dFieldTpe = getScalaGenericTypeClass("dField", clz)
+    dFieldTpe shouldBe defined
+    dFieldTpe.value shouldBe typeOf[Double]
+
+    val bFieldTpe = getScalaGenericTypeClass("bField", clz)
+    bFieldTpe shouldBe defined
+    bFieldTpe.value shouldBe typeOf[Boolean]
   }
 
   after {
