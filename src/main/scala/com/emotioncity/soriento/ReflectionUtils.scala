@@ -105,7 +105,7 @@ object ReflectionUtils {
    * @tparam T generic type
    * @return scala.reflect.runtime.universe.Type
    */
-  def typeStringByTypeTag[T: TypeTag] = typeOf[T].typeArgs.head
+  def typeStringByTypeTag[T: TypeTag](t: T) = typeOf[T].typeArgs.headOption
 
   def typeStringByType(t: Type): Option[Type] = t.typeArgs.headOption
 
@@ -140,28 +140,27 @@ object ReflectionUtils {
   }
 
   def getOType[T](inName: String, field: Field, clazz: Class[_]): OType = {
+    val fieldName = field.getName
     val fieldClassName = field.getType.getName
-    val genericOpt = getGenericTypeClass(field)
+    val genericOpt = getScalaGenericTypeClass(fieldName, clazz) //getClass getType => use scala version (bottom)
     genericOpt match {
       case Some(generic) =>
-        println(s"InDATA: $field")
-        println(s"Generic name: ${generic.getName}")
-        simpleFieldOType(clazz, inName, generic.getName)
+        simpleFieldOType(clazz, inName, generic.toString)
       case None =>
-        simpleFieldOType(clazz, inName,fieldClassName)
+        simpleFieldOType(clazz, inName, fieldClassName)
     }
   }
 
   private def simpleFieldOType[T](clazz: Class[_], inName: String, fieldClassName: String): OType = {
     fieldClassName match {
-      case "java.lang.Boolean" | "boolean" => OType.BOOLEAN
-      case "java.lang.String" | "string" => OType.STRING
-      case "java.lang.Byte" | "byte" => OType.BYTE
-      case "java.lang.Short" | "short" => OType.SHORT
-      case "java.lang.Integer" | "int" => OType.INTEGER
-      case "java.lang.Long" | "long" => OType.LONG
-      case "java.lang.Float" | "float" => OType.FLOAT
-      case "java.lang.Double" | "double" => OType.DOUBLE
+      case "java.lang.Boolean" | "Boolean" => OType.BOOLEAN
+      case "java.lang.String" | "String" => OType.STRING
+      case "java.lang.Byte" | "Byte" => OType.BYTE
+      case "java.lang.Short" | "Short" => OType.SHORT
+      case "java.lang.Integer" | "Int" => OType.INTEGER
+      case "java.lang.Long" | "Long" => OType.LONG
+      case "java.lang.Float" | "Float" => OType.FLOAT
+      case "java.lang.Double" | "Double" => OType.DOUBLE
       case "java.util.Date" => OType.DATE
       //TODO support Option type not implemented yet, but in progress
       case _ =>
@@ -232,7 +231,12 @@ object ReflectionUtils {
     }
   }
 
-  def getGenericTypeClass(field: Field): Option[Class[_]] = {
+  /**
+   * Do not use this method. It is broken, return None for boxing java types (Double, Boolean, etc)
+   * @param field field of constructor
+   * @return
+   */
+  private[soriento] def getGenericTypeClass(field: Field): Option[Class[_]] = {
     val genericType = field.getGenericType
     genericType match {
       case parametrizedType: ParameterizedType =>
@@ -246,6 +250,25 @@ object ReflectionUtils {
       case _ =>
         None
     }
+  }
+
+  def getScalaGenericTypeClass(fieldName: String, clazz: Class[_]): Option[Type] = {
+    val tpe = getTypeForClass(clazz)
+
+    val paramOpt: Option[Option[Symbol]] = tpe.companion.typeSymbol
+      .typeSignature
+      .members
+      .collectFirst { case method: MethodSymbol if method.name.toString == "apply" =>
+      method.paramLists.head.find(p => p.name.toString == fieldName)
+    }
+
+    paramOpt match {
+      case Some(p) =>
+        p.flatMap(s => s.typeSignature.resultType.typeArgs.headOption)
+      case None =>
+        None
+    }
+
   }
 
 }
