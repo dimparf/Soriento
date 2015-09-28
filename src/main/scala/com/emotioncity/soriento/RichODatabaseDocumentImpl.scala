@@ -9,7 +9,7 @@ import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
 
 import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Future, blocking}
 
 /**
  * Created by stream on 31.03.15.
@@ -37,7 +37,9 @@ object RichODatabaseDocumentImpl {
       Future {
         val internalDb = instance.asInstanceOf[ODatabaseDocumentTx].copy
         try {
-          x(internalDb)
+          blocking {
+            x(internalDb)
+          }
         } finally {
           if (internalDb != null) {
             internalDb.close()
