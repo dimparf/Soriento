@@ -52,7 +52,7 @@ trait ODb {
       val oClass = schema.createClass(ccSimpleName)
       register += ccSimpleName -> oClass
       val clazz: Class[_] = Class.forName(ccName)
-      val fieldList = clazz.getDeclaredFields.toList
+      val fieldList = clazz.getDeclaredFields.toListc
       val nameTypeMap: Map[String, Field] = fieldList.map(field => field.getName -> field).toMap
       for (entity <- nameTypeMap) {
         val (name, field) = entity
