@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Soriento : Scala OrientDb object mapping library">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Soriento</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/dimparf/Soriento">View on GitHub</a>
+
+          <h1 id="project_title">Soriento</h1>
+          <h2 id="project_tagline">Scala OrientDb object mapping library</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/dimparf/Soriento/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/dimparf/Soriento/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="soriento" class="anchor" href="#soriento" aria-hidden="true"><span class="octicon octicon-link"></span></a>Soriento</h1>
+
+<p><a href="https://gitter.im/dimparf/Soriento?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Join the chat at https://gitter.im/dimparf/Soriento"></a>
+<a href="https://travis-ci.org/dimparf/Soriento"><img src="https://travis-ci.org/dimparf/Soriento.svg" alt="Build Status"></a></p>
+
+<h2>
+<a id="scala-orientdb-object-mapping-library" class="anchor" href="#scala-orientdb-object-mapping-library" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scala OrientDb object mapping library</h2>
+
+<p>Soriento is an object-relational mapping framework from scala case classes to OrientDb ODocument.</p>
+
+<h2>
+<a id="news" class="anchor" href="#news" aria-hidden="true"><span class="octicon octicon-link"></span></a>News</h2>
+
+<ul>
+<li>Support LinkSet, LinkList annotated fields</li>
+<li>ODocumentReader auto creation (thanks b0c1)</li>
+<li>Async query support (thanks b0c1)</li>
+</ul>
+
+<h2>
+<a id="note" class="anchor" href="#note" aria-hidden="true"><span class="octicon octicon-link"></span></a>Note</h2>
+
+<p>Please use develop branch for development and master as production version of library.</p>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li>Creating/deleting OrientDb classes by case classes.</li>
+<li>Transparent CRUD for documents represented as case classes.</li>
+<li>Linked or Embedded definitions for case classes.</li>
+<li>Support serialization/deserialization for case classes with <a href="https://github.com/Embedded" class="user-mention">@Embedded</a> list/set of case classes.</li>
+<li>Support OType mapping Scala =&gt; OrientDb OTypes.</li>
+<li>Transactions support.</li>
+<li>Query by SQL.</li>
+</ul>
+
+<p>Supported types:</p>
+
+<ul>
+<li>Long, Double, Int, Float, Short, String, case classes: Embedded, EmbeddedList, EmbeddedSet, Link, LinkList, LinkSet</li>
+</ul>
+
+<h2>
+<a id="coming-soon" class="anchor" href="#coming-soon" aria-hidden="true"><span class="octicon octicon-link"></span></a>Coming soon</h2>
+
+<ul>
+<li>LinkMap.</li>
+<li>EmbeddedMap.</li>
+</ul>
+
+<h2>
+<a id="add-to-you-project" class="anchor" href="#add-to-you-project" aria-hidden="true"><span class="octicon octicon-link"></span></a>Add to you project</h2>
+
+<div class="highlight highlight-source-scala"><pre> <span class="pl-k">lazy</span> <span class="pl-k">val</span> <span class="pl-en">youProject</span> <span class="pl-k">=</span> <span class="pl-en">Project</span>(<span class="pl-s"><span class="pl-pds">"</span>YouProject<span class="pl-pds">"</span></span>, file(<span class="pl-s"><span class="pl-pds">"</span>.<span class="pl-pds">"</span></span>))
+  .settings(<span class="pl-v">commonSettings</span>: _<span class="pl-k">*</span>)
+  .dependsOn(sorientoProject)
+
+ <span class="pl-k">lazy</span> <span class="pl-k">val</span> <span class="pl-en">sorientoProject</span> <span class="pl-k">=</span> <span class="pl-en">RootProject</span>(uri(<span class="pl-s"><span class="pl-pds">"</span>https://github.com/dimparf/Soriento.git#master<span class="pl-pds">"</span></span>))</pre></div>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Simple example:</p>
+
+<div class="highlight highlight-source-scala"><pre>  <span class="pl-k">import</span> <span class="pl-v">com.emotioncity.soriento.Dsl.</span><span class="pl-v">_ </span><span class="pl-c">// or extends Dsl trait</span>
+  <span class="pl-k">import</span> <span class="pl-v">com.emotioncity.soriento.ODocumentReader.</span><span class="pl-v">_</span>
+
+  <span class="pl-k">implicit</span> <span class="pl-k">val</span> <span class="pl-en">orientDb</span><span class="pl-k">:</span> <span class="pl-en">ODatabaseDocumentTx</span> <span class="pl-k">=</span> <span class="pl-k">???</span>
+
+  <span class="pl-k">case</span> <span class="pl-k">class</span> <span class="pl-en">Message</span>(<span class="pl-v">content</span>: <span class="pl-k">String</span>)
+
+  <span class="pl-k">case</span> <span class="pl-k">class</span> <span class="pl-en">Blog</span>(<span class="pl-v">author</span>: <span class="pl-k">String</span>, <span class="pl-k">@</span><span class="pl-en">Embedded</span> <span class="pl-v">message</span>: <span class="pl-en">Message</span>) <span class="pl-c">// or @Linked</span>
+
+  <span class="pl-k">case</span> <span class="pl-k">class</span> <span class="pl-en">BlogWithEmbeddedMessages</span>(<span class="pl-v">author</span>: <span class="pl-k">String</span>, <span class="pl-k">@</span><span class="pl-en">EmbeddedSet</span> <span class="pl-v">messages</span>: <span class="pl-en">List</span>[<span class="pl-en">Message</span>])
+
+  <span class="pl-c">//schema-full (use com.emotioncity.soriento.ODb trait) mode or without this lines - schema less</span>
+  createOClass[<span class="pl-en">Message</span>] 
+  createOClass[<span class="pl-en">Blog</span>]
+  createOClass[<span class="pl-en">BlogWithEmbeddedMessages</span>]
+
+  <span class="pl-k">val</span> <span class="pl-en">blog</span> <span class="pl-k">=</span> <span class="pl-en">Blog</span>(<span class="pl-s"><span class="pl-pds">"</span>Dim<span class="pl-pds">"</span></span>, message <span class="pl-k">=</span> <span class="pl-en">Message</span>(<span class="pl-s"><span class="pl-pds">"</span>Hi<span class="pl-pds">"</span></span>)) <span class="pl-c">//or without named params Blog("Dim", Message("Hi))</span>
+  <span class="pl-k">val</span> <span class="pl-en">blogWithEmbeddedMessages</span> <span class="pl-k">=</span> <span class="pl-en">BlogWithEmbeddedMessages</span>(<span class="pl-s"><span class="pl-pds">"</span>John<span class="pl-pds">"</span></span>, <span class="pl-en">List</span>(<span class="pl-en">Message</span>(<span class="pl-s"><span class="pl-pds">"</span>Hi<span class="pl-pds">"</span></span>), <span class="pl-en">Message</span>(<span class="pl-s"><span class="pl-pds">"</span>New blog note<span class="pl-pds">"</span></span>)))
+  <span class="pl-c">//ActiveRecord style</span>
+  blog.save
+  blogWithEmbeddedMessages.save
+
+  <span class="pl-c">//..or</span>
+  orientDb.save(blog)
+
+
+  <span class="pl-k">val</span> <span class="pl-en">blogs</span><span class="pl-k">:</span> <span class="pl-en">List</span>[<span class="pl-en">Blog</span>] <span class="pl-k">=</span> db.queryBySql[<span class="pl-en">Blog</span>](<span class="pl-s"><span class="pl-pds">"</span>select from blog<span class="pl-pds">"</span></span>)
+
+  <span class="pl-c">//Save object graph (from test code, use scalatest)</span>
+  <span class="pl-k">val</span> <span class="pl-en">messageOne</span> <span class="pl-k">=</span> <span class="pl-en">LinkedMessage</span>(<span class="pl-s"><span class="pl-pds">"</span>This is my first message<span class="pl-pds">"</span></span>)
+  <span class="pl-k">val</span> <span class="pl-en">messageOneSaved</span> <span class="pl-k">=</span> messageOne.save.as[<span class="pl-en">LinkedMessage</span>].get
+  <span class="pl-k">val</span> <span class="pl-en">messageTwo</span> <span class="pl-k">=</span> <span class="pl-en">LinkedMessage</span>(<span class="pl-s"><span class="pl-pds">"</span>last<span class="pl-pds">"</span></span>)
+  <span class="pl-k">val</span> <span class="pl-en">messageTwoSaved</span> <span class="pl-k">=</span> messageTwo.save.as[<span class="pl-en">LinkedMessage</span>].get
+
+  <span class="pl-c">//Warning: Soriento use immutable case classes,</span>
+  <span class="pl-c">//unsaved messages don't have id. Save your values and get saved object with id with as[T] method.</span>
+  <span class="pl-k">val</span> <span class="pl-en">blogWithLinkSetMessages</span> <span class="pl-k">=</span> <span class="pl-en">BlogWithLinkSetMessages</span>(<span class="pl-s"><span class="pl-pds">"</span>MyBlog<span class="pl-pds">"</span></span>, <span class="pl-en">Set</span>(messageOneSaved, messageTwoSaved))
+  blogWithLinkSetMessages.save
+
+  <span class="pl-k">val</span> <span class="pl-en">extractedBlogsOpt</span> <span class="pl-k">=</span> orientDb
+  .queryBySql[<span class="pl-en">BlogWithLinkSetMessages</span>](<span class="pl-s"><span class="pl-pds">"</span>select from BlogWithLinkSetMessages where name = 'MyBlog'<span class="pl-pds">"</span></span>).headOption
+    extractedBlogsOpt <span class="pl-k">match</span> {
+      <span class="pl-k">case</span> <span class="pl-en">Some</span>(extractedBlog) <span class="pl-k">=&gt;</span>
+        inside(extractedBlog) { <span class="pl-k">case</span> <span class="pl-en">BlogWithLinkSetMessages</span>(name, messages) <span class="pl-k">=&gt;</span>
+          name should equal(<span class="pl-s"><span class="pl-pds">"</span>MyBlog<span class="pl-pds">"</span></span>)
+          messages should have size <span class="pl-c1">2</span>
+          messages should contain(<span class="pl-en">LinkedMessage</span>(<span class="pl-s"><span class="pl-pds">"</span>This is my first message<span class="pl-pds">"</span></span>, messageOneId))
+          messages should contain(<span class="pl-en">LinkedMessage</span>(<span class="pl-s"><span class="pl-pds">"</span>last<span class="pl-pds">"</span></span>, messageTwoId))
+        }
+      <span class="pl-k">case</span> <span class="pl-c1">None</span> <span class="pl-k">=&gt;</span> fail(<span class="pl-s"><span class="pl-pds">"</span>Model not saved or retrieved<span class="pl-pds">"</span></span>)
+    }
+  }
+
+  deleteOClass[<span class="pl-en">Message</span>]
+  deleteOClass[<span class="pl-en">Blog</span>]
+  deleteOClass[<span class="pl-en">BlogWithEmbeddedMessages</span>]
+  deleteOClass[<span class="pl-en">BlogWithLinkSetMessages</span>]</pre></div>
+
+<p>You can also create custom readers for models:</p>
+
+<div class="highlight highlight-source-scala"><pre>  <span class="pl-k">object</span> <span class="pl-en">BlogWithEmbeddedMessages</span> {
+    <span class="pl-k">implicit</span> <span class="pl-k">object</span> <span class="pl-en">BlogWithEmbeddedMessagesReader</span> <span class="pl-k">extends</span> <span class="pl-e">ODocumentReader</span>[<span class="pl-en">BlogWithEmbeddedMessages</span>] {
+       <span class="pl-k">def</span> <span class="pl-en">read</span>(<span class="pl-v">oDocument</span>: <span class="pl-en">ODocument</span>)<span class="pl-k">:</span> <span class="pl-en">BlogWithEmbeddedMessages</span> <span class="pl-k">=</span> {
+          <span class="pl-en">BlogWithEmbeddedMessages</span>(
+            oDocument.get[<span class="pl-k">String</span>](<span class="pl-s"><span class="pl-pds">"</span>author<span class="pl-pds">"</span></span>).get,
+            oDocument.getAs[<span class="pl-en">Message</span>, <span class="pl-en">List</span>[<span class="pl-en">Message</span>]](<span class="pl-s"><span class="pl-pds">"</span>message<span class="pl-pds">"</span></span>).get
+          )
+       }
+     }
+  }
+</pre></div>
+
+<p>and import it:</p>
+
+<div class="highlight highlight-source-scala"><pre><span class="pl-k">import</span> <span class="pl-v">BlogWithEmbeddedMessages.</span><span class="pl-v">_</span>
+</pre></div>
+
+<p>More examples in test directory.</p>
+
+<h2>
+<a id="testing" class="anchor" href="#testing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Testing</h2>
+
+<p>To run unit tests:</p>
+
+<pre><code>sbt test
+</code></pre>
+
+<h2>
+<a id="contributors" class="anchor" href="#contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributors</h2>
+
+<ul>
+<li>Dmitriy Parenskiy <a href="https://github.com/dimparf">https://github.com/dimparf</a>
+</li>
+<li>Janos Haber <a href="https://github.com/b0c1">https://github.com/b0c1</a>
+</li>
+</ul>
+
+<h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h2>
+
+<p>Welcome to contribute!
+You can always post an issue or (even better) fork the project, implement your idea or fix the bug you have found and send a pull request. 
+Just remember to test it when you are done. Here is how:</p>
+
+<p>Run sbt test to run and compile tests.</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>This software is available under the <a href="LICENSE">Apache License, Version 2.0</a>.    </p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Soriento maintained by <a href="https://github.com/dimparf">dimparf</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
