@@ -7,11 +7,13 @@ import com.orientechnologies.orient.core.db.OPartitionedDatabasePool
  */
 trait OrientDbSupport {
   val oDatabaseDocumentPool = new OPartitionedDatabasePool("memory:Test" + Thread.currentThread().getId, "admin", "admin").setAutoCreate(true)
-  //val remotePool = new OPartitionedDatabasePool("remote:localhost/emotiongraph", "root", "varlogr3_")
-
   implicit val orientDb = oDatabaseDocumentPool.acquire()
-  //implicit val orientDb = remotePool.acquire()
 
+}
+
+trait RemoteOrientDbSupport {
+  val remotePool = new OPartitionedDatabasePool("remote:localhost/emotiongraph", "root", "varlogr3_").setAutoCreate(true)
+  implicit val orientDb = remotePool.acquire()
 }
 
 
