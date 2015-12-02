@@ -1,21 +1,18 @@
 package com.emotioncity.soriento
 
-import javax.persistence.Id
-
-import com.emotioncity.soriento.annotations.{EmbeddedList, Embedded}
-import com.emotioncity.soriento.support.{RemoteOrientDbSupport, OrientDbSupport}
-import com.emotioncity.soriento.testmodels.{ClassWithOptionalRid, Simple, ComplexWithRid}
-import com.orientechnologies.orient.core.id.{ORecordId, ORID}
+import com.emotioncity.soriento.RichODatabaseDocumentImpl._
+import com.emotioncity.soriento.RichODocumentImpl._
+import com.emotioncity.soriento.support.OrientDbSupport
+import com.emotioncity.soriento.testmodels.ClassWithOptionalRid
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Inside, BeforeAndAfter, Matchers, FunSuite}
-import RichODocumentImpl._
-import RichODatabaseDocumentImpl._
+import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
 
 /**
   * Created by stream on 02.12.15.
   */
 class RichODatabaseDocumentTest extends FunSuite
-with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with RemoteOrientDbSupport with ODb {
+with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with OrientDbSupport with ODb {
+
   import ODocumentReader._
 
   test("async query by sql list of models") {
@@ -26,8 +23,8 @@ with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with Re
     mayBeModel1 shouldBe defined
     val model1 = mayBeModel1.get
     inside(model1) { case ClassWithOptionalRid(rid, name) =>
-        rid shouldBe defined
-        name should equal("My model1")
+      rid shouldBe defined
+      name should equal("My model1")
     }
     mayBeModel2 shouldBe defined
     val model2 = mayBeModel2.get
