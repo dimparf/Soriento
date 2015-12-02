@@ -5,6 +5,7 @@ import com.emotioncity.soriento.RichODocumentImpl._
 import com.emotioncity.soriento.support.RemoteOrientDbSupport
 import com.emotioncity.soriento.testmodels.ClassWithOptionalRid
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
 
 /**
@@ -12,6 +13,9 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
   */
 class RichODatabaseDocumentTest extends FunSuite
 with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with RemoteOrientDbSupport with ODb {
+
+  implicit val defaultPatience =
+    PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
   import ODocumentReader._
 

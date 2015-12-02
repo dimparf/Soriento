@@ -36,15 +36,15 @@ object RichODatabaseDocumentImpl {
       val instance = ODatabaseRecordThreadLocal.INSTANCE.get
       Future {
         val internalDb = instance.asInstanceOf[ODatabaseDocumentTx].copy
-        try {
+        //try {
           blocking {
             x(internalDb)
           }
-        } finally {
+        /*} finally {
           if (internalDb != null) {
             internalDb.close()
           }
-        }
+        }*/
       }
     }
 
