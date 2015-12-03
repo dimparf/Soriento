@@ -105,7 +105,7 @@ object ReflectionUtils {
    * @tparam T generic type
    * @return scala.reflect.runtime.universe.Type
    */
-  def typeStringByTypeTag[T: TypeTag](t: T) = typeOf[T].typeArgs.headOption
+  def typeStringByTypeTag[T: TypeTag](t: T): Option[Type] = typeOf[T].typeArgs.headOption
 
   def typeStringByType(t: Type): Option[Type] = t.typeArgs.headOption
 

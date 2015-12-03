@@ -9,11 +9,6 @@ import com.orientechnologies.orient.core.metadata.schema.{OClass, OSchema, OType
 
 import scala.reflect.ClassTag
 
-
-/**
- * Created by stream on 13.12.14.
- *
- */
 trait ODb {
   var register: Map[String, OClass] = Map.empty
 
@@ -25,18 +20,20 @@ trait ODb {
     val ccSimpleName = clazz.getSimpleName
     if (!schema.existsClass(ccSimpleName)) {
       createOClassByName(schema, clazz.getName, ccSimpleName)
-    } else schema.getClass(ccSimpleName)
+    } else {
+      schema.getClass(ccSimpleName)
+    }
   }
 
 
   /**
-   * Drop OClass if it exists
-   * @param tag
-   * @param db
-   * @tparam T Associated case class
-   * @return true if class dropped else false
-   */
-  def dropOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocument) = {
+    * Drop OClass if it exists
+    * @param tag
+    * @param db
+    * @tparam T Associated case class
+    * @return true if class dropped else false
+    */
+  def dropOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocument): Boolean = {
     try {
       val oClassName = tag.runtimeClass.getSimpleName
       db.getMetadata.getSchema.dropClass(oClassName)
@@ -57,9 +54,9 @@ trait ODb {
       for (entity <- nameTypeMap) {
         val (name, field) = entity
         val oType = getOType(name, field, clazz)
-        if (oType == OType.LINK || oType == OType.LINKLIST  || oType == OType.LINKSET || oType == OType.LINKMAP
+        if (oType == OType.LINK || oType == OType.LINKLIST || oType == OType.LINKSET || oType == OType.LINKMAP
           || oType == OType.EMBEDDED || oType == OType.EMBEDDEDLIST || oType == OType.EMBEDDEDSET) {
-          val genericOpt = getScalaGenericTypeClass(name, clazz)//getGenericTypeClass(field)
+          val genericOpt = getScalaGenericTypeClass(name, clazz) //getGenericTypeClass(field)
           val subOClassName = if (genericOpt.isDefined) genericOpt.get.typeSymbol.fullName else field.getType.getName
           val subOClassSimpleName = subOClassName.substring(subOClassName.lastIndexOf(".") + 1)
           if (register.contains(subOClassName)) {

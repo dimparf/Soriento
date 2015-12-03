@@ -28,7 +28,7 @@ object RichODatabaseDocumentImpl {
       results.toList.map(document => reader.read(document))
     }
 
-    def command(query: String) = {
+    def command(query: String): OCommandRequest = {
       db.command[OCommandRequest](new OCommandSQL(query)).execute() //type annotation of return?
     }
 
