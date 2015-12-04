@@ -2,7 +2,7 @@ package com.emotioncity.soriento
 
 import com.emotioncity.soriento.RichODatabaseDocumentImpl._
 import com.emotioncity.soriento.RichODocumentImpl._
-import com.emotioncity.soriento.support.RemoteOrientDbSupport
+import com.emotioncity.soriento.support.{TestPooledConfig, TestUnpooledConfig, RemoteOrientDbSupport}
 import com.emotioncity.soriento.testmodels.ClassWithOptionalRid
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -13,6 +13,8 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
   */
 class RichODatabaseDocumentTest extends FunSuite
 with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with RemoteOrientDbSupport with ODb {
+
+  implicit val config = TestPooledConfig
 
   implicit val defaultPatience =
     PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
@@ -47,6 +49,6 @@ with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with Re
       savedModels shouldBe a[List[_]]
       savedModels should have size 3
     }
+    dropOClass[ClassWithOptionalRid]
   }
-  dropOClass[ClassWithOptionalRid]
 }

@@ -18,8 +18,11 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     dropOClass[Test]
     dropOClass[Message]
     dropOClass[BlogWithLinkedMessage]
+    dropOClass[LinkedMessage]
     dropOClass[BlogWithEmbeddedMessages]
     dropOClass[BlogWithLinkSetMessages]
+    dropOClass[ClassWithOptionalField]
+    dropOClass[ClassWithOptionalPrimitiveField]
   }
 
   test("ODb should be create OClass with name in OrientDb") {

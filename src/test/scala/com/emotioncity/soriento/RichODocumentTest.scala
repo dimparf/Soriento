@@ -4,7 +4,8 @@ import java.util
 
 import com.emotioncity.soriento.RichODatabaseDocumentImpl._
 import com.emotioncity.soriento.RichODocumentImpl._
-import com.emotioncity.soriento.support.OrientDbSupport
+import com.emotioncity.soriento.config.SorientoConfig
+import com.emotioncity.soriento.support.{TestUnpooledConfig, OrientDbSupport}
 import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument

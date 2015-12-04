@@ -1,8 +1,7 @@
 package com.emotioncity.soriento
 
-import com.emotioncity.soriento.support.OrientDbSupport
+import com.emotioncity.soriento.support.{RemoteOrientDbSupport, TestPooledConfig, OrientDbSupport, TestUnpooledConfig}
 import com.emotioncity.soriento.testmodels._
-import com.orientechnologies.orient.core.db.document.{ODatabaseDocumentPool, ODatabaseDocumentTx}
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
@@ -11,13 +10,13 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 import scala.collection.JavaConversions._
 
 /**
- * Created by stream on 25.12.14.
- */
+  * Created by stream on 25.12.14.
+  */
 
 
-class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with ODb with OrientDbSupport {
+class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with ODb with RemoteOrientDbSupport {
 
-  import ODocumentReader._
+  implicit val config = TestPooledConfig
 
   test("Dsl should be convert Product to ODocument") {
     val blog = Blog(author = "Arnold", message = Record("Agrh!"))
