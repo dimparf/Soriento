@@ -32,9 +32,6 @@ object ReflectionUtils {
     createCaseClassByType(tpe, map).asInstanceOf[T]
   }
 
-  //TypeMap: Map(name -> String, latitude -> Double, longitude -> Double, id -> Option[com.orientechnologies.orient.core.id.ORID], address -> com.emotioncity.common.model.Address, owner -> com.emotioncity.customer.model.Owner, events -> Set[com.emotioncity.user.model.Event], distance -> Option[Double])
-
-  //Input:  Map(events -> (), distance -> Some(0.0), address -> Address(Vladivostok,Russkaya,37), latitude -> 43.16971838460839, owner -> Owner(Dmitriy Parenskiy,dimparf@gmail.com,q34twvfw45tgy245gbt,Some(#13:1)), @class -> Place, name -> My sweet home, longitude -> 131.9223502278328, @rid -> #12:1)
   def createCaseClassByType(tpe: Type, document: ODocument): Any = {
     val constr = constructor(tpe)
     val params = constr.symbol.paramLists.flatten // get constructor params
@@ -99,12 +96,14 @@ object ReflectionUtils {
       input.get(name) match {
         case Some(value) => value
         case None =>
+          println("Agrh: " + typeMap(name))
           val (signature, optional) = checkOptional(typeMap(name))
           val xxx = if (signature.<:<(typeOf[ORID])) {
             document.getIdentity
           } else {
             null
           }
+          println(s"XXX: $xxx")
           if (optional) Option(xxx) else xxx
       }
     }).toSeq
