@@ -95,7 +95,9 @@ object ReflectionUtils {
     println(s"Params: $params")
     val prms = params.map(_.name.toString).map(name => {
       input.get(name) match {
-        case Some(value) => value
+        case Some(value) =>
+          println(s"Value type name: $name - value: ${value.getClass}")
+          value
         case None =>
           println("Agrh: " + typeMap(name))
           val (signature, optional) = checkOptional(typeMap(name))
