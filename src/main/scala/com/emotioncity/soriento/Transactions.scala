@@ -23,7 +23,7 @@ trait Transactions {
         db.rollback
         throw e
     } finally {
-          db.close()
+      db.close()
     }
   }
 

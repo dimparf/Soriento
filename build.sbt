@@ -7,8 +7,12 @@ lazy val commonSettings = Seq(
   organization := "com.emotioncity",
   version := "0.1.0-SNAPSHOT",
   scalaVersion := "2.11.7",
+  coverageEnabled := true,
   offline := false,
   fork in run := true,
+  fork in Test := true,
+  testForkedParallel := false,
+  parallelExecution in Test := false,
   autoCompilerPlugins := true,
   javacOptions ++= Seq("-source", "1.7", "-target", "1.7"),
   scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-language:implicitConversions"),
@@ -20,11 +24,9 @@ lazy val commonSettings = Seq(
     "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/"
   ),
 libraryDependencies ++= Seq(
-  "com.tinkerpop.blueprints" % "blueprints-core" % "2.6.0",
-//  "com.orientechnologies" % "orient-commons" % "2.1.0",
+  "com.tinkerpop.blueprints" % "blueprints-core" % "2.3.0",
   "com.orientechnologies" % "orientdb-core" % "2.1.0",
   "com.orientechnologies" % "orientdb-graphdb" % "2.1.0",
-  "com.orientechnologies" % "orientdb-client" % "2.1.0",
   "org.scala-lang" % "scalap" % "2.11.6", //TODO fix scala dep on scalaVersion
   "org.mockito" % "mockito-core" % "1.9.5" % "test",
   "org.scalatest" %% "scalatest" % "2.2.3" % "test",

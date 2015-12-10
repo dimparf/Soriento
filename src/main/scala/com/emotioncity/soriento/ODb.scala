@@ -8,7 +8,6 @@ import com.orientechnologies.orient.core.exception.OSchemaException
 import com.orientechnologies.orient.core.metadata.schema.{OClass, OSchema, OType}
 
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe._
 
 
 /**
@@ -16,7 +15,7 @@ import scala.reflect.runtime.universe._
  *
  */
 trait ODb {
-   var register: Map[String, OClass] = Map.empty
+  var register: Map[String, OClass] = Map.empty
 
   def initialize() {}
 
@@ -58,7 +57,7 @@ trait ODb {
       for (entity <- nameTypeMap) {
         val (name, field) = entity
         val oType = getOType(name, field, clazz)
-        if (oType == OType.LINK || oType == OType.LINKLIST || oType == OType.LINKMAP
+        if (oType == OType.LINK || oType == OType.LINKLIST  || oType == OType.LINKSET || oType == OType.LINKMAP
           || oType == OType.EMBEDDED || oType == OType.EMBEDDEDLIST || oType == OType.EMBEDDEDSET) {
           val genericOpt = getGenericTypeClass(field)
           val subOClass = if (genericOpt.isDefined) genericOpt.get else field.getType

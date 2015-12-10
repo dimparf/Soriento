@@ -17,6 +17,7 @@ import scala.reflect.runtime.universe._
 /**
  * Created by stream on 14.12.14.
  */
+
 object ReflectionUtils {
 
   import scala.collection.JavaConverters._
@@ -26,20 +27,62 @@ object ReflectionUtils {
     m.reflectClass(t.typeSymbol.asClass).reflectConstructor(t.decl(termNames.CONSTRUCTOR).asMethod)
   }
 
-  def createCaseClass[T](map: Map[String, Any])(implicit tag: TypeTag[T]): T = {
+  def createCaseClass[T](map: ODocument)(implicit tag: TypeTag[T]): T = {
     val tpe = typeOf[T]
     createCaseClassByType(tpe, map).asInstanceOf[T]
   }
 
-  def createCaseClassByType(tpe: Type, map: Map[String, Any]): Any = {
+  def createCaseClassByType(tpe: Type, document: ODocument): Any = {
     val constr = constructor(tpe)
     val params = constr.symbol.paramLists.flatten // get constructor params
-    val input = map.map {
-        case (k: String, m: Map[String, Any] @unchecked) =>
-          k -> createCaseClassByType(params.find(_.name.toString == k).get.typeSignature, m)
-        case x => x
+    val typeMap = params.map(symbol => symbol.name.toString -> symbol.typeSignature).toMap
+    val input = document.toMap.asScala.map {
+      case (k, v) =>
+        typeMap.get(k) match {
+          case None => (k, v)
+          case Some(originalSignature) =>
+            val (signature, optional) = if (originalSignature.<:<(typeOf[Option[_]])) {
+              (originalSignature.typeArgs.head, true)
+            } else {
+              (originalSignature, false)
+            }
+            val valueType = v match {
+              case m: ODocument =>
+                if (signature.<:<(typeOf[ORID])) {
+                  m.getIdentity
+                } else if (signature.<:<(typeOf[ODocument])) {
+                  m
+                } else {
+                  createCaseClassByType(signature, m)
+                }
+              case m: OTrackedSet[ODocument @unchecked] =>
+                m.asScala.map(item => createCaseClassByType(signature.typeArgs.head, item)).toSet
+              case m: util.ArrayList[ODocument @unchecked] =>
+                m.asScala.toList.map(item => createCaseClassByType(signature.typeArgs.head, item))
+              case m => m
+            }
+            k -> (if (optional) Some(valueType) else valueType)
+        }
+    }
+
+    constr(params.map(_.name.toString).map(name => {
+      input.get(name) match {
+        case Some(value) => value
+        case None =>
+          val (signature, optional) = if (typeMap(name).<:<(typeOf[Option[_]])) {
+            (typeMap(name).typeArgs.head, true)
+          } else {
+            (typeMap(name), false)
+          }
+          val xxx = if (signature.<:<(typeOf[ORID])) {
+            document.getIdentity
+          } else {
+            null
+          }
+          if (optional) Option(xxx) else xxx
       }
-    constr(params.map(_.name.toString).map(input).toSeq: _*) // invoke constructor
+    }).toSeq: _*) // invoke constructor
+
   }
 
   // return a human-readable type string for type argument 'T'
@@ -118,7 +161,8 @@ object ReflectionUtils {
 
           case None =>
             OType.ANY
-        }*///TODO support Option type not implemented yet, but in progress
+        }*/
+      //TODO support Option type not implemented yet, but in progress
       case _ =>
         val typeOfClass = getTypeForClass(clazz)
         val annotatedFields: List[(String, List[Annotation])] = onlyFieldsWithAnnotations(typeOfClass).get
@@ -171,9 +215,16 @@ object ReflectionUtils {
     idFieldOpt match {
       case Some(idField) =>
         idField.setAccessible(true)
-        getGenericTypeClass(idField) match {           //TODO check Option ?
-          case Some(generic) => idField.get(cc).asInstanceOf[Option[ORID]]
-          case None => Option(idField.get(cc).asInstanceOf[ORID])
+        getGenericTypeClass(idField) match {
+          case Some(generic) => //Option[ORID]
+            idField.get(cc).asInstanceOf[Option[ORID]]
+          case None => //ORID
+            getTypeForClass(idField.getType) match {
+              case tpe if tpe =:= typeOf[ORID] =>
+                Option(idField.get(cc).asInstanceOf[ORID])
+              case _ =>
+                None
+            }
         }
       case None =>
         None
