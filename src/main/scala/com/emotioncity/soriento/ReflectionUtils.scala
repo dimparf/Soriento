@@ -63,10 +63,12 @@ object ReflectionUtils {
                 m.asScala.toList.map(item => createCaseClassByType(signature.typeArgs.head, item))
               case m => m
             }
-            println("Value type: " + valueType)
+            //println("Value type: " + valueType)
             k -> (if (optional) Some(valueType) else valueType)
         }
     }
+
+    println(s"Input:  $input")
 
     val prms = params.map(_.name.toString).map(name => {
       input.get(name) match {
