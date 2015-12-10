@@ -36,7 +36,7 @@ object ReflectionUtils {
     val constr = constructor(tpe)
     val params = constr.symbol.paramLists.flatten // get constructor params
     val typeMap = params.map(symbol => symbol.name.toString -> symbol.typeSignature).toMap
-    println("TypeMap: " + typeMap)
+    //println("TypeMap: " + typeMap)
 
     def checkOptional(originalSignature: Type): (Type, Boolean) = {
       if (originalSignature.<:<(typeOf[Option[_]])) {
@@ -46,7 +46,7 @@ object ReflectionUtils {
       }
     }
 
-    println(s"inDocument: ${ if (document.field("events") != null) document.field("events").getClass else null }")
+    //println(s"inDocument: ${ if (document.field("events") != null) document.field("events").getClass else null }")
 
     val input = document.toMap.asScala.map {
       case (k, v) =>
@@ -79,11 +79,8 @@ object ReflectionUtils {
                 } else {
                   createCaseClassByType(signature, m)
                 }
-              //case m: OTrackedSet[ODocument] =>
               case m: util.Set[ODocument] =>
-                println("ТЫ ТУТ!")
                 m.asScala.map(item => createCaseClassByType(signature.typeArgs.head, item)).toSet
-              //case m: util.ArrayList[ODocument] =>
               case m: util.List[ODocument] =>
                 m.asScala.toList.map(item => createCaseClassByType(signature.typeArgs.head, item))
               case m => m
@@ -94,26 +91,24 @@ object ReflectionUtils {
     }
 
 
-    println(s"Input:  $input")
-    println(s"Params: $params")
+  /*  println(s"Input:  $input")
+    println(s"Params: $params")*/
     val prms = params.map(_.name.toString).map(name => {
       input.get(name) match {
         case Some(value) =>
-          println(s"Value type name: $name - value: ${value.getClass}")
+          //println(s"Value type name: $name - value: ${value.getClass}")
           value
         case None =>
-          println("Agrh: " + typeMap(name))
           val (signature, optional) = checkOptional(typeMap(name))
           val xxx = if (signature.<:<(typeOf[ORID])) {
             document.getIdentity
           } else {
             null
           }
-          println(s"XXX: $xxx")
           if (optional) Option(xxx) else xxx
       }
     }).toSeq
-    println("Prms: " + prms)
+    //println("Prms: " + prms)
     constr(prms:_*) // invoke constructor
 
   }
