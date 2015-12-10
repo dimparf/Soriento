@@ -46,7 +46,7 @@ object ReflectionUtils {
       }
     }
 
-    println(s"inDocument: ${document.field("events")}")
+    println(s"inDocument: ${ if (document.field("events") != null) document.field("events").getClass else null }")
 
     val input = document.toMap.asScala.map {
       case (k, v) =>
