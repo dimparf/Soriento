@@ -55,6 +55,7 @@ object ReflectionUtils {
               fieldsWithAnnotations.find(pair => pair._2.exists(annotation => annotation.tree.tpe =:= typeOf[Id])) match {
                 case Some(nameAnnotations) =>
                   val keyName = nameAnnotations._1
+                  println(s"Rid fieldName: $keyName")
                   val ridFieldSignature = typeMap.get(keyName).get //safe ?
                   val (signature, optional) = checkOptional(ridFieldSignature)
                   val valueType = v.asInstanceOf[ORID].getIdentity // unsafe, test it, improve it
