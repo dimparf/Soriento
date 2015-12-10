@@ -10,6 +10,7 @@ import com.orientechnologies.orient.core.id.ORID
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 
+import scala.reflect
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
@@ -39,16 +40,36 @@ object ReflectionUtils {
     val params = constr.symbol.paramLists.flatten // get constructor params
     val typeMap = params.map(symbol => symbol.name.toString -> symbol.typeSignature).toMap
     println("TypeMap: " + typeMap)
+
+    def checkOptional(originalSignature: Type): (Type, Boolean) = {
+      if (originalSignature.<:<(typeOf[Option[_]])) {
+        (originalSignature.typeArgs.head, true)
+      } else {
+        (originalSignature, false)
+      }
+    }
+
     val input = document.toMap.asScala.map {
       case (k, v) =>
         typeMap.get(k) match {
-          case None => (k, v)
-          case Some(originalSignature) =>
-            val (signature, optional) = if (originalSignature.<:<(typeOf[Option[_]])) {
-              (originalSignature.typeArgs.head, true)
+          case None =>
+            if (k.equalsIgnoreCase("@rid")) {
+              val fieldsWithAnnotations: List[(String, List[Annotation])] = onlyFieldsWithAnnotations(tpe).get
+              fieldsWithAnnotations.find(pair => pair._2.exists(annotation => annotation.tree.tpe =:= typeOf[Id])) match {
+                case Some(nameAnnotations) =>
+                  val keyName = nameAnnotations._1
+                  val ridFieldSignature = typeMap.get(keyName).get //safe ?
+                  val (signature, optional) = checkOptional(ridFieldSignature)
+                  val valueType = v.asInstanceOf[ORID].getIdentity // unsafe, test it, improve it
+                  keyName -> (if (optional) Option(valueType) else valueType)
+                case None =>
+                  (k, v)
+              }
             } else {
-              (originalSignature, false)
+              (k, v)
             }
+          case Some(originalSignature) =>
+            val (signature, optional) = checkOptional(originalSignature)
             val valueType = v match {
               case m: ODocument =>
                 if (signature.<:<(typeOf[ORID])) {
@@ -78,11 +99,7 @@ object ReflectionUtils {
       input.get(name) match {
         case Some(value) => value
         case None =>
-          val (signature, optional) = if (typeMap(name).<:<(typeOf[Option[_]])) {
-            (typeMap(name).typeArgs.head, true)
-          } else {
-            (typeMap(name), false)
-          }
+          val (signature, optional) = checkOptional(typeMap(name))
           val xxx = if (signature.<:<(typeOf[ORID])) {
             document.getIdentity
           } else {
