@@ -1,6 +1,7 @@
 package com.emotioncity.soriento
 
 import com.emotioncity.soriento.ReflectionUtils._
+import com.emotioncity.soriento.support.OrientDbSupport
 import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.id.ORecordId
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}

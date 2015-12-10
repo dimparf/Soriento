@@ -1,6 +1,6 @@
 package com.emotioncity.soriento
 
-import com.emotioncity.soriento.support.{RemoteOrientDbSupport, TestPooledConfig, OrientDbSupport, TestUnpooledConfig}
+import com.emotioncity.soriento.support.{RemoteOrientDbSupport, OrientDbSupport}
 import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
@@ -14,9 +14,7 @@ import scala.collection.JavaConversions._
   */
 
 
-class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with ODb with RemoteOrientDbSupport {
-
-  implicit val config = TestPooledConfig
+class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with ODb {
 
   test("Dsl should be convert Product to ODocument") {
     val blog = Blog(author = "Arnold", message = Record("Agrh!"))

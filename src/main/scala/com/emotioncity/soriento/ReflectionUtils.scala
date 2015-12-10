@@ -35,6 +35,7 @@ object ReflectionUtils {
     val constr = constructor(tpe)
     val params = constr.symbol.paramLists.flatten // get constructor params
     val typeMap = params.map(symbol => symbol.name.toString -> symbol.typeSignature).toMap
+    //println("TypeMap: " + typeMap)
     val input = document.toMap.asScala.map {
       case (k, v) =>
         typeMap.get(k) match {
@@ -55,16 +56,18 @@ object ReflectionUtils {
                   createCaseClassByType(signature, m)
                 }
               case m: OTrackedSet[ODocument] =>
+              case m: util.Set[ODocument] =>
                 m.asScala.map(item => createCaseClassByType(signature.typeArgs.head, item)).toSet
               case m: util.ArrayList[ODocument] =>
                 m.asScala.toList.map(item => createCaseClassByType(signature.typeArgs.head, item))
               case m => m
             }
+            //println("Value type: " + valueType)
             k -> (if (optional) Some(valueType) else valueType)
         }
     }
 
-    constr(params.map(_.name.toString).map(name => {
+    val prms = params.map(_.name.toString).map(name => {
       input.get(name) match {
         case Some(value) => value
         case None =>
@@ -80,7 +83,9 @@ object ReflectionUtils {
           }
           if (optional) Option(xxx) else xxx
       }
-    }).toSeq: _*) // invoke constructor
+    }).toSeq
+    //println("Params: " + prms)
+    constr(prms:_*) // invoke constructor
 
   }
 

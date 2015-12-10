@@ -1,5 +1,6 @@
 package com.emotioncity.soriento
 
+import com.emotioncity.soriento.support.{RemoteOrientDbSupport, OrientDbSupport}
 import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.metadata.schema.OType
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}

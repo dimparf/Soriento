@@ -1,6 +1,5 @@
 package com.emotioncity.soriento
 
-import com.emotioncity.soriento.config.SorientoConfig
 import com.orientechnologies.orient.core.command.OCommandRequest
 import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
 import com.orientechnologies.orient.core.db.document.{ODatabaseDocument, ODatabaseDocumentTx}
@@ -19,49 +18,60 @@ object RichODatabaseDocumentImpl {
 
   implicit class RichODatabaseDocumentTx(db: ODatabaseDocument) {
 
-    def queryDocumentsBySql(sql: String): List[ODocument] = {
+    def queryDocumentsBySql(sql: String): List[ODocument] = blockingCall { db =>
       val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](sql))
       results.toList
     }
 
-    def queryBySql[T](query: String)(implicit reader: ODocumentReader[T]): List[T] = {
+    def queryBySql[T](query: String)(implicit reader: ODocumentReader[T]): List[T] = blockingCall { db =>
       val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](query))
       results.toList.map(document => reader.read(document))
     }
 
-    def command(query: String): OCommandRequest = {
+    def command(query: String): OCommandRequest = blockingCall { db =>
       db.command[OCommandRequest](new OCommandSQL(query)).execute() //type annotation of return?
     }
 
-    protected def asyncCall[T](x: ODatabaseDocumentTx => T)(implicit config: SorientoConfig): Future[T] = {
+    /**
+      * TODO in OrientDb 2.2 use isPooled method of db instance
+      * thanks orientdb team
+      * @return
+      */
+    def isPooled = db.getClass.getName.equalsIgnoreCase("com.orientechnologies.orient.core.db.OPartitionedDatabasePool$DatabaseDocumentTxPolled")
+
+    protected def blockingCall[T](payload: ODatabaseDocumentTx => T): T = {
+      println("Blocking call")
+      println(if (isPooled) "Database is pooled" else "Database is unpooled")
       val instance = ODatabaseRecordThreadLocal.INSTANCE.get
+      //println("ThreadLocal is: " + instance.getClass.getName)
+      val internalDb = if (isPooled) instance.asInstanceOf[ODatabaseDocumentTx] else instance.asInstanceOf[ODatabaseDocumentTx].copy()
+      payload(internalDb)
+    }
+
+    protected def asyncCall[T](payload: ODatabaseDocumentTx => T): Future[T] = {
+      println("Async call")
+      println(if (isPooled) "Database is pooled" else "Database is unpooled")
+      val instance = ODatabaseRecordThreadLocal.INSTANCE.get
+      //println("ThreadLocal is: " + instance.getClass.getName)
       Future {
-        val internalDb: ODatabaseDocumentTx = if (config.poolIsDefined) {
-          println("Use pooled connection")
-          config.oDatabaseDocumentPool.get.acquire()
+        val internalDb = if (isPooled) {
+          val tempDb = db.asInstanceOf[ODatabaseDocumentTx]
+          tempDb.activateOnCurrentThread()
         } else {
-          println("Create new unpooled connection")
-          ODatabaseRecordThreadLocal.INSTANCE.set(instance)
-          instance.asInstanceOf[ODatabaseDocumentTx].copy
+          instance.asInstanceOf[ODatabaseDocumentTx].copy()
         }
-        try {
-          blocking {
-            x(internalDb)
-          }
-        } finally {
-          if (internalDb != null) {
-            internalDb.close()
-          }
+        blocking {
+          payload(internalDb)
         }
       }
     }
 
-    def asyncQueryBySql(sql: String)(implicit config: SorientoConfig): Future[List[ODocument]] = asyncCall { internalDb =>
+    def asyncQueryBySql(sql: String): Future[List[ODocument]] = asyncCall { internalDb =>
       val results: java.util.List[ODocument] = internalDb.query(new OSQLSynchQuery[ODocument](sql))
       results.toList
     }
 
-    def asyncQueryBySql[T](query: String)(implicit reader: ODocumentReader[T], config: SorientoConfig): Future[List[T]] = asyncCall { internalDb =>
+    def asyncQueryBySql[T](query: String)(implicit reader: ODocumentReader[T]): Future[List[T]] = asyncCall { internalDb =>
       val results: java.util.List[ODocument] = internalDb.query(new OSQLSynchQuery[ODocument](query))
       results.toList.map(document => reader.read(document))
     }
