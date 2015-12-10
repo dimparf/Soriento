@@ -59,6 +59,7 @@ object ReflectionUtils {
               case m: util.Set[ODocument] =>
                 m.asScala.map(item => createCaseClassByType(signature.typeArgs.head, item)).toSet
               case m: util.ArrayList[ODocument] =>
+              case m: util.List[ODocument] =>
                 m.asScala.toList.map(item => createCaseClassByType(signature.typeArgs.head, item))
               case m => m
             }
