@@ -53,5 +53,5 @@ with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with OD
     }
     dropOClass[ClassWithOptionalRid]
   }
-  
+
 }
