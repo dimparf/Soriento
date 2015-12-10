@@ -46,6 +46,8 @@ object ReflectionUtils {
       }
     }
 
+    println(s"inDocument: $document")
+
     val input = document.toMap.asScala.map {
       case (k, v) =>
         typeMap.get(k) match {
