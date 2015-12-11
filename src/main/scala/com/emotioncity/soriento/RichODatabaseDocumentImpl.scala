@@ -40,8 +40,8 @@ object RichODatabaseDocumentImpl {
     def isPooled = db.getClass.getName.equalsIgnoreCase("com.orientechnologies.orient.core.db.OPartitionedDatabasePool$DatabaseDocumentTxPolled")
 
     protected def blockingCall[T](payload: ODatabaseDocumentTx => T): T = {
-      println("Blocking call")
-      println(if (isPooled) "Database is pooled" else "Database is unpooled")
+      /*println("Blocking call")
+      println(if (isPooled) "Database is pooled" else "Database is unpooled")*/
       val instance = ODatabaseRecordThreadLocal.INSTANCE.get
       //println("ThreadLocal is: " + instance.getClass.getName)
       val internalDb = if (isPooled) instance.asInstanceOf[ODatabaseDocumentTx] else instance.asInstanceOf[ODatabaseDocumentTx].copy()
@@ -49,8 +49,8 @@ object RichODatabaseDocumentImpl {
     }
 
     protected def asyncCall[T](payload: ODatabaseDocumentTx => T): Future[T] = {
-      println("Async call")
-      println(if (isPooled) "Database is pooled" else "Database is unpooled")
+      /*println("Async call")
+      println(if (isPooled) "Database is pooled" else "Database is unpooled")*/
       val instance = ODatabaseRecordThreadLocal.INSTANCE.get
       //println("ThreadLocal is: " + instance.getClass.getName)
       Future {
