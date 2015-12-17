@@ -32,6 +32,11 @@ object RichODatabaseDocumentImpl {
       db.command[OCommandRequest](new OCommandSQL(query)).execute() //type annotation of return?
     }
 
+    def saveAs[T](oDocument: ODocument)(implicit reader: ODocumentReader[T]): Option[T] = blockingCall { db =>
+      val savedDocument = db.save[ODocument](oDocument)
+      reader.readOpt(savedDocument)
+    }
+
     /**
       * TODO in OrientDb 2.2 use isPooled method of db instance
       * thanks orientdb team

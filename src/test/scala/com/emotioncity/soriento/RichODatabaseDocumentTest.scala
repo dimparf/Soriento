@@ -54,4 +54,10 @@ with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with OD
     dropOClass[ClassWithOptionalRid]
   }
 
+  test("call save method from implicit") {
+    val model = ClassWithOptionalRid(None, name = "name")
+    val savedModel = orientDb.saveAs[ClassWithOptionalRid](model)
+    println(s"Saved model: $savedModel")
+  }
+
 }
