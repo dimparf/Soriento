@@ -48,7 +48,8 @@ trait Dsl {
                 case item =>
                   item
               }.asJavaCollection
-            case _ => x
+                case Nil => None //TODO fix empty list matching
+                case _ => x
           }
       }
       if (fieldValue != None) {
