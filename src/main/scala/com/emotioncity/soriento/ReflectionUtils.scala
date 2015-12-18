@@ -300,4 +300,7 @@ object ReflectionUtils {
 
   }
 
+  private def isCaseClass(tpe: Type) =
+    tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass
+
 }
