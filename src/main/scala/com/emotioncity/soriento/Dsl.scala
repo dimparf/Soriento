@@ -25,7 +25,7 @@ trait Dsl {
         case p: Product if p.productArity > 0 =>
           p match {
             case Some(value) =>
-              if (isCaseClass(ReflectionUtils.getTypeForClass(value.getClass))) {
+              if (ReflectionUtils.isCaseClass(ReflectionUtils.getTypeForClass(value.getClass))) {
                 productToDocument(value.asInstanceOf[Product])
               } else {
                 value
