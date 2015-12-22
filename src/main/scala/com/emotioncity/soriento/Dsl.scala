@@ -61,7 +61,5 @@ trait Dsl {
     document
   }
 
-  private[this] def isCaseClass(o: Any) = o.getClass.getInterfaces.contains(classOf[scala.Product])
-
 }
 
