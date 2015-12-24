@@ -1,5 +1,7 @@
 package com.emotioncity.soriento
 
+import java.util.Collections
+
 import com.emotioncity.soriento.ReflectionUtils._
 import com.orientechnologies.orient.core.record.impl.ODocument
 
@@ -7,8 +9,8 @@ import scala.collection.JavaConverters._
 
 
 /**
- * Created by stream on 31.10.14.
- */
+  * Created by stream on 31.10.14.
+  */
 trait Dsl {
 
   implicit def productToDocument[T >: Any](cc: Product): ODocument = {
@@ -48,8 +50,9 @@ trait Dsl {
                 case item =>
                   item
               }.asJavaCollection
-                case Nil => None //TODO fix empty list matching
-                case _ => x
+            case Nil =>
+              Collections.emptyList
+            case _ => x
           }
       }
       if (fieldValue != None) {

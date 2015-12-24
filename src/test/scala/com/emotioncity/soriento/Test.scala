@@ -1,22 +1,18 @@
 package com.emotioncity.soriento
-/*
-import com.emotioncity.soriento.testmodels.{Complex, Simple}
-import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal*/
+
+import com.emotioncity.soriento.testmodels.{CCRecursive, Complex, Simple}
+import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
+import com.orientechnologies.orient.core.metadata.schema.OType
+import com.orientechnologies.orient.core.record.impl.ODocument
+import java.util.{ArrayList => JAList}
 
 /**
  * Created by stream on 14.07.15.
  */
-object TestApp extends App /*with Dsl with ODb*/ {
-/*  import ODocumentReader._
-  ODatabaseRecordThreadLocal.INSTANCE.set(orientDb)
-  createOClass[Complex]
-  val complex = Complex(12, Simple("test"), "testString", List(Simple("test2"), Simple("test3")))
-  val complexDoc = productToDocument(complex)
-  println("Generated complexDoc: " + complexDoc)
-  complexDoc.save()*/
-  val classLoader = new Object().getClass.getClassLoader
-  val field = classOf[ClassLoader].getDeclaredField("classes")
-  field.setAccessible(true)
-
-  val classes =  field.get(classLoader) //asVector[Class]
+object TestApp extends App with Dsl with ODb {
+  val oClass = createOClass[CCRecursive]
+  println(s"OClass: $oClass")
+  val doc = new ODocument("CCRecursive")
+  doc.field("sField", "string").field("rList", new JAList(), OType.LINKLIST).save()
+  println(s"Document: $doc")
 }

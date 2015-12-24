@@ -1,11 +1,14 @@
 package com.emotioncity.soriento
 
-import com.emotioncity.soriento.support.{RemoteOrientDbSupport, OrientDbSupport}
+import java.util.{List => JList, Set => JSet}
+
+import com.emotioncity.soriento.RichODocumentImpl._
 import com.emotioncity.soriento.testmodels._
+import com.orientechnologies.orient.core.id.ORecordId
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
-import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
+import org.scalatest._
 
 import scala.collection.JavaConversions._
 
@@ -14,7 +17,7 @@ import scala.collection.JavaConversions._
   */
 
 
-class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with ODb {
+class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with ODb with Inspectors with Inside {
 
   test("Dsl should be convert Product to ODocument") {
     val blog = Blog(author = "Arnold", message = Record("Agrh!"))
@@ -104,6 +107,74 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     simpleDoc.fieldType("sField") should equal(OType.STRING)
   }
 
+  test("serialize case class with linked fields") {
+    val simple = Simple("simple")
+    val simpleLinkedList = List(Simple("inlist1"), Simple("inlist2"))
+    val simpleLinkedSet = Set(Simple("inset1"), Simple("inset2"), Simple("inset3"))
+    val ccWithAllSupportedLinkedTypes = CCWithAllSupportedLinkedTypes(None, simple, simpleLinkedList, simpleLinkedSet)
+    val doc = productToDocument(ccWithAllSupportedLinkedTypes)
+    doc.save
+    doc.getClassName should equal("CCWithAllSupportedLinkedTypes")
+
+    val simpleDoc = doc.field[ODocument]("simple")
+    simpleDoc.getClassName should equal("Simple")
+    simpleDoc.getIdentity should not equal ORecordId.EMPTY_RECORD_ID
+    doc.fieldType("simple") should equal(OType.LINK)
+    simpleDoc.field[String]("sField") should equal("simple")
+    simpleDoc.fieldType("sField") should equal(OType.STRING)
+
+    val simpleLinkedListDoc = doc.field[JList[ODocument]]("list")
+    simpleLinkedListDoc shouldBe a[JList[_]]
+    doc.fieldType("list") should equal(OType.LINKLIST)
+    simpleLinkedListDoc should have size 2
+    forAll(simpleLinkedListDoc) { sDoc =>
+      sDoc.getClassName should equal("Simple")
+      sDoc.getIdentity should not equal ORecordId.EMPTY_RECORD_ID
+      sDoc.fieldType("sField") should equal(OType.STRING)
+    }
+
+    val simpleLinkedSetDoc = doc.field[JSet[ODocument]]("set")
+    simpleLinkedSetDoc shouldBe a[JSet[_]]
+    doc.fieldType("set") should equal(OType.LINKSET)
+    simpleLinkedSetDoc should have size 3
+    forAll(simpleLinkedSetDoc) { sDoc =>
+      sDoc.getClassName should equal("Simple")
+      sDoc.getIdentity should not equal ORecordId.EMPTY_RECORD_ID
+      sDoc.fieldType("sField") should equal(OType.STRING)
+    }
+  }
+
+  test("recurcive serialization") {
+    createOClass[CCRecursive]
+    val ccRecursiveWithNil = CCRecursive(None, "string", List(CCRecursive(None, "s2", Nil)))
+    val doc = productToDocument(ccRecursiveWithNil)
+    doc.save
+    doc.getClassName should equal("CCRecursive")
+    doc.getIdentity should not equal ORecordId.EMPTY_RECORD_ID
+    val rList = doc.field[JList[ODocument]]("rList")
+    rList shouldBe a[JList[_]]
+    doc.fieldType("rList") should equal(OType.LINKLIST)
+    forAll(rList) { ccDoc =>
+      ccDoc.getClassName should equal("CCRecursive")
+      ccDoc.field[String]("sField") should equal("s2")
+      ccDoc.field[JList[ODocument]]("rList") shouldBe a[JList[_]]
+      ccDoc.getIdentity should not equal ORecordId.EMPTY_RECORD_ID
+    }
+
+    val backed = doc.as[CCRecursive].get
+    inside(backed) { case CCRecursive(id, sField, list) =>
+      id shouldBe defined
+      sField should equal("string")
+      list shouldBe a[List[_]]
+      list should have size 1
+      val innerCC = list.head
+      innerCC shouldBe a[CCRecursive]
+      innerCC.id shouldBe defined
+      innerCC.sField should equal("s2")
+      innerCC.rList shouldBe a[List[_]]
+      innerCC.rList should have size 0
+    }
+  }
 
   after {
     dropOClass[Blog]
@@ -112,6 +183,8 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     dropOClass[Checkin]
     dropOClass[Simple]
     dropOClass[BlogWithEmbeddedListMessages]
+    dropOClass[CCWithAllSupportedLinkedTypes]
+    dropOClass[CCRecursive]
     dropOClass[Message]
   }
 
