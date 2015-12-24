@@ -25,8 +25,8 @@ lazy val commonSettings = Seq(
   ),
 libraryDependencies ++= Seq(
   "com.tinkerpop.blueprints" % "blueprints-core" % "2.6.0",
-  "com.orientechnologies" % "orientdb-core" % "2.1.7",
-  "com.orientechnologies" % "orientdb-graphdb" % "2.1.7",
+  "com.orientechnologies" % "orientdb-core" % "2.1.8",
+  "com.orientechnologies" % "orientdb-graphdb" % "2.1.8",
   "org.scala-lang" % "scalap" % "2.11.7", //TODO fix scala dep on scalaVersion
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
   "org.scalatest" %% "scalatest" % "2.2.5" % "test",
