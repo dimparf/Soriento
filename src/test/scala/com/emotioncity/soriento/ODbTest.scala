@@ -121,4 +121,21 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     longFieldTypeP should equal(OType.LONG)
   }
 
+  test("Behavior: create OClass by case class structure if it not exists else do nothing") {
+    createOClass[Simple]
+    schema.existsClass("Simple") shouldBe true
+    createOClass[Simple]
+    schema.existsClass("Simple") shouldBe true
+    createOClass[Complex]
+    schema.existsClass("Complex") shouldBe true
+    createOClass[Complex]
+    schema.existsClass("Complex") shouldBe true
+    schema.existsClass("Simple") shouldBe true
+    dropOClass[Complex] shouldBe true
+    schema.existsClass("Complex") shouldBe false
+    schema.existsClass("Simple") shouldBe true
+    dropOClass[Simple] shouldBe true
+    schema.existsClass("Simple") shouldBe false
+  }
+
 }
