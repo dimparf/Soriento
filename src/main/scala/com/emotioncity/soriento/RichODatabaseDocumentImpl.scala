@@ -56,6 +56,7 @@ object RichODatabaseDocumentImpl {
     protected def asyncCall[T](payload: ODatabaseDocumentTx => T): Future[T] = {
       /*println("Async call")
       println(if (isPooled) "Database is pooled" else "Database is unpooled")*/
+      db.activateOnCurrentThread()
       val instance = ODatabaseRecordThreadLocal.INSTANCE.get
       //println("ThreadLocal is: " + instance.getClass.getName)
       Future {

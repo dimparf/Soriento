@@ -21,16 +21,17 @@ trait Dsl {
     //println(s"document rid: ${document.getIdentity}")
     val values = cc.productIterator
     val fieldList = cc.getClass.getDeclaredFields.toList
-    fieldList.foreach { field =>
+    val purifiedFromId = values.zip(fieldList.iterator).toList.filter { case (v, f) => !isId(f.getName, cc.getClass) }
+    purifiedFromId.foreach { case (value, field) =>
       val fieldName = field.getName
-      val fieldValue = values.next() match {
+      val fieldValue = value match {
         case p: Product if p.productArity > 0 =>
           p match {
-            case Some(value) =>
-              if (ReflectionUtils.isCaseClass(ReflectionUtils.getTypeForClass(value.getClass))) {
-                productToDocument(value.asInstanceOf[Product])
+            case Some(v) =>
+              if (ReflectionUtils.isCaseClass(ReflectionUtils.getTypeForClass(v.getClass))) {
+                productToDocument(v.asInstanceOf[Product])
               } else {
-                value
+                v
               }
             case _: List[_] =>
               p.asInstanceOf[List[_]].map {
@@ -63,6 +64,13 @@ trait Dsl {
     }
     document
   }
+
+  /*
+
+    def saveAs[T](implicit reader: ODocumentReader[T], orientDb: ODatabaseDocument): Option[T] = {
+      import RichODatabaseDocumentImpl._
+      orientDb.saveAs[T](oDocument)
+    }*/
 
 }
 
