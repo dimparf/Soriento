@@ -11,7 +11,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
   * Created by stream on 02.12.15.
   */
 class RichODatabaseDocumentTest extends FunSuite
-with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with OrientDbSupport with ODb {
+with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with ODb {
 
   import ODocumentReader._
 

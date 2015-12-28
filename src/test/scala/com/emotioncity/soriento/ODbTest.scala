@@ -1,5 +1,6 @@
 package com.emotioncity.soriento
 
+import com.emotioncity.soriento.support.{RemoteOrientDbSupport, OrientDbSupport}
 import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.metadata.schema.OType
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -18,8 +19,11 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     dropOClass[Test]
     dropOClass[Message]
     dropOClass[BlogWithLinkedMessage]
+    dropOClass[LinkedMessage]
     dropOClass[BlogWithEmbeddedMessages]
     dropOClass[BlogWithLinkSetMessages]
+    dropOClass[ClassWithOptionalField]
+    dropOClass[ClassWithOptionalPrimitiveField]
   }
 
   test("ODb should be create OClass with name in OrientDb") {
@@ -115,6 +119,23 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     createdOClassP.existsProperty("longValue") shouldBe true
     val longFieldTypeP = createdOClassP.getProperty("longValue").getType
     longFieldTypeP should equal(OType.LONG)
+  }
+
+  test("Behavior: create OClass by case class structure if it not exists else do nothing") {
+    createOClass[Simple]
+    schema.existsClass("Simple") shouldBe true
+    createOClass[Simple]
+    schema.existsClass("Simple") shouldBe true
+    createOClass[Complex]
+    schema.existsClass("Complex") shouldBe true
+    createOClass[Complex]
+    schema.existsClass("Complex") shouldBe true
+    schema.existsClass("Simple") shouldBe true
+    dropOClass[Complex] shouldBe true
+    schema.existsClass("Complex") shouldBe false
+    schema.existsClass("Simple") shouldBe true
+    dropOClass[Simple] shouldBe true
+    schema.existsClass("Simple") shouldBe false
   }
 
 }

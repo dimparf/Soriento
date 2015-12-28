@@ -1,5 +1,7 @@
 package com.emotioncity.soriento
 
+import java.util.Collections
+
 import com.emotioncity.soriento.ReflectionUtils._
 import com.orientechnologies.orient.core.record.impl.ODocument
 
@@ -7,8 +9,8 @@ import scala.collection.JavaConverters._
 
 
 /**
- * Created by stream on 31.10.14.
- */
+  * Created by stream on 31.10.14.
+  */
 trait Dsl {
 
   implicit def productToDocument[T >: Any](cc: Product): ODocument = {
@@ -25,7 +27,7 @@ trait Dsl {
         case p: Product if p.productArity > 0 =>
           p match {
             case Some(value) =>
-              if (isCaseClass(value)) {
+              if (ReflectionUtils.isCaseClass(ReflectionUtils.getTypeForClass(value.getClass))) {
                 productToDocument(value.asInstanceOf[Product])
               } else {
                 value
@@ -48,6 +50,8 @@ trait Dsl {
                 case item =>
                   item
               }.asJavaCollection
+            case Nil =>
+              Collections.emptyList
             case _ => x
           }
       }
@@ -59,8 +63,6 @@ trait Dsl {
     }
     document
   }
-
-  private[this] def isCaseClass(o: Any) = o.getClass.getInterfaces.contains(classOf[scala.Product])
 
 }
 

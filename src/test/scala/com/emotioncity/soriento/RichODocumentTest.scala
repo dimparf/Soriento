@@ -4,7 +4,6 @@ import java.util
 
 import com.emotioncity.soriento.RichODatabaseDocumentImpl._
 import com.emotioncity.soriento.RichODocumentImpl._
-import com.emotioncity.soriento.support.OrientDbSupport
 import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
@@ -15,7 +14,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
   * Created by stream on 31.03.15.
   */
 
-class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with Inside with Dsl with OrientDbSupport
+class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with Inside with Dsl
 with ODb {
 
   import ODocumentReader._

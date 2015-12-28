@@ -1,6 +1,7 @@
 package com.emotioncity.soriento
 
 import com.emotioncity.soriento.ReflectionUtils._
+import com.emotioncity.soriento.support.OrientDbSupport
 import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.id.ORecordId
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -13,18 +14,6 @@ import scala.reflect.runtime.universe._
 
 
 class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter {
-
-  // Test is too raw
-  //  test("it should be create instance of case class by name simple and recursively") {
-  //    val simpleMap = Map("sField" -> "Test field")
-  //    val simpleCaseClass = createCaseClass[Simple](simpleMap)
-  //    simpleCaseClass should equal(Simple("Test field"))
-  //
-  //    val complexMap = Map("iField" -> 2, "sField" -> "tt", "simple" -> Map("sField" -> "Simple"), "listField" -> List(Simple("Simple")))
-  //    val complexCaseClass = createCaseClass[Complex](complexMap)
-  //    val simple = Simple("Simple")
-  //    complexCaseClass should equal(Complex(2, simple, sField = "tt", List(simple)))
-  //  }
 
   test("detect ORID in case class instance") {
     val complexWithRid = ComplexWithRid(id = ORecordId.EMPTY_RECORD_ID, 1, Simple("tt"), "tt", Nil)
