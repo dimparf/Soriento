@@ -8,9 +8,12 @@ Soriento
 
 Soriento is an object-relational mapping framework from scala case classes to OrientDb ODocument.
 ##News
- - Support LinkSet, LinkList annotated fields
- - ODocumentReader auto creation (thanks b0c1)
- - Async query support (thanks b0c1)
+- Pre-maven 0.1.0alpha release
+- fix LinkSet deserialization
+- add saveAs[T](document) to RichODatabaseDocument
+- fix recursive serialization
+- fix primitive type OType detection
+- update OrientDb dependencies
  
 ##Note
 Please use develop branch for development and master as production version of library.
