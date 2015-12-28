@@ -64,5 +64,12 @@ trait Dsl {
     document
   }
 
+  /*
+    * TODO implement it
+    def saveAs[T](implicit reader: ODocumentReader[T], orientDb: ODatabaseDocument): Option[T] = {
+      import RichODatabaseDocumentImpl._
+      orientDb.saveAs[T](oDocument)
+    }*/
+
 }
 
