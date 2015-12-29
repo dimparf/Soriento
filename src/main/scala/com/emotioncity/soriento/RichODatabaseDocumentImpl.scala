@@ -28,8 +28,8 @@ object RichODatabaseDocumentImpl {
       results.toList.map(document => reader.read(document))
     }
 
-    def command(query: String): OCommandRequest = blockingCall { db =>
-      db.command[OCommandRequest](new OCommandSQL(query)).execute() //type annotation of return?
+    def commandRequest[RET <: Any](query: String): RET = blockingCall { db =>
+      db.command(new OCommandSQL(query)).execute[RET]()
     }
 
     def saveAs[T](oDocument: ODocument)(implicit reader: ODocumentReader[T]): Option[T] = blockingCall { db =>
