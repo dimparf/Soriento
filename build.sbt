@@ -6,7 +6,7 @@ lazy val commonSettings = Seq(
   name := "Soriento",
   organization := "com.emotioncity",
   version := "0.1.0-SNAPSHOT",
-  scalaVersion := "2.11.7",
+  scalaVersion := "2.11.8",
   //coverageEnabled := true,
   offline := false,
   fork in run := true,
@@ -27,7 +27,7 @@ libraryDependencies ++= Seq(
   "com.tinkerpop.blueprints" % "blueprints-core" % "2.6.0",
   "com.orientechnologies" % "orientdb-core" % "2.1.8",
   "com.orientechnologies" % "orientdb-graphdb" % "2.1.8",
-  "org.scala-lang" % "scalap" % "2.11.7", //TODO fix scala dep on scalaVersion
+  "org.scala-lang" % "scalap" % "2.11.8", //TODO fix scala dep on scalaVersion
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
   "org.scalatest" %% "scalatest" % "2.2.5" % "test",
   "org.specs2" %% "specs2" % "2.3.13" % "test"
