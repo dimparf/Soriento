@@ -18,6 +18,23 @@ Soriento is an object-relational mapping framework from scala case classes to Or
 ##Note
 Please use develop branch for development and master as production version of library.
 
+##New: Polymorphic loading (by class name)
+
+See PolyMorphicLoadByNameTest.scala
+```
+    val teSchema = List(db.getMetadata().getSchema().createClass("TraceElement")).asJava
+    createOClass[TraceElementViewEvent].setSuperClasses(teSchema)
+    createOClass[TraceElementLoginEvent].setSuperClasses(teSchema)
+
+    db.save(new TraceElementLoginEvent(123, LoginEvent(1000)))
+    db.save(new TraceElementViewEvent(124, ViewEvent(1000, 99)))
+
+    val blogs: List[TraceElement] = db.queryAnyBySql[TraceElement]("select * from TraceElement;")
+```
+To achieve this, type names need to be loaded into a registry before the query.
+
+TODO. Dynamically load types from a set of packages if not found.
+
 ## Features
 
  - Creating/deleting OrientDb classes by case classes.
