@@ -20,8 +20,9 @@ object ReflectionUtils {
 
   import scala.collection.JavaConverters._
 
+  private val m = runtimeMirror(getClass.getClassLoader)
+
   def constructor(t: Type): MethodMirror = {
-    val m = runtimeMirror(getClass.getClassLoader)
     m.reflectClass(t.typeSymbol.asClass).reflectConstructor(t.decl(termNames.CONSTRUCTOR).asMethod)
   }
 

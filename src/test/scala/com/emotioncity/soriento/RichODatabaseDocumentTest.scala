@@ -2,24 +2,16 @@ package com.emotioncity.soriento
 
 import com.emotioncity.soriento.RichODatabaseDocumentImpl._
 import com.emotioncity.soriento.RichODocumentImpl._
-import com.emotioncity.soriento.support.{OrientDbSupport, RemoteOrientDbSupport}
+import com.emotioncity.soriento.support.OrientDbSupport
 import com.emotioncity.soriento.testmodels.ClassWithOptionalRid
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
-
-import scala.concurrent.{Future, blocking}
-import scala.concurrent.ExecutionContext.Implicits.global
-
 
 /**
   * Created by stream on 02.12.15.
   */
 class RichODatabaseDocumentTest extends FunSuite
 with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with ODb {
-
-  implicit val defaultPatience =
-    PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
   import ODocumentReader._
 
@@ -51,13 +43,6 @@ with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with OD
       savedModels shouldBe a[List[_]]
       savedModels should have size 3
     }
-    dropOClass[ClassWithOptionalRid]
   }
-
-  test("call save method from implicit") {
-    val model = ClassWithOptionalRid(None, name = "name")
-    val savedModel = orientDb.saveAs[ClassWithOptionalRid](model)
-    println(s"Saved model: $savedModel")
-  }
-
+  dropOClass[ClassWithOptionalRid]
 }
