@@ -49,7 +49,7 @@ object RichODatabaseDocumentImpl {
       println(if (isPooled) "Database is pooled" else "Database is unpooled")*/
       val instance = ODatabaseRecordThreadLocal.INSTANCE.get
       //println("ThreadLocal is: " + instance.getClass.getName)
-      val internalDb = if (isPooled) instance.asInstanceOf[ODatabaseDocumentTx] else instance.asInstanceOf[ODatabaseDocumentTx].copy()
+      val internalDb = if (!isPooled) instance.asInstanceOf[ODatabaseDocumentTx] else instance.asInstanceOf[ODatabaseDocumentTx].copy()
       payload(internalDb)
     }
 
