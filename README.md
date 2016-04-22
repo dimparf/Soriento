@@ -29,11 +29,19 @@ See PolyMorphicLoadByNameTest.scala
     db.save(new TraceElementLoginEvent(123, LoginEvent(1000)))
     db.save(new TraceElementViewEvent(124, ViewEvent(1000, 99)))
 
+
+    // TODO: Discover on demand from package
+    val typeReaders = ClassNameReadersRegistry()
+    typeReaders.add[TraceElementLoginEvent]
+    typeReaders.add[TraceElementViewEvent]
+
+    implicit val reader = new ByClassNameODocumentReader(typeReaders)
+    import AnyRichODatabaseDocumentImpl._
+
     val blogs: List[TraceElement] = db.queryAnyBySql[TraceElement]("select * from TraceElement;")
 ```
 To achieve this, type names need to be loaded into a registry before the query.
 
-TODO. Dynamically load types from a set of packages if not found.
 
 ## Features
 
