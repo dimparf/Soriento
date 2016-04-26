@@ -20,7 +20,7 @@ Please use develop branch for development and master as production version of li
 
 ##New: Polymorphic loading (by class name)
 
-See PolyMorphicLoadByNameTest.scala
+See PolyMorphicLoadByNameTest.scala : "Polymorphic"
 ```
     val teSchema = List(db.getMetadata().getSchema().createClass("TraceElement")).asJava
     createOClass[TraceElementViewEvent].setSuperClasses(teSchema)
@@ -40,7 +40,7 @@ See PolyMorphicLoadByNameTest.scala
 
     val blogs: List[TraceElement] = db.queryAnyBySql[TraceElement]("select * from TraceElement;")
 ```
-To achieve this, type names need to be loaded into a registry before the query.
+To achieve this, type names need to be loaded into the typeReaders registry before the query.
 
 
 ## Features

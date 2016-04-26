@@ -35,7 +35,7 @@ trait Dsl {
     val fieldList = ctorParams
     val values = cc.productIterator // Are matched to field
 
-    var rid: Option[ORID] = null
+    var rid: Option[ORID] = None
 
     // Collect the (value,field) pairs.
     // Id fields are eliminated since they are provided directly in the document's constructor.
@@ -85,7 +85,7 @@ trait Dsl {
     purifiedFromId.foreach { case (value, field) =>
       val fieldName = field.name.decodedName.toString
       val fieldValue = scalaFieldToDocumentField(value)
-      if (fieldValue != None) {
+      if (fieldValue != null) {
         // Works for polymorphic types?
         val oType: OType = getOType(field)
         //println(s"DOC:${document.getClassName}.${fieldName} = ${fieldValue}    ${oType}")
