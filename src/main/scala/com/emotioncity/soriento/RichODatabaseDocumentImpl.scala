@@ -39,7 +39,7 @@ object RichODatabaseDocumentImpl {
 
     /**
       * TODO in OrientDb 2.2 use isPooled method of db instance
-      * thanks orientdb team
+      * thanks orientdb team for patch.
       * @return
       */
     def isPooled = db.getClass.getName.equalsIgnoreCase("com.orientechnologies.orient.core.db.OPartitionedDatabasePool$DatabaseDocumentTxPolled")
@@ -48,7 +48,7 @@ object RichODatabaseDocumentImpl {
       /*println("Blocking call")
       println(if (isPooled) "Database is pooled" else "Database is unpooled")*/
       val instance = ODatabaseRecordThreadLocal.INSTANCE.get
-      //println("ThreadLocal is: " + instance.getClass.getName)
+      println("ThreadLocal is: " + instance.getClass.getName)
       val internalDb = if (isPooled) instance.asInstanceOf[ODatabaseDocumentTx] else instance.asInstanceOf[ODatabaseDocumentTx].copy()
       payload(internalDb)
     }
