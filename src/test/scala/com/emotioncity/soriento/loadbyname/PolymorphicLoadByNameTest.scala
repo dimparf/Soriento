@@ -4,9 +4,9 @@ import javax.persistence.Id
 
 import com.emotioncity.soriento.annotations._
 import com.emotioncity.soriento.{Dsl, ODb, ReflectionUtils}
-import com.orientechnologies.orient.client.remote.OServerAdmin
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.id.ORID
+import ODBUtil._
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 import scala.reflect.runtime.universe._
@@ -105,71 +105,8 @@ package reflectmodels {
 
 }
 
+
 class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAfter with ODb with Dsl {
-
-
-  def ensureNewRemoteDB(host: String,
-                        dbName: String,
-                        user: String = "admin",
-                        pass: String = "admin",
-                        remoteDBStorage: String = "plocal",
-                        dbType: String = "document",
-                        dropIfExists: Boolean = false): Unit = {
-    val server = new OServerAdmin(s"remote:${host}/${dbName}").connect(user, pass)
-
-    try {
-      val exists = server.listDatabases.asScala.contains(dbName)
-      if (exists) {
-        if (dropIfExists) {
-          println("DROP!")
-          server.dropDatabase(dbName)
-          server.createDatabase(dbName, dbType, remoteDBStorage)
-        }
-        // Already exists
-      }
-      else {
-        server.createDatabase(dbName, dbType, remoteDBStorage)
-      }
-    }
-    finally {
-      server.close()
-    }
-  }
-
-
-  def makeTestDB() = {
-    if (true) {
-
-      val db: ODatabaseDocumentTx = new ODatabaseDocumentTx("memory:testdb")
-      db.create()
-      db
-
-    } else {
-      // Remote DB
-      // This is useful for checking that serialization actually happens.
-      val dbHost = "orientdb"
-      val dbName = "stu"
-      val dbUser = "root"
-      val dbPass = ""
-
-      ensureNewRemoteDB(dbHost, dbName, dbUser, dbPass, remoteDBStorage = "plocal", dropIfExists = true)
-      new ODatabaseDocumentTx(s"remote:${dbHost}/${dbName}").open(dbUser, dbPass)
-    }
-  }
-
-  def withDropDB(dbFactory: => ODatabaseDocumentTx)(func: ODatabaseDocumentTx => Unit): Unit = {
-    val db = dbFactory
-    try {
-      func(db)
-    } finally {
-      if (!db.isClosed) {
-        if (!db.isActiveOnCurrentThread) {
-          db.activateOnCurrentThread()
-        }
-        db.drop()
-      }
-    }
-  }
 
   test("Read write Basics") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>

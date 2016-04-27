@@ -77,9 +77,9 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
     * @tparam T
     * @return
     */
-  def add[T](implicit tag: TypeTag[T]): DocToObjectFunc = add(tag.tpe)
+  def add[T](implicit tag: TypeTag[T]): DocToObjectFunc = addType(tag.tpe)
 
-  def add(tpe: Type): DocToObjectFunc = {
+  def addType(tpe: Type): DocToObjectFunc = {
     val name = classNamer(tpe)
 
     _types.get(name) match {
@@ -320,7 +320,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
 
       case typ if typ.typeSymbol.isClass => {
         // Ensure there's readers for component types
-        this.add(typ)
+        this.addType(typ)
 
         { value: Any => this.createClassByDocumentClassName(value.asInstanceOf[ODocument]) }
       }

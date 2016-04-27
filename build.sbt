@@ -28,6 +28,8 @@ libraryDependencies ++= Seq(
   "com.orientechnologies" % "orientdb-core" % "2.1.8",
   "com.orientechnologies" % "orientdb-graphdb" % "2.1.8",
   "org.scala-lang" % "scalap" % "2.11.8", //TODO fix scala dep on scalaVersion
+  //"jline" % "jline" % "2.12.1",
+  "jline" % "jline" % "0.9.94",
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
   "org.scalatest" %% "scalatest" % "2.2.5" % "test",
   "org.specs2" %% "specs2" % "2.3.13" % "test"
