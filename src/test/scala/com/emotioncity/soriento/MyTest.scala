@@ -26,14 +26,14 @@ class QueryAfterSaveTest extends FunSuite with Matchers with BeforeAndAfter with
       db.save(blog)
       db.save(blog)
       val blogs: List[Blog] = db.queryBySql[Blog]("select from blog")
-      println(blogs)
-      println(blogs.size)
 
       val blog2 = Blog(author = "Arnold2", message = Record("Agrh2!"))
       db.save(blog2)
-      // This test that the DB is not closed here (previously was)
+      
+      // Tests that the DB is not closed here (previously was failing)
+      db.isActiveOnCurrentThread should be(true)
+
       val blogs2: List[Blog] = db.queryBySql[Blog]("select from blog")
-      println(blogs2)
     } finally {
       db.drop()
     }
