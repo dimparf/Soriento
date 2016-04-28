@@ -20,10 +20,14 @@ object ReflectionUtils {
 
   import scala.collection.JavaConverters._
 
+  val mirror = runtimeMirror(getClass.getClassLoader)
+
   def constructor(t: Type): MethodMirror = {
-    val m = runtimeMirror(getClass.getClassLoader)
-    m.reflectClass(t.typeSymbol.asClass).reflectConstructor(t.decl(termNames.CONSTRUCTOR).asMethod)
+    val ctr = t.decl(termNames.CONSTRUCTOR)
+    mirror.reflectClass(t.typeSymbol.asClass).reflectConstructor(ctr.asMethod)
   }
+
+  def constructorParams(t: Type) = constructor(t).symbol.paramLists.flatten
 
   def createCaseClass[T](map: ODocument)(implicit tag: TypeTag[T]): T = {
     val tpe = typeOf[T]
@@ -129,6 +133,7 @@ object ReflectionUtils {
 
   /**
     * Powerful for determine type of Generic
+    *
     * @tparam T generic type
     * @return scala.reflect.runtime.universe.Type
     */
@@ -140,6 +145,25 @@ object ReflectionUtils {
     val runtimeMirrorT = runtimeMirror(clazz.getClassLoader)
     runtimeMirrorT.classSymbol(clazz).toType
   }
+
+
+  def erasedObjectType(obj: Any): Type = mirror.reflect(obj).symbol.toType
+
+  /**
+    * NB. Ordering is reverse of what you might expect.
+    * Also, the case accessors hide the annotation information.
+    *
+    * @param typ
+    * @return
+    */
+  def caseAccessors(typ: Type): Iterable[MethodSymbol] = typ.members.collect {
+    case m: MethodSymbol if m.isCaseAccessor => m
+  }
+
+  def caseAccessorsFromObject(obj: AnyRef): Iterable[MethodSymbol] = caseAccessors(erasedObjectType(obj))
+
+  def caseAccessorsT[T: TypeTag]() = caseAccessors(typeOf[T])
+
 
   def fieldsWithAnnotations(tpe: Type): Option[List[(String, List[Annotation])]] = {
     val companionSymbol = tpe.typeSymbol.companion
@@ -160,6 +184,48 @@ object ReflectionUtils {
       .collectFirst { case method: MethodSymbol if method.name.toString == "apply" =>
         method.paramLists.head.map(p => p.name.toString -> p.annotations).filter(t => t._2.nonEmpty)
       }
+  }
+
+  private def getOTypeBySymbolAnnotationOnly(symbol: Symbol): Option[OType] = {
+    // TODO. Validate that symbol.type is Set, List and Maps where specified.
+    symbol.annotations.collectFirst {
+      case tpe if tpe.tree.tpe =:= typeOf[Embedded] => OType.EMBEDDED
+      case tpe if tpe.tree.tpe =:= typeOf[Linked] => OType.LINK
+      case tpe if tpe.tree.tpe =:= typeOf[LinkSet] => OType.LINKSET
+      case tpe if tpe.tree.tpe =:= typeOf[LinkList] => OType.LINKLIST
+      case tpe if tpe.tree.tpe =:= typeOf[EmbeddedSet] => OType.EMBEDDEDSET
+      case tpe if tpe.tree.tpe =:= typeOf[EmbeddedList] => OType.EMBEDDEDLIST
+    }
+  }
+
+  def getOTypeByType(typ: Type): OType = {
+    typ match {
+      case tpe if tpe <:< typeOf[Option[_]] => getOTypeByType(tpe.typeArgs(0))
+      case tpe if typ <:< typeOf[Boolean] => OType.BOOLEAN
+      case tpe if typ <:< typeOf[Int] => OType.INTEGER
+      case tpe if typ <:< typeOf[Long] => OType.LONG
+      case tpe if typ <:< typeOf[Short] => OType.SHORT
+      case tpe if typ <:< typeOf[Double] => OType.DOUBLE
+      case tpe if typ <:< typeOf[Float] => OType.FLOAT
+      //case tpe if typ <:< typeOf[Char] => OType.CHARACTER
+      case tpe if typ <:< typeOf[String] => OType.STRING
+      case tpe if typ <:< typeOf[java.lang.Boolean] => OType.BOOLEAN
+      case tpe if typ <:< typeOf[java.lang.Integer] => OType.INTEGER
+      case tpe if typ <:< typeOf[java.lang.Long] => OType.LONG
+      case tpe if typ <:< typeOf[java.lang.Short] => OType.SHORT
+      case tpe if typ <:< typeOf[java.lang.Double] => OType.DOUBLE
+      case tpe if typ <:< typeOf[java.lang.Float] => OType.FLOAT
+      //case tpe if typ <:< typeOf[java.lang.Character] => OType.CHARACTER
+      case tpe if typ <:< typeOf[java.util.Date] => OType.DATE
+      case _ =>  OType.ANY
+    }
+  }
+
+  def getOType[T](parameterSymbol: Symbol): OType = {
+    getOTypeBySymbolAnnotationOnly(parameterSymbol) match {
+      case Some(annotationOType) => annotationOType
+      case None => getOTypeByType(parameterSymbol.asTerm.typeSignature)
+    }
   }
 
   def getOType[T](inName: String, field: Field)(implicit tag: ClassTag[T]): OType = {
@@ -223,6 +289,10 @@ object ReflectionUtils {
     }
   }
 
+  def hasAnnotation(symbol: Symbol, annotation: Type) = symbol.annotations.exists(_.tree.tpe =:= annotation)
+
+  def isId(symbol: Symbol) = hasAnnotation(symbol: Symbol, typeOf[Id])
+
   def isId(name: String, clazz: Class[_]): Boolean = {
     val typeOfClass = getTypeForClass(clazz)
     val maybeFieldsWithAnnotations: Option[List[(String, List[Annotation])]] = onlyFieldsWithAnnotations(typeOfClass)
@@ -236,6 +306,7 @@ object ReflectionUtils {
   /**
     * Get RID if it present in object
     * TODO: More type safe!
+    *
     * @param cc case class
     * @return None if RID does not exist else Some(rid)
     */
@@ -264,6 +335,7 @@ object ReflectionUtils {
 
   /**
     * Do not use this method. It is broken, return None for boxing java types (Double, Boolean, etc)
+    *
     * @param field field of constructor
     * @return
     */

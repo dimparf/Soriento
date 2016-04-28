@@ -8,12 +8,40 @@ Soriento
 
 Soriento is an object-relational mapping framework from scala case classes to OrientDb ODocument.
 ##News
- - Support LinkSet, LinkList annotated fields
- - ODocumentReader auto creation (thanks b0c1)
- - Async query support (thanks b0c1)
+- Pre-maven 0.1.0alpha release
+- fix LinkSet deserialization
+- add saveAs[T](document) to RichODatabaseDocument
+- fix recursive serialization
+- fix primitive type OType detection
+- update OrientDb dependencies
  
 ##Note
 Please use develop branch for development and master as production version of library.
+
+##New: Polymorphic loading (by class name)
+
+See PolyMorphicLoadByNameTest.scala : "Polymorphic"
+```
+    val teSchema = List(db.getMetadata().getSchema().createClass("TraceElement")).asJava
+    createOClass[TraceElementViewEvent].setSuperClasses(teSchema)
+    createOClass[TraceElementLoginEvent].setSuperClasses(teSchema)
+
+    db.save(new TraceElementLoginEvent(123, LoginEvent(1000)))
+    db.save(new TraceElementViewEvent(124, ViewEvent(1000, 99)))
+
+
+    // TODO: Discover on demand from package
+    val typeReaders = ClassNameReadersRegistry()
+    typeReaders.add[TraceElementLoginEvent]
+    typeReaders.add[TraceElementViewEvent]
+
+    implicit val reader = new ByClassNameODocumentReader(typeReaders)
+    import AnyRichODatabaseDocumentImpl._
+
+    val blogs: List[TraceElement] = db.queryAnyBySql[TraceElement]("select * from TraceElement;")
+```
+To achieve this, type names need to be loaded into the typeReaders registry before the query.
+
 
 ## Features
 
