@@ -55,6 +55,9 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
       createOClass[LoginEvent]
       createOClass[ViewEvent]
 
+      createOClass[LoginEvent]  // Test duplicate registration
+      createOClass[ViewEvent]
+
       val userTrace = UserTrace(
         traceElements = List(
           TraceElementLoginEvent(date = 123, data = LoginEvent(1000)),
@@ -68,7 +71,10 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
       typeReaders.add[ViewEvent]
       typeReaders.add[TraceElementLoginEvent]
       typeReaders.add[TraceElementViewEvent]
-      typeReaders.add[UserTrace]
+      val rdr = typeReaders.add[UserTrace]
+
+      typeReaders.add[TraceElementViewEvent] // Test duplicate registration
+      (rdr eq typeReaders.add[UserTrace]) should be(true)
 
       implicit val reader = new ByClassNameODocumentReader(typeReaders)
 

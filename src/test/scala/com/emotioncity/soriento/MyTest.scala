@@ -29,7 +29,7 @@ class QueryAfterSaveTest extends FunSuite with Matchers with BeforeAndAfter with
 
       val blog2 = Blog(author = "Arnold2", message = Record("Agrh2!"))
       db.save(blog2)
-      
+
       // Tests that the DB is not closed here (previously was failing)
       db.isActiveOnCurrentThread should be(true)
 

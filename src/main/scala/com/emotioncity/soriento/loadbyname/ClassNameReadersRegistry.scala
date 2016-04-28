@@ -1,13 +1,14 @@
 package com.emotioncity.soriento.loadbyname
 
 import java.util
+
 import com.emotioncity.soriento.ReflectionUtils
 import _root_.com.orientechnologies.orient.core.record.impl.ODocument
 import _root_.com.orientechnologies.orient.core.id.ORID
 
 import scala.collection.JavaConverters._
 import scala.collection.{Map, mutable}
-import scala.reflect.runtime.universe.{Type, TypeTag, runtimeMirror, typeOf, Symbol}
+import scala.reflect.runtime.universe.{Symbol, Type, TypeTag, runtimeMirror, typeOf}
 
 object Typedefs {
   // Extracts a scala object from a document
@@ -62,8 +63,8 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
   private val mirror = runtimeMirror(getClass.getClassLoader)
 
   // Maps from classes to readers.
-  private var _readers = Map[String, DocumentReader]()
-  private var _classNameToType = Map[String, Type]()
+  private var _readers = collection.immutable.Map[String, DocumentReader]()
+  private var _classNameToType = collection.immutable.Map[String, Type]()
 
   def readers = _readers
 
@@ -77,22 +78,39 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
   def add[T](implicit tag: TypeTag[T]): DocumentReader = addType(tag.tpe)
 
   def addType(tpe: Type): DocumentReader = {
-    val name = classNamer(tpe)
+    val className = classNamer(tpe)
 
-    _classNameToType.get(name) match {
-      case Some(existingType) => {
-        if (existingType =:= tpe) _readers(name)
-        else throw new Exception(s"name '${name}' for type ${tpe} was already registered for type ${existingType}")
-      }
-      case None => {
-        val reader = makeDocumentReaderFromType(tpe)
-
-        this.synchronized {
-          _readers += (name -> reader)
-          _classNameToType += (name -> tpe)
+    _readers.get(className) match {
+      case Some(reader) => {
+        _classNameToType.get(className) match {
+          case Some(existingType) => {
+            if (existingType =:= tpe) reader
+            else throw new IllegalArgumentException(s"name '${className}' for type ${tpe} was already registered for different type ${existingType}")
+          }
+          case None => reader // Was registered with an unknown type.
         }
+      }
+      case None => addReader(className, makeDocumentReaderFromType(tpe), Some(tpe))
+    }
+  }
 
-        reader
+  /**
+    * Registers a function to deserialize some className
+    *
+    * @param className
+    * @param tpe
+    * @param documentReader
+    * @return
+    */
+  def addReader(className: String, documentReader: DocumentReader, tpe: Option[Type] = None): DocumentReader = {
+    this.synchronized {
+      _classNameToType.get(className) match {
+        case Some(existingType) => throw new IllegalArgumentException(s"name '${className}' for type ${tpe} was already registered for type ${existingType}")
+        case None => {
+          _readers += (className -> documentReader)
+          _classNameToType += (className -> tpe.get)
+          documentReader
+        }
       }
     }
   }
@@ -109,7 +127,9 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
     val name = document.getClassName
     _readers.get(name) match {
       case Some(reader) => reader(document)
-      case None => throw new Exception(s"Document classname '${name}' has no reader")
+      case None => throw new Exception(s"Document classname '${
+        name
+      }' has no reader")
     }
   }
 
@@ -207,10 +227,9 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
       case typ if typ <:< typeOf[Option[_]] => {
         val elemReader = getValueMapperForRead(typ.typeArgs.head)
 
+
         {
-          value: Any =>
-            if (value == null) None
-            else Some(elemReader(value))
+          value: Any => if (value == null) None else Some(elemReader(value))
         }
       }
 
@@ -304,11 +323,16 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
       case typ if typ.typeSymbol.isClass => {
         // Ensure there's readers for component types
         this.addType(typ)
+        //
 
-        { value: Any => this.createClassByDocumentClassName(value.asInstanceOf[ODocument]) }
+        {
+          value: Any => this.createClassByDocumentClassName(value.asInstanceOf[ODocument])
+        }
       }
       case _: Any => {
-        throw new Exception(s"Unhandled read type ${typ}")
+        throw new Exception(s"Unhandled read type ${
+          typ
+        }")
       }
     }
   }
