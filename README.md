@@ -136,6 +136,7 @@ To run unit tests:
 ## Contributors
 * Dmitriy Parenskiy <https://github.com/dimparf>
 * Janos Haber <https://github.com/b0c1>
+* Stuart Reynolds <https://github.com/stuz5000>
 
 ## Contributing
 
