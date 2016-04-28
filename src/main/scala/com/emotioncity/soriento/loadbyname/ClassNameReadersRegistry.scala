@@ -1,29 +1,27 @@
 package com.emotioncity.soriento.loadbyname
 
 import java.util
-import javax.persistence.Id
-
 import com.emotioncity.soriento.ReflectionUtils
-import _root_.com.orientechnologies.orient.core.metadata.schema.OType
 import _root_.com.orientechnologies.orient.core.record.impl.ODocument
 import _root_.com.orientechnologies.orient.core.id.ORID
-import com.sun.xml.internal.bind.v2.model.core.TypeRef
 
 import scala.collection.JavaConverters._
 import scala.collection.{Map, mutable}
-import scala.collection.convert.Wrappers.IterableWrapper
-import scala.reflect.runtime.universe.{Annotation, Type, TypeTag, runtimeMirror, typeOf, TypeRef, Symbol}
+import scala.reflect.runtime.universe.{Type, TypeTag, runtimeMirror, typeOf, Symbol}
 
+object Typedefs {
+  // Extracts a scala object from a document
+  type DocumentReader = (ODocument => Any)
 
-trait DocumentReader extends Function[ODocument, Any] {
-  /**
-    * Produces a scala object from document.
-    *
-    * @param doc
-    * @return
-    */
-  def apply(doc: ODocument): Any
+  // Extracts a specific field from a document
+  type FieldReader = (ODocument => Any)
+
+  // Maps from document field values into the type parameters need for a class constructor.
+  type ValueReader = (Any => Any)
+
 }
+
+import Typedefs._
 
 /**
   * Reads a document and emits a scala type.
@@ -32,7 +30,7 @@ trait DocumentReader extends Function[ODocument, Any] {
   * @param fieldConstructors Returns constructor fields for this type from an odocument.
   */
 case class DocumentFromConstructor(val tpe: Type,
-                                   val fieldConstructors: Seq[(ODocument => Any)]
+                                   val fieldConstructors: Seq[FieldReader]
                                   ) extends DocumentReader {
   val constr = ReflectionUtils.constructor(tpe)
 
@@ -61,12 +59,11 @@ case class DocumentFromConstructor(val tpe: Type,
 case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNameFunctions.simple) {
   //                               ClassToNameFunctions.underscoreTypeParameters) {
 
-  type DocToObjectFunc = (ODocument => Any)
   private val mirror = runtimeMirror(getClass.getClassLoader)
 
   // Maps from classes to readers.
-  private var _readers = Map[String, DocToObjectFunc]()
-  private var _types = Map[String, Type]()
+  private var _readers = Map[String, DocumentReader]()
+  private var _classNameToType = Map[String, Type]()
 
   def readers = _readers
 
@@ -77,12 +74,12 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
     * @tparam T
     * @return
     */
-  def add[T](implicit tag: TypeTag[T]): DocToObjectFunc = addType(tag.tpe)
+  def add[T](implicit tag: TypeTag[T]): DocumentReader = addType(tag.tpe)
 
-  def addType(tpe: Type): DocToObjectFunc = {
+  def addType(tpe: Type): DocumentReader = {
     val name = classNamer(tpe)
 
-    _types.get(name) match {
+    _classNameToType.get(name) match {
       case Some(existingType) => {
         if (existingType =:= tpe) _readers(name)
         else throw new Exception(s"name '${name}' for type ${tpe} was already registered for type ${existingType}")
@@ -92,7 +89,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
 
         this.synchronized {
           _readers += (name -> reader)
-          _types += (name -> tpe)
+          _classNameToType += (name -> tpe)
         }
 
         reader
@@ -128,12 +125,6 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
     DocumentFromConstructor(tpe, constructorFieldReaders)
   }
 
-  /**
-    * Maps from document fields into typed parameters for class constructors.
-    */
-  type FieldReader = (ODocument => Any)
-  type ValueReader = (Any => Any)
-
 
   private val ORIDType = typeOf[ORID]
 
@@ -156,20 +147,12 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
         case tpe if tpe <:< typeOf[ORID] => {
           doc: ODocument => doc.getIdentity
         }
+        case _ => throw new IllegalArgumentException(s"@Id field must be type ORID or Option[ORID]")
       }
     }
     else {
+      // Other option types handled here.
       val valueReader = getValueMapperForRead(tpe)
-
-//      println(s"value ${
-//        value
-//      }")
-//
-//      if (value == null) {
-//        println("NULL")
-//        throw new Exception("null value")
-//      }
-//
 
       {
         doc: ODocument => valueReader(doc.field(name))
@@ -331,9 +314,3 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
   }
 
 }
-
-
-
-
-
-
