@@ -111,6 +111,12 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
       // Object should be identical
       (userTraceWithoutIDs == userTrace) should be(true)
 
+
+      // Can also query specific type
+      val loginEvents: List[TraceElementLoginEvent] = db.queryAnyBySql[TraceElementLoginEvent]("select * from TraceElementLoginEvent;")
+      println(loginEvents)
+      loginEvents.size should be(1)
+      loginEvents(0).copy(id=None) should be(userTrace.traceElements(0))
     }
   }
 

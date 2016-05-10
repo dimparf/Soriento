@@ -124,7 +124,7 @@ with ODb {
 
   test("convert document to object class explicity") {
     val message = LinkedMessage("Hi all")
-    val savedMessageDoc = message.save
+    val savedMessageDoc: ODocument = message.save
     val converted = savedMessageDoc.as[LinkedMessage]
     converted should not be empty
     converted should contain(LinkedMessage("Hi all", Option(savedMessageDoc.getIdentity)))
@@ -133,7 +133,23 @@ with ODb {
     broken shouldBe empty
 
     //createOClass[ClassWithOptionalPrimitiveField]
+  }
 
+//  def saveLoad[T](obj:T) = {
+//
+//  }
+
+  test("enum field") {
+    createOClass[AllTypeFields]
+
+    val message = AllTypeFields(e=WeekdayEnum.FRI)
+    val doc: ODocument = message.save
+    val converted = doc.as[AllTypeFields].get
+    val convertedNoID = converted.copy(id=None)
+
+    (converted.e eq WeekdayEnum.FRI) should be(true)
+    (message==convertedNoID) should be(true)
+    (message eq converted) should be(false)
   }
 
   after {
@@ -146,6 +162,7 @@ with ODb {
     dropOClass[LinkedMessage]
     dropOClass[BlogWithLinkedMessage]
     dropOClass[BlogWithLinkSetMessages]
+    dropOClass[AllTypeFields]
     //dropOClass[ClassWithOptionalPrimitiveField]
   }
 
