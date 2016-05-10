@@ -1,13 +1,9 @@
 package com.emotioncity.soriento
 
-import java.lang.reflect.Field
-
-import com.emotioncity.soriento.ReflectionUtils._
-import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
-import com.emotioncity.soriento.RichODatabaseDocumentImpl._
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument
 import com.orientechnologies.orient.core.exception.OSchemaException
 import com.orientechnologies.orient.core.metadata.schema.{OClass, OSchema, OType}
+import scala.reflect.runtime.universe.{Type, TypeTag, Symbol, typeOf}
 
 import scala.reflect.ClassTag
 
@@ -16,21 +12,16 @@ trait ODb {
 
   def initialize() {}
 
-  def createOClass[T](implicit tag: ClassTag[T], db: ODatabaseDocument): OClass = {
+  def createOClass[T <: AnyRef](implicit tag: TypeTag[T], db: ODatabaseDocument): OClass = {
     db.activateOnCurrentThread()
     val schema = db.getMetadata.getSchema
-    val clazz = tag.runtimeClass
-    val ccSimpleName = clazz.getSimpleName
-    if (!schema.existsClass(ccSimpleName)) {
-      createOClassByName(schema, clazz.getName, ccSimpleName)
-    } else {
-      schema.getClass(ccSimpleName)
-    }
+    createOClassByType(schema, tag.tpe)
   }
 
 
   /**
     * Drop OClass if it exists
+    *
     * @param tag
     * @param db
     * @tparam T Associated case class
@@ -48,39 +39,84 @@ trait ODb {
     }
   }
 
-  private[soriento] def createOClassByName(schema: OSchema, ccName: String, ccSimpleName: String): OClass = {
-    if (!register.contains(ccSimpleName) && !schema.existsClass(ccSimpleName)) {
-      val oClass = schema.createClass(ccSimpleName)
-      register += ccSimpleName -> oClass
-      val clazz: Class[_] = Class.forName(ccName)
-      val fieldList = clazz.getDeclaredFields.toList
-      val nameTypeMap: Map[String, Field] = fieldList.map(field => field.getName -> field).toMap
-      for (entity <- nameTypeMap) {
-        val (name, field) = entity
-        val oType = getOType(name, field, clazz)
-        if (oType == OType.LINK || oType == OType.LINKLIST || oType == OType.LINKSET || oType == OType.LINKMAP
-          || oType == OType.EMBEDDED || oType == OType.EMBEDDEDLIST || oType == OType.EMBEDDEDSET) {
-          val genericOpt = getScalaGenericTypeClass(name, clazz) //getGenericTypeClass(field)
-          val subOClassName = if (genericOpt.isDefined) genericOpt.get.typeSymbol.fullName else field.getType.getName
-          val subOClassSimpleName = subOClassName.substring(subOClassName.lastIndexOf(".") + 1)
-          if (register.contains(subOClassName)) {
-            oClass.createProperty(name, oType, register.get(subOClassSimpleName).get)
-          } else {
-            val subOClass = createOClassByName(schema, subOClassName, subOClassSimpleName)
-            oClass.createProperty(name, oType, subOClass)
-            register += subOClassSimpleName -> subOClass
+  private[soriento] def createOClassByType(schema: OSchema, typ: Type): OClass = {
+    val clazz = ReflectionUtils.toJavaClass(typ)
+    val ccSimpleName = clazz.getSimpleName
+
+    register.get(ccSimpleName) match {
+      case Some(oclass) => oclass
+      case None => {
+
+        val oClass = schema.createClass(ccSimpleName)
+        // Prevent recursive definition
+        register += ccSimpleName -> oClass
+
+        val fields: List[Symbol] = if (clazz.isInterface) List.empty[Symbol] else ReflectionUtils.constructorParams(typ)
+
+        fields
+          .filter(!ReflectionUtils.isId(_))  // IDs saved explicitly
+          .foreach { fieldSymbol =>
+
+            val fieldName = fieldSymbol.name.toString
+            val fieldType = ReflectionUtils.removeOptionType(fieldSymbol.typeSignature)
+
+
+            val oType = ReflectionUtils.getOType(fieldSymbol)
+
+            oType match {
+
+              case OType.LINK
+                   | OType.EMBEDDED =>
+                oClass.createProperty(fieldName, oType, createOClassByType(schema, fieldType))
+
+              case OType.LINKLIST
+                   | OType.EMBEDDEDLIST
+                   | OType.LINKSET
+                   | OType.EMBEDDEDSET => {
+                val genericOpt = fieldType.typeArgs.head // MUST be a generic type
+                oClass.createProperty(fieldName, oType, createOClassByType(schema, genericOpt))
+              }
+
+              case OType.EMBEDDEDMAP
+                   | OType.LINKMAP => {
+                throw new IllegalArgumentException("MAP not implemented")
+                // Need to test this
+
+                // Map MUST be a generic type
+                val genericOpt1 = fieldType.typeArgs(0)
+                val genericOpt2 = fieldType.typeArgs(1)
+                if (genericOpt1 <:< typeOf[String]) new IllegalArgumentException(s"Map key must be string in field ${ccSimpleName}.${fieldName}")
+
+                oClass.createProperty(fieldName, oType, createOClassByType(schema, genericOpt2))
+              }
+              case OType.BOOLEAN
+                   | OType.INTEGER
+                   | OType.SHORT
+                   | OType.LONG
+                   | OType.FLOAT
+                   | OType.DOUBLE
+                   | OType.DATETIME // Date.class
+                   | OType.STRING
+                   | OType.BYTE // Byte.class
+                   | OType.DATE // Date.class
+                   | OType.BINARY // byte[].class
+                   | OType.DECIMAL // BigDecimal.class
+                   | OType.ANY =>
+
+                oClass.createProperty(fieldName, oType)
+
+
+              case OType.TRANSIENT // ("Transient", 18, null, new Class<?>[] {}),
+                   | OType.CUSTOM // ("Custom", 20, OSerializableStream.class, new Class<?>[] { OSerializableStream.class, Serializable.class }),
+                   | OType.LINKBAG // ("LinkBag", 22, ORidBag.class, new Class<?>[] { ORidBag.class }),
+                   | _ =>
+                throw new IllegalArgumentException(s"Unexpected otype '${oType}' for field ${ccSimpleName}.${fieldName}")
+
+            }
           }
-        } else {
-          if (!isId(name, clazz)) {
-            oClass.createProperty(name, oType)
-          }
-        }
+
+        oClass
       }
-      oClass
-    } else {
-      register.get(ccSimpleName).get
     }
   }
-
-
 }

@@ -73,17 +73,6 @@ package failingmodels {
 
 }
 
-package basicmodels {
-
-
-  case class Message(content: String)
-
-  case class Blog(author: String, @Linked message: Message)
-
-  // or @Linked
-  case class BlogWithEmbeddedMessages(author: String, @LinkList messages: List[Message])
-
-}
 
 package reflectmodels {
 

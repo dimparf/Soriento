@@ -5,7 +5,9 @@ import com.emotioncity.soriento.{Dsl, ODb, ReflectionUtils}
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.id.ORID
 import ODBUtil._
+import com.emotioncity.soriento.testmodels._
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
+import polymorphicmodels.UserTrace
 
 import scala.reflect.runtime.universe._
 import scala.collection.JavaConverters._
@@ -13,34 +15,6 @@ import scala.collection.JavaConverters._
 
 class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAfter with ODb with Dsl {
 
-  test("Read write Basics") {
-    withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
-
-      import basicmodels._
-      import com.emotioncity.soriento.RichODatabaseDocumentImpl._
-
-      createOClass[Message]
-      createOClass[BlogWithEmbeddedMessages]
-
-      val blogWithEmbeddedMessages = BlogWithEmbeddedMessages("John", List(Message("Hi"), Message("New blog note")))
-
-      db.save(blogWithEmbeddedMessages)
-      db.save(blogWithEmbeddedMessages)
-
-
-      //println("BlogWithEmbeddedMessages--------")
-      val result = db.queryBySql[BlogWithEmbeddedMessages]("select * from BlogWithEmbeddedMessages;")
-      //result.foreach(println(_))
-
-      (blogWithEmbeddedMessages == result(0)) should be(true)
-      (blogWithEmbeddedMessages.messages(0) eq result(0).messages(0)) should be(false)
-
-      //println("Message--------")
-      val messages = db.queryBySql[Message]("select * from Message;")
-      //      messages.foreach(println(_))
-      (messages.length) should be(4)
-    }
-  }
 
   test("Polymorphic") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
@@ -55,7 +29,7 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
       createOClass[LoginEvent]
       createOClass[ViewEvent]
 
-      createOClass[LoginEvent]  // Test duplicate registration
+      createOClass[LoginEvent] // Test duplicate registration
       createOClass[ViewEvent]
 
       val userTrace = UserTrace(
@@ -80,7 +54,7 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
 
       import AnyRichODatabaseDocumentImpl._
 
-      val traces: List[UserTrace] = db.queryAnyBySql[UserTrace]("select * from UserTrace;")
+      val traces: Seq[UserTrace] = db.queryAnyBySql[UserTrace]("select * from UserTrace;")
 
       println(traces)
       traces.size should be(1)
@@ -113,57 +87,38 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
 
 
       // Can also query specific type
-      val loginEvents: List[TraceElementLoginEvent] = db.queryAnyBySql[TraceElementLoginEvent]("select * from TraceElementLoginEvent;")
+      val loginEvents: Seq[TraceElementLoginEvent] = db.queryAnyBySql[TraceElementLoginEvent]("select * from TraceElementLoginEvent;")
       println(loginEvents)
       loginEvents.size should be(1)
-      loginEvents(0).copy(id=None) should be(userTrace.traceElements(0))
+      loginEvents(0).copy(id = None) should be(userTrace.traceElements(0))
     }
   }
 
-
-  test("Reflect test") {
+  test("All type fields") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
 
-      // TODO. Update this test to refelect new implementation in Dsl.scala
-      // (other tests are exercising this quite well)
+      createOClass[AllTypeFields]
 
-      import reflectmodels._
+      val obj = AllTypeFields(
+        e = WeekdayEnum.FRI,
+        eOpt = Some(WeekdayEnum.THU))
 
-      val te = TraceElementLoginEvent3(123, 12345, LoginEvent3(1000))
-
-
-
-      // clz.getDeclaredFields erases overridden values
-      def printDeclaredFields(clz: Class[_]): Unit = {
-        for (e <- clz.getDeclaredFields.toList) {
-          println(s"  F ${e.getType.isLocalClass}   -- isLocal:${e.getType.isLocalClass}  -- ${e}")
-        }
-        //      val c: Class[_] = clz.getSuperclass
-        //      if (c != null) printDeclaredFields(c)
-      }
-
-      printDeclaredFields(te.getClass)
-
-      for (e <- te.productIterator) println(s"VAL ${e}")
+      db.save( obj)
 
 
+      val typeReaders = ClassNameReadersRegistry()
+      typeReaders.add[AllTypeFields]
+      implicit val reader = new ByClassNameODocumentReader(typeReaders)
+      import AnyRichODatabaseDocumentImpl._
 
-      for (e <- ReflectionUtils.caseAccessorsFromObject(te)) {
-        //      for (e <- caseAccessorsT[TraceElementLoginEvent3]) {
-        println(s"  A ${e} ${e.returnType}   E:${ReflectionUtils.hasAnnotation(e, typeOf[Embedded])}  I:${ReflectionUtils.isId(e)}")
-      }
-
-
-      val ctor = ReflectionUtils.constructor(typeOf[TraceElementLoginEvent3])
-      val cParams: List[Symbol] = ctor.symbol.paramLists.flatten
-
-      val x: String = cParams(0).name.decodedName.toString
-
-      for (e <- cParams) {
-        println(s"  C ${e} NAME(${e.name.decodedName.toString})  ${ReflectionUtils.getOType(e)} E:${ReflectionUtils.hasAnnotation(e, typeOf[Embedded])}  I:${ReflectionUtils.isId(e)}")
-      }
+      val objs: Seq[AllTypeFields] = db.queryAnyBySql[AllTypeFields]("select * from AllTypeFields;")
+      objs.size should be (1)
+      val converted = objs(0)
+      (converted eq objs) should be(false)
+      (converted.withNullIDs() eq objs) should be(false)
+      (converted.withNullIDs() == obj) should be(true)
+      (converted.e eq obj.e) should be(true)
     }
   }
-
 }
 

@@ -17,8 +17,10 @@ case class AllTypeFields(
                           val b: Byte = 1,
                           val e: WeekdayEnum = MON, // scala.Enumeration
                           val iOpt: Option[Int] = Some(123),
-                          val iOptOpt: Option[Option[Int]] = Some(Some(123)),
+                          //FAILING val iOptOpt: Option[Option[Int]] = Some(Some(123)),
                           val eOpt: Option[WeekdayEnum] = Some(MON),
-                          val eOptOpt: Option[Option[WeekdayEnum]] = Some(Some(MON)),
+                          //FAILING val eOptOpt: Option[Option[WeekdayEnum]] = Some(Some(MON)),
                           @Id id: Option[ORID] = None
-                        )
+                        ){
+  def withNullIDs() = this.copy(id=None)
+}

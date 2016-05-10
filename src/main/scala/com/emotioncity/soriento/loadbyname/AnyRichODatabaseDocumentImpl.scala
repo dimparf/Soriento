@@ -4,7 +4,9 @@ import com.emotioncity.soriento.ODocumentReader
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
+
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 object AnyRichODatabaseDocumentImpl {
 
@@ -24,10 +26,10 @@ object AnyRichODatabaseDocumentImpl {
       * @tparam T I expect all returned elements to be a subtype of this.
       * @return
       */
-    def queryAnyBySql[T <: Any](query: String)(implicit reader: ODocumentReader[Any]): List[T] = blockingCall { db =>
+    def queryAnyBySql[T <: Any](query: String)(implicit reader: ODocumentReader[Any]): Seq[T] = blockingCall { db =>
       val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](query))
-      results.asScala.toList.map(document => reader.read(document)).asInstanceOf[List[T]]
-      // list.map(e => e.asInstanceOf[T] )  // Validate elements
+      val objs: Seq[Any] = results.asScala.map(document => reader.read(document))
+      objs.asInstanceOf[Seq[T]]
     }
   }
 

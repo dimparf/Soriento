@@ -6,11 +6,19 @@ import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.id.ORecordId
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 import org.scalatest.OptionValues._
-import scala.reflect.runtime.universe._
+import scala.reflect.runtime.universe.typeOf
 
 /**
- * Created by stream on 25.12.14.
- */
+  * Created by stream on 25.12.14.
+  */
+
+package enumtest {
+
+
+  case class CC(val nonEnum: Int, val wd: WeekdayEnum.WeekdayEnum)
+
+
+}
 
 
 class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter {
@@ -58,6 +66,27 @@ class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter
     val bFieldTpe = getScalaGenericTypeClass("bField", clz)
     bFieldTpe shouldBe defined
     bFieldTpe.value shouldBe typeOf[Boolean]
+  }
+
+
+
+  test("enum reflection test") {
+
+
+    import scala.reflect.runtime.universe.typeOf
+    import enumtest._
+    import com.emotioncity.soriento.testmodels.WeekdayEnum._
+
+    val enumParams = constructorParams(typeOf[CC]).map(_.typeSignature).filter(EnumReflector.isEnumeration _)
+    (enumParams.size) should be(1)
+
+    val er = EnumReflector(enumParams.head)
+
+    val cc = CC(123, WeekdayEnum.THU)
+    (cc.wd eq er.fromID(er.toID(cc.wd))) should be(true)
+    (cc.wd eq er.fromName(er.toName(cc.wd)).asInstanceOf[WeekdayEnum.WeekdayEnum]) should be(true)
+    (er.values.size == 7) should be(true)
+
   }
 
   after {
