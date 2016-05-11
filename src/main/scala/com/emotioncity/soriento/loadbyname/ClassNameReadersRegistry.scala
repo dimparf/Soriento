@@ -257,9 +257,8 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
       case typ if typ <:< typeOf[Iterable[_]] => getValueMapperForReadListCollection(typ)
 
       case typ if typ.typeSymbol.isClass => {
-        // Ensure there's readers for component types
+        // Ensure there's a reader for this field class
         this.addType(typ)
-        //
 
         {
           value: Any => this.createClassByDocumentClassName(value.asInstanceOf[ODocument])

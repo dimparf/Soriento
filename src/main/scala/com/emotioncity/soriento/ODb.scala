@@ -13,9 +13,13 @@ trait ODb {
   def initialize() {}
 
   def createOClass[T <: AnyRef](implicit tag: TypeTag[T], db: ODatabaseDocument): OClass = {
+    createOClass(tag.tpe, db)
+  }
+
+  def createOClass(tpe:Type, db: ODatabaseDocument): OClass = {
     db.activateOnCurrentThread()
     val schema = db.getMetadata.getSchema
-    createOClassByType(schema, tag.tpe)
+    createOClassByType(schema, tpe)
   }
 
 

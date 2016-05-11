@@ -6,7 +6,7 @@ import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.id.ORecordId
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 import org.scalatest.OptionValues._
-import scala.reflect.runtime.universe.typeOf
+import scala.reflect.runtime.universe.{typeOf,MethodSymbol,Type}
 
 /**
   * Created by stream on 25.12.14.
@@ -15,7 +15,14 @@ import scala.reflect.runtime.universe.typeOf
 package enumtest {
 
 
+  // Case class with enum constructor fields
   case class CC(val nonEnum: Int, val wd: WeekdayEnum.WeekdayEnum)
+
+  // Class with enum fields
+  class EC{
+    var nonEnum: Int = 0
+    var wd: WeekdayEnum.WeekdayEnum = WeekdayEnum.FRI
+  }
 
 
 }
@@ -77,6 +84,7 @@ class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter
     import enumtest._
     import com.emotioncity.soriento.testmodels.WeekdayEnum._
 
+    // Enum params of case class
     val enumParams = constructorParams(typeOf[CC]).map(_.typeSignature).filter(EnumReflector.isEnumeration _)
     (enumParams.size) should be(1)
 
@@ -86,6 +94,29 @@ class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter
     (cc.wd eq er.fromID(er.toID(cc.wd))) should be(true)
     (cc.wd eq er.fromName(er.toName(cc.wd)).asInstanceOf[WeekdayEnum.WeekdayEnum]) should be(true)
     (er.values.size == 7) should be(true)
+
+
+
+
+    // Accessing non-case class
+    val typ = ReflectionUtils.getTypeForClass(classOf[EC])
+    //val typ = typeOf[EC]
+
+
+    val classEnumGetters = ReflectionUtils.classGetters( typ ).filter(EnumReflector.isEnumeration(_))
+    classEnumGetters.size should be(1)
+    val classEnumSetters = ReflectionUtils.classGetters( typ ).filter(EnumReflector.isEnumeration(_))
+    classEnumSetters.size should be(1)
+
+    val fieldGetterMethod = classEnumGetters.head
+    val fieldName = fieldGetterMethod.name.toString
+    val reflector = EnumReflector(fieldGetterMethod.returnType)
+    val enumGetter = ReflectionUtils.toJavaClass(typ).getMethods.filter(_.getName==fieldName).head
+
+    val ecObj = new EC()
+    val enumObj = enumGetter.invoke(ecObj)
+    reflector.toName(enumObj) == WeekdayEnum.FRI.toString should be(true)
+
 
   }
 
