@@ -144,7 +144,7 @@ class DslTest extends FunSuite with Matchers with BeforeAndAfter with Dsl with O
     }
   }
 
-  test("recurcive serialization") {
+  test("recursive serialization") {
     createOClass[CCRecursive]
     val ccRecursiveWithNil = CCRecursive(None, "string", List(CCRecursive(None, "s2", Nil)))
     val doc = productToDocument(ccRecursiveWithNil)

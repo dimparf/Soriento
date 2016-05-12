@@ -5,7 +5,7 @@ import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.id.ORID
 
-import scala.reflect.runtime.universe.{Symbol, TypeTag, runtimeMirror}
+import scala.reflect.runtime.universe.{Symbol, TypeTag, runtimeMirror, Type}
 import scala.collection.JavaConverters._
 
 
@@ -14,16 +14,21 @@ import scala.collection.JavaConverters._
   */
 trait Dsl {
 
+
   private def scalaFieldToDocumentField(field: Any): Any = {
-    field match {
-      case Some(v) => scalaFieldToDocumentField(v)
-      case None => null
-      // TODO: Add map here.
-      case p: Set[_] => p.map { e => scalaFieldToDocumentField(e) }.asJavaCollection
-      case p: List[_] => p.map { e => scalaFieldToDocumentField(e) }.asJavaCollection
-      case p: Product if p.productArity > 0 => productToDocument(p)
-      case x: Any => x // Builtins and null
-      case null => null
+    if (EnumReflector.isEnumerationValue(field))
+      field.asInstanceOf[scala.Enumeration$Value].id
+    else {
+      field match {
+        case Some(v) => scalaFieldToDocumentField(v)
+        case None => null
+        // TODO: Add map here.
+        case p: Set[_] => p.map { e => scalaFieldToDocumentField(e) }.asJavaCollection
+        case p: List[_] => p.map { e => scalaFieldToDocumentField(e) }.asJavaCollection
+        case p: Product if p.productArity > 0 => productToDocument(p)
+        case x: Any => x // Builtins and null
+        case null => null
+      }
     }
   }
 

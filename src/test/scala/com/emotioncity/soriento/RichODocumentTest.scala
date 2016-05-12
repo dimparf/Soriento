@@ -15,7 +15,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
   */
 
 class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with Inside with Dsl
-with ODb {
+  with ODb {
 
   import ODocumentReader._
 
@@ -124,7 +124,7 @@ with ODb {
 
   test("convert document to object class explicity") {
     val message = LinkedMessage("Hi all")
-    val savedMessageDoc = message.save
+    val savedMessageDoc: ODocument = message.save
     val converted = savedMessageDoc.as[LinkedMessage]
     converted should not be empty
     converted should contain(LinkedMessage("Hi all", Option(savedMessageDoc.getIdentity)))
@@ -133,7 +133,35 @@ with ODb {
     broken shouldBe empty
 
     //createOClass[ClassWithOptionalPrimitiveField]
+  }
 
+  //  def saveLoad[T](obj:T) = {
+  //
+  //  }
+
+  test("enum field") {
+
+    object Colours extends Enumeration {
+      val Red, Amber, Green = Value
+    }
+
+    val e = Colours.Red
+
+    createOClass[AllTypeFields]
+
+    val obj = AllTypeFields(
+      e = WeekdayEnum.FRI,
+      eOpt = Some(WeekdayEnum.THU))
+
+    val doc: ODocument = obj.save
+    val converted = doc.as[AllTypeFields].get
+    val convertedNoID: AllTypeFields = converted.copy(id = None)
+
+    (obj eq converted) should be(false)
+    (converted.e eq WeekdayEnum.FRI) should be(true)
+//    println(obj)
+//    println(convertedNoID)
+    (obj == convertedNoID) should be(true)
   }
 
   after {
@@ -146,6 +174,7 @@ with ODb {
     dropOClass[LinkedMessage]
     dropOClass[BlogWithLinkedMessage]
     dropOClass[BlogWithLinkSetMessages]
+    dropOClass[AllTypeFields]
     //dropOClass[ClassWithOptionalPrimitiveField]
   }
 
