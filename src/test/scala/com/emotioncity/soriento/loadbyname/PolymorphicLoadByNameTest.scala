@@ -13,24 +13,53 @@ import scala.reflect.runtime.universe._
 import scala.collection.JavaConverters._
 
 
-class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAfter with ODb with Dsl {
+class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAfter with Dsl {
+
+  test("Duplicate register class that exists in existing DB") {
+    withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
+
+
+      import polymorphicmodels._
+
+    {
+      val odb = new ODb {}
+      odb.createOClass[LoginEvent]
+      odb.createOClass[ViewEvent]
+      odb.createOClass[LoginEvent] // Test duplicate registration
+      odb.createOClass[ViewEvent]
+    }
+
+    {
+      // Check that ODb object's cache does not mask error.
+      val odb = new ODb {}
+      odb.createOClass[LoginEvent]
+      odb.createOClass[ViewEvent]
+      odb.createOClass[LoginEvent] // Test duplicate registration
+      odb.createOClass[ViewEvent]
+    }
+
+    }
+  }
 
 
   test("Polymorphic") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
+
+      val odb = new ODb {}
+
       import polymorphicmodels._
 
       // Test polymorphic.
 
-      val teSchema = List(createOClass[TraceElementWithID]).asJava
-      createOClass[TraceElementViewEvent].setSuperClasses(teSchema)
-      createOClass[TraceElementLoginEvent].setSuperClasses(teSchema)
-      createOClass[UserTrace]
-      createOClass[LoginEvent]
-      createOClass[ViewEvent]
+      val teSchema = List(odb.createOClass[TraceElementWithID]).asJava
+      odb.createOClass[TraceElementViewEvent].setSuperClasses(teSchema)
+      odb.createOClass[TraceElementLoginEvent].setSuperClasses(teSchema)
+      odb.createOClass[UserTrace]
+      odb.createOClass[LoginEvent]
+      odb.createOClass[ViewEvent]
 
-      createOClass[LoginEvent] // Test duplicate registration
-      createOClass[ViewEvent]
+      odb.createOClass[LoginEvent] // Test duplicate registration
+      odb.createOClass[ViewEvent]
 
       val userTrace = UserTrace(
         traceElements = List(
@@ -96,14 +125,14 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
 
   test("All type fields") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
-
-      createOClass[AllTypeFields]
+      val odb = new ODb {}
+      odb.createOClass[AllTypeFields]
 
       val obj = AllTypeFields(
         e = WeekdayEnum.FRI,
         eOpt = Some(WeekdayEnum.THU))
 
-      db.save( obj)
+      db.save(obj)
 
 
       val typeReaders = ClassNameReadersRegistry()
@@ -112,7 +141,7 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
       import AnyRichODatabaseDocumentImpl._
 
       val objs: Seq[AllTypeFields] = db.queryAnyBySql[AllTypeFields]("select * from AllTypeFields;")
-      objs.size should be (1)
+      objs.size should be(1)
       val converted = objs(0)
       (converted eq objs) should be(false)
       (converted.withNullIDs() eq objs) should be(false)
