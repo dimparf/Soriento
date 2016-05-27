@@ -32,6 +32,14 @@ object ReflectionUtils {
 
   def toJavaClass(tpe:Type) = mirror.runtimeClass(tpe.typeSymbol.asClass)
 
+  def getTypeForClass(clazz: Class[_]): Type = {
+    //val mirror = runtimeMirror(clazz.getClassLoader)
+    mirror.classSymbol(clazz).toType
+  }
+
+  // Get the field accessors of a class type
+  def classGetters(typ:Type) = typ.members.collect{case m:MethodSymbol=> m}.filter(_.isGetter)
+  def classAccessors(typ:Type) = typ.members.collect{case m:MethodSymbol=> m}.filter(_.isAccessor)
 
   // Is thread-safe. Support polymorphics reading.
   // Caches types and is efficient.
@@ -149,10 +157,7 @@ object ReflectionUtils {
 
   def typeStringByType(t: Type): Option[Type] = t.typeArgs.headOption
 
-  def getTypeForClass[T](clazz: Class[T]): Type = {
-    val runtimeMirrorT = runtimeMirror(clazz.getClassLoader)
-    runtimeMirrorT.classSymbol(clazz).toType
-  }
+
 
 
   def erasedObjectType(obj: Any): Type = mirror.reflect(obj).symbol.toType

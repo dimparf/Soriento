@@ -3,8 +3,8 @@ package com.emotioncity.soriento
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument
 import com.orientechnologies.orient.core.exception.OSchemaException
 import com.orientechnologies.orient.core.metadata.schema.{OClass, OSchema, OType}
+import scala.reflect.runtime.universe.{Type, TypeTag, Symbol, typeOf}
 
-import scala.reflect.runtime.universe.{Symbol, Type, TypeTag, typeOf}
 import scala.reflect.ClassTag
 
 trait ODb {
@@ -14,16 +14,10 @@ trait ODb {
 
   def createOClass[T <: AnyRef](implicit tag: TypeTag[T], db: ODatabaseDocument): OClass = {
     db.activateOnCurrentThread()
-    val clazz = ReflectionUtils.toJavaClass(tag.tpe)
-    val ccSimpleName = clazz.getSimpleName
     val schema = db.getMetadata.getSchema
-
-    if (!schema.existsClass(ccSimpleName)) {
-      createOClassByType(schema, tag.tpe)
-    } else {
-      schema.getClass(ccSimpleName)
-    }
+    createOClassByType(schema, tag.tpe)
   }
+
 
   /**
     * Drop OClass if it exists
@@ -44,7 +38,6 @@ trait ODb {
       case ose: OSchemaException => false
     }
   }
-
 
   private[soriento] def createOClassByType(schema: OSchema, typ: Type): OClass = {
     val clazz = ReflectionUtils.toJavaClass(typ)

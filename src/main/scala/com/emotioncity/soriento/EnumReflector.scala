@@ -10,6 +10,7 @@ object EnumReflector {
 
   def apply(enumElementType: Type): EnumReflector = cache.getOrElse(enumElementType, new EnumReflector(enumElementType))
 
+  final def isEnumeration(sym: Symbol): Boolean = isEnumeration(sym.typeSignature)
   final def isEnumeration(tpe: Type): Boolean = tpe.baseClasses.exists(_.fullName == "scala.Enumeration.Value")
   final def isEnumerationValue(obj: Any): Boolean = obj.isInstanceOf[Enumeration$Value]
 }
@@ -17,14 +18,17 @@ object EnumReflector {
 
 /**
   * Everything you ever wanted to access about a scala.Enumeration through reflection.
+  *
+  * BUGS. Fails unless the enum was declared in package scope. (no object or inner-class or function-scope enums)
   */
-class EnumReflector(enumElementType: Type) {
+class EnumReflector(val enumElementType: Type) {
 
   private val tref = enumElementType.asInstanceOf[TypeRef]
   private val trr: Type = tref.pre
-  private val className = trr.typeSymbol.asClass.fullName
+  val className = trr.typeSymbol.asClass.fullName
 
   /// The enum's companion object
+  getClass.getClassLoader.loadClass(className)
   val enumObject = getClass.getClassLoader.loadClass(className + "$").getField("MODULE$").get(null)
 
   val applyMethod = enumObject.getClass.getMethods.filter(m => m.getName.contains("apply"))(0)
