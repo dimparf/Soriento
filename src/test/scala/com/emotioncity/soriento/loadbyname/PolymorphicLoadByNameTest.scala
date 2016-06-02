@@ -1,15 +1,15 @@
 package com.emotioncity.soriento.loadbyname
 
-import com.emotioncity.soriento.annotations._
+
 import com.emotioncity.soriento.{Dsl, ODb, ReflectionUtils}
+import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.id.ORID
 import ODBUtil._
 import com.emotioncity.soriento.testmodels._
+import com.orientechnologies.orient.core.metadata.schema.OClass
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
-import polymorphicmodels.UserTrace
 
-import scala.reflect.runtime.universe._
 import scala.collection.JavaConverters._
 
 
@@ -126,7 +126,11 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
   test("All type fields") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
       val odb = new ODb {}
-      odb.createOClass[AllTypeFields]
+      val oclass: OClass = odb.createOClass[AllTypeFields]
+
+      oclass.getProperty("e") should be (OType.INTEGER)
+      oclass.getProperty("eOpt") should be (OType.INTEGER)
+
 
       val obj = AllTypeFields(
         e = WeekdayEnum.FRI,
