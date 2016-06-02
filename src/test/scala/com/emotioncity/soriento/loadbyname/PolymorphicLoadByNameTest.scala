@@ -1,15 +1,18 @@
 package com.emotioncity.soriento.loadbyname
 
-import com.emotioncity.soriento.annotations._
-import com.emotioncity.soriento.{Dsl, ODb, ReflectionUtils}
+
+import com.emotioncity.soriento.{Dsl, EnumReflector, ODb, ReflectionUtils}
+import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.id.ORID
 import ODBUtil._
 import com.emotioncity.soriento.testmodels._
+import com.orientechnologies.orient.core.metadata.schema.OClass
+import com.orientechnologies.orient.core.record.impl.ODocument
+import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
+import org.apache.commons.collections.EnumerationUtils
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
-import polymorphicmodels.UserTrace
 
-import scala.reflect.runtime.universe._
 import scala.collection.JavaConverters._
 
 
@@ -126,7 +129,11 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
   test("All type fields") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
       val odb = new ODb {}
-      odb.createOClass[AllTypeFields]
+      val oclass: OClass = odb.createOClass[AllTypeFields]
+
+      // Default mapping for enums is to INTEGER
+      oclass.getProperty("e").getType() should be(OType.INTEGER)
+      oclass.getProperty("eOpt").getType() should be(OType.INTEGER)
 
       val obj = AllTypeFields(
         e = WeekdayEnum.FRI,
@@ -134,6 +141,15 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
 
       db.save(obj)
 
+
+    {
+      val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument]("select * from AllTypeFields;"))
+      val doc = results.get(0)
+      doc.fieldType("e") should be(OType.INTEGER)
+      doc.fieldType("eOpt") should be(OType.INTEGER)
+    }
+
+    {
 
       val typeReaders = ClassNameReadersRegistry()
       typeReaders.add[AllTypeFields]
@@ -147,6 +163,7 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
       (converted.withNullIDs() eq objs) should be(false)
       (converted.withNullIDs() == obj) should be(true)
       (converted.e eq obj.e) should be(true)
+    }
     }
   }
 }
