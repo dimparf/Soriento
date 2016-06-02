@@ -216,10 +216,14 @@ object ReflectionUtils {
     }
   }
 
+  /**
+    * Ignores any annotations. Prefer to use getOType(parameterSymbol: Symbol) where possible
+    * since this will allow specialization by annotation.
+    */
   def getOTypeByType(typ: Type): OType = {
     typ match {
       case tpe if tpe <:< typeOf[Option[_]] => getOTypeByType(tpe.typeArgs(0))
-      case tpe if typ <:< typeOf[scala.Enumeration$Value] => OType.INTEGER
+      case tpe if EnumReflector.isEnumeration(typ) => OType.INTEGER
       case tpe if typ <:< typeOf[Boolean] => OType.BOOLEAN
       case tpe if typ <:< typeOf[Int] => OType.INTEGER
       case tpe if typ <:< typeOf[Long] => OType.LONG
