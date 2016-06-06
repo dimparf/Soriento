@@ -43,6 +43,25 @@ with Matchers with BeforeAndAfter with Inside with ScalaFutures with Dsl with OD
       savedModels shouldBe a[List[_]]
       savedModels should have size 3
     }
+    dropOClass[ClassWithOptionalRid]
+
   }
-  dropOClass[ClassWithOptionalRid]
+
+  test("async command by sql") {
+    createOClass[ClassWithOptionalRid]
+    val mayBeModel1 = ClassWithOptionalRid(name = "My model1").save.as[ClassWithOptionalRid]
+    val commandResult = orientDb.asyncCommandBySql[Integer]("update ClassWithOptionalRid set name = 'testUpdate'")
+    whenReady(commandResult) { commandResult =>
+      commandResult shouldBe a[Integer]
+      commandResult should equal(1)
+    }
+    val savedModelsFuture = orientDb.asyncQueryBySql[ClassWithOptionalRid]("select from ClassWithOptionalRid")
+    whenReady(savedModelsFuture) { savedModels =>
+      savedModels shouldBe a[List[_]]
+      savedModels should have size 1
+      val savedModel = savedModels.head
+      savedModel.name should equal("testUpdate")
+    }
+    dropOClass[ClassWithOptionalRid]
+  }
 }

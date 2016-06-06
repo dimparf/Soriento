@@ -32,6 +32,10 @@ object RichODatabaseDocumentImpl {
       db.command(new OCommandSQL(query)).execute[RET]()
     }
 
+    def asyncCommandBySql[Integer](query: String): Future[Integer] = asyncCall { db =>
+      db.command(new OCommandSQL(query)).execute[Integer]()
+    }
+
     def saveAs[T](oDocument: ODocument)(implicit reader: ODocumentReader[T]): Option[T] = blockingCall { db =>
       val savedDocument = db.save[ODocument](oDocument)
       reader.readOpt(savedDocument)
