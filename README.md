@@ -29,6 +29,7 @@ Please use develop branch for development and master as production version of li
  - Transactions support.
  - Query by SQL.
  - Polymorphic serialization and deserialization of List elements.
+ - Scala Enumeration support.
  
 Supported types:
 - Long, Double, Int, Float, Short, String, case classes: Embedded, EmbeddedList, EmbeddedSet, Link, LinkList, LinkSet
