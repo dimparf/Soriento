@@ -37,9 +37,12 @@ object ReflectionUtils {
     mirror.classSymbol(clazz).toType
   }
 
-  // Get the field accessors of a class type
-  def classGetters(typ:Type) = typ.members.collect{case m:MethodSymbol=> m}.filter(_.isGetter)
-  def classAccessors(typ:Type) = typ.members.collect{case m:MethodSymbol=> m}.filter(_.isAccessor)
+
+  def methods(typ: Type) = typ.members.collect { case m: MethodSymbol => m }.toIndexedSeq.reverse
+
+  def classGetters(typ: Type) = methods(typ).filter(_.isGetter)
+
+  def classAccessors(typ: Type) = methods(typ).filter(_.isAccessor)
 
   // Is thread-safe. Support polymorphics reading.
   // Caches types and is efficient.
@@ -77,10 +80,9 @@ object ReflectionUtils {
 
   def typeStringByType(t: Type): Option[Type] = t.typeArgs.headOption
 
-
-
-
   def erasedObjectType(obj: Any): Type = mirror.reflect(obj).symbol.toType
+
+  def typeOfObject[T](t: T)(implicit tag:TypeTag[T]): Type = tag.tpe
 
   /**
     * NB. Ordering is reverse of what you might expect.
