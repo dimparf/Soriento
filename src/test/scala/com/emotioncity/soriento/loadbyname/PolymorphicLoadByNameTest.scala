@@ -12,6 +12,7 @@ import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
 import org.apache.commons.collections.EnumerationUtils
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
+import polymorphicmodels.LoginEvent
 
 import scala.collection.JavaConverters._
 
@@ -45,6 +46,40 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
   }
 
 
+  test("Late binding of reader") {
+
+    var registered = false
+
+    def registerReader(classname:String, registry:ClassNameReadersRegistry): Boolean ={
+      classname match {
+        case "LoginEvent" =>
+          registered = true
+          registry.add[LoginEvent]
+          true
+        case _=> false
+      }
+    }
+
+    withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
+      val odb = new ODb {}
+      odb.createOClass[LoginEvent]
+
+      val obj = LoginEvent(1000)
+      db.save(obj)
+
+      implicit val documentReader = ClassNameReadersRegistry(onMissingClassRead = registerReader)
+      import AnyRichODatabaseDocumentImpl._
+
+      documentReader.readers.contains("LoginEvent") should be(false)
+      val traces: Seq[LoginEvent] = db.queryAnyBySql[LoginEvent]("select * from LoginEvent;")(documentReader)
+      registered should be (true)
+      documentReader.readers.contains("LoginEvent") should be(true)
+
+      (traces.size) should be(1)
+      (obj == traces(0)) should be(true)
+    }
+  }
+
   test("Polymorphic") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
 
@@ -71,7 +106,7 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
 
       db.save(userTrace)
 
-      val typeReaders = ClassNameReadersRegistry()
+      implicit val typeReaders = ClassNameReadersRegistry()
 
       typeReaders.add[LoginEvent]
       typeReaders.add[ViewEvent]
@@ -81,8 +116,6 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
 
       typeReaders.add[TraceElementViewEvent] // Test duplicate registration
       (rdr eq typeReaders.add[UserTrace]) should be(true)
-
-      implicit val reader = new ByClassNameODocumentReader(typeReaders)
 
       import AnyRichODatabaseDocumentImpl._
 
@@ -151,9 +184,9 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
 
     {
 
-      val typeReaders = ClassNameReadersRegistry()
+      implicit val typeReaders = ClassNameReadersRegistry()
       typeReaders.add[AllTypeFields]
-      implicit val reader = new ByClassNameODocumentReader(typeReaders)
+
       import AnyRichODatabaseDocumentImpl._
 
       val objs: Seq[AllTypeFields] = db.queryAnyBySql[AllTypeFields]("select * from AllTypeFields;")

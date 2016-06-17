@@ -2,7 +2,7 @@ package com.emotioncity.soriento.loadbyname
 
 import java.util
 
-import com.emotioncity.soriento.{EnumReflector, ReflectionUtils}
+import com.emotioncity.soriento.{EnumReflector, ODocumentReader, ReflectionUtils}
 import _root_.com.orientechnologies.orient.core.record.impl.ODocument
 import _root_.com.orientechnologies.orient.core.id.ORID
 
@@ -59,8 +59,11 @@ case class DocumentFromConstructor(val tpe: Type,
   * to create a field of type T without knowing T. (ClassToNameFunctions.simple
   * is probably right for generics).
   *
+  * @param onMissingClassRead Callback to read a class
   */
-case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNameFunctions.simple) {
+case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNameFunctions.simple,
+                                    val onMissingClassRead: (String, ClassNameReadersRegistry) => Boolean = ClassNameReadersRegistry.throwMissingClassReader
+                                   ) extends ODocumentReader[Any] {
   //                               ClassToNameFunctions.underscoreTypeParameters) {
 
   private val mirror = runtimeMirror(getClass.getClassLoader)
@@ -71,6 +74,36 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
 
   def readers = _readers
 
+
+
+  /**
+    * Convert a oDocument into a scala object.
+    * A reader is looked-up based on the document classname
+    *
+    * @param document
+    * @return
+    */
+  def read(document: ODocument): Any = {
+    val name = document.getClassName
+    _readers.get(name) match {
+      case Some(reader) => reader(document)
+      case None => {
+        if (!onMissingClassRead(name, this)) {
+          ClassNameReadersRegistry.throwMissingClassReader(name)
+        }
+
+        // Try again
+        _readers.get(name) match {
+          case Some(reader) => reader(document)
+          case None => {
+            ClassNameReadersRegistry.throwMissingClassReader(name)
+            null
+          }
+        }
+      }
+    }
+  }
+
   /**
     * Register a document reader for type T
     *
@@ -79,6 +112,8 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
     * @return
     */
   def add[T](implicit tag: TypeTag[T]): DocumentReader = addType(tag.tpe)
+
+  def add(clz:Class[_]): DocumentReader = addType(ReflectionUtils.toType(clz))
 
   def addType(tpe: Type): DocumentReader = {
     val className = classNamer(tpe)
@@ -115,7 +150,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
 
           _classNameToType += (className -> tpe.get)
 
-          val reader = DocumentFromConstructor(tpe=tpe.get, fieldConstructors = null)
+          val reader = DocumentFromConstructor(tpe = tpe.get, fieldConstructors = null)
           _readers += (className -> reader)
           // Instantiating documentReader may recursively ask for the same type.
           // This late binding of fieldConstructors allows recursive definitions
@@ -127,23 +162,6 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
     }
   }
 
-
-  /**
-    * Convert a oDocument into a scala object.
-    * A reader is looked-up based on the document classname
-    *
-    * @param document
-    * @return
-    */
-  def createClassByDocumentClassName(document: ODocument): Any = {
-    val name = document.getClassName
-    _readers.get(name) match {
-      case Some(reader) => reader(document)
-      case None => throw new Exception(s"Document classname '${
-        name
-      }' has no reader")
-    }
-  }
 
   private def makeDocumentReaderFromType(tpe: Type): DocumentReader = {
 
@@ -261,7 +279,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
         this.addType(typ)
 
         {
-          value: Any => this.createClassByDocumentClassName(value.asInstanceOf[ODocument])
+          value: Any => this.read(value.asInstanceOf[ODocument])
         }
       }
       case _: Any => unhandledType(typ)
@@ -274,7 +292,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
 
 
     val genericType = typ.typeArgs(1)
-    if ( ReflectionUtils.isCaseClass(genericType) ) {
+    if (ReflectionUtils.isCaseClass(genericType)) {
       addType(genericType)
     }
 
@@ -286,7 +304,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
         typ <:< typeOf[collection.immutable.Map[String, _]] => {
         value: Any =>
 
-          val elems: collection.immutable.Map[String, Any] = value.asInstanceOf[util.Map[String, ODocument]].asScala.mapValues(v => createClassByDocumentClassName(v)).toMap
+          val elems: collection.immutable.Map[String, Any] = value.asInstanceOf[util.Map[String, ODocument]].asScala.mapValues(v => read(v)).toMap
           elems.asInstanceOf[collection.immutable.Map[String, Any]] // Type check
       }
 
@@ -296,7 +314,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
         typ <:< typeOf[collection.mutable.Map[String, _]] => {
         value: Any =>
 
-          val elems = value.asInstanceOf[util.Map[String, ODocument]].asScala.map(kv => (kv._1 -> createClassByDocumentClassName(kv._2)))
+          val elems = value.asInstanceOf[util.Map[String, ODocument]].asScala.map(kv => (kv._1 -> read(kv._2)))
           elems.asInstanceOf[collection.mutable.HashMap[String, Any]] // Type check
       }
       //Maps: misc
@@ -306,7 +324,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
 
         {
           value: Any =>
-            val elems: mutable.Map[String, Any] = value.asInstanceOf[util.Map[String, ODocument]].asScala.map(kv => (kv._1 -> createClassByDocumentClassName(kv._2)))
+            val elems: mutable.Map[String, Any] = value.asInstanceOf[util.Map[String, ODocument]].asScala.map(kv => (kv._1 -> read(kv._2)))
             elems
         }
       }
@@ -317,7 +335,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
   private def getValueMapperForReadListCollection(typ: Type): ValueReader = {
 
     val genericType = typ.typeArgs.head
-    if ( ReflectionUtils.isCaseClass(genericType) ) {
+    if (ReflectionUtils.isCaseClass(genericType)) {
       addType(genericType)
     }
 
@@ -329,7 +347,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
         typ <:< typeOf[collection.immutable.Map[String, _]] => {
         value: Any =>
 
-          val elems: collection.immutable.Map[String, Any] = value.asInstanceOf[util.Map[String, ODocument]].asScala.mapValues(v => createClassByDocumentClassName(v)).toMap
+          val elems: collection.immutable.Map[String, Any] = value.asInstanceOf[util.Map[String, ODocument]].asScala.mapValues(v => read(v)).toMap
           elems.asInstanceOf[collection.immutable.Map[String, Any]] // Type check
       }
 
@@ -339,7 +357,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
         typ <:< typeOf[collection.mutable.Map[String, _]] => {
         value: Any =>
 
-          val elems = value.asInstanceOf[util.Map[String, ODocument]].asScala.map(kv => (kv._1 -> createClassByDocumentClassName(kv._2)))
+          val elems = value.asInstanceOf[util.Map[String, ODocument]].asScala.map(kv => (kv._1 -> read(kv._2)))
           elems.asInstanceOf[collection.mutable.HashMap[String, Any]] // Type check
       }
       //Maps: misc
@@ -349,7 +367,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
 
         {
           value: Any =>
-            val elems: mutable.Map[String, Any] = value.asInstanceOf[util.Map[String, ODocument]].asScala.map(kv => (kv._1 -> createClassByDocumentClassName(kv._2)))
+            val elems: mutable.Map[String, Any] = value.asInstanceOf[util.Map[String, ODocument]].asScala.map(kv => (kv._1 -> read(kv._2)))
             elems
         }
       }
@@ -359,7 +377,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
       //typ <:< typeOf[collection.immutable.HashSet[_]] ||
       typ <:< typeOf[collection.immutable.Set[_]] => {
         value: Any =>
-          val elems: Seq[Any] = value.asInstanceOf[util.Set[ODocument]].asScala.toSeq.map(doc => createClassByDocumentClassName(doc))
+          val elems: Seq[Any] = value.asInstanceOf[util.Set[ODocument]].asScala.toSeq.map(doc => read(doc))
           collection.immutable.Set[Any](elems: _*) // Type check
       }
       //Sets: mutable
@@ -367,7 +385,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
       //typ <:< typeOf[collection.mutable.HashSet[_]] ||
       typ <:< typeOf[collection.mutable.Set[_]] => {
         value: Any =>
-          val elems: mutable.Set[Any] = value.asInstanceOf[util.Set[ODocument]].asScala.map(doc => createClassByDocumentClassName(doc))
+          val elems: mutable.Set[Any] = value.asInstanceOf[util.Set[ODocument]].asScala.map(doc => read(doc))
           elems
       }
       //Sets: misc
@@ -376,7 +394,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
 
         {
           value: Any =>
-            val elems: Set[Any] = value.asInstanceOf[util.Set[ODocument]].asScala.map(doc => createClassByDocumentClassName(doc)).toSet
+            val elems: Set[Any] = value.asInstanceOf[util.Set[ODocument]].asScala.map(doc => read(doc)).toSet
             elems
         }
       }
@@ -391,7 +409,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
 
         {
           value: Any =>
-            val elems: List[Any] = value.asInstanceOf[util.List[ODocument]].asScala.map(doc => createClassByDocumentClassName(doc)).toList
+            val elems: List[Any] = value.asInstanceOf[util.List[ODocument]].asScala.map(doc => read(doc)).toList
             collection.immutable.List(elems: _*)
         }
       }
@@ -408,7 +426,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
           value: Any =>
 
             // TODO: Result an ArrayBuffer?
-            val elems: mutable.Buffer[Any] = value.asInstanceOf[util.List[ODocument]].asScala.map(doc => createClassByDocumentClassName(doc))
+            val elems: mutable.Buffer[Any] = value.asInstanceOf[util.List[ODocument]].asScala.map(doc => read(doc))
             elems
         }
       }
@@ -419,11 +437,19 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
         typ <:< typeOf[collection.Seq[_]] => {
         value: Any =>
 
-          val elems = value.asInstanceOf[util.List[ODocument]].asScala.map(doc => createClassByDocumentClassName(doc))
+          val elems = value.asInstanceOf[util.List[ODocument]].asScala.map(doc => read(doc))
           elems.asInstanceOf[collection.IndexedSeq[_]]
       }
 
       case _: Any => unhandledType(typ)
     }
+  }
+}
+
+
+object ClassNameReadersRegistry {
+  def throwMissingClassReader(classname: String, registry: ClassNameReadersRegistry=null): Boolean = {
+    throw new Exception(s"Document with @class '${classname}' has no reader")
+    false
   }
 }

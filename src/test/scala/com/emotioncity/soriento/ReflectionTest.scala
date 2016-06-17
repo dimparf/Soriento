@@ -99,7 +99,7 @@ class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter
 
 
     // Accessing non-case class
-    val typ = ReflectionUtils.getTypeForClass(classOf[EC])
+    val typ = ReflectionUtils.toType(classOf[EC])
     //val typ = typeOf[EC]
 
 

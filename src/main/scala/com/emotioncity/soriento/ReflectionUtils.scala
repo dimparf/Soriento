@@ -32,7 +32,7 @@ object ReflectionUtils {
 
   def toJavaClass(tpe:Type) = mirror.runtimeClass(tpe.typeSymbol.asClass)
 
-  def getTypeForClass(clazz: Class[_]): Type = {
+  def toType(clazz: Class[_]): Type = {
     //val mirror = runtimeMirror(clazz.getClassLoader)
     mirror.classSymbol(clazz).toType
   }
@@ -45,91 +45,11 @@ object ReflectionUtils {
   // Caches types and is efficient.
   val readers = ClassNameReadersRegistry()
 
-  def createCaseClass[T](document: ODocument)(implicit tag: TypeTag[T]): T =
+  def createCaseClass[T](document: ODocument)(implicit tag: TypeTag[T]): T = createCaseClass(document,readers)(tag)
+
+  def createCaseClass[T](document: ODocument, readers:ClassNameReadersRegistry)(implicit tag: TypeTag[T]): T =
     readers.addType(tag.tpe)(document).asInstanceOf[T]
 
-
-  //  def createCaseClassByType(tpe: Type, document: ODocument): Any = {
-//    val constr = constructor(tpe)
-//    val params = constr.symbol.paramLists.flatten // get constructor params
-//    val typeMap = params.map(symbol => symbol.name.toString -> symbol.typeSignature).toMap
-//    //println("TypeMap: " + typeMap)
-//
-//    def checkOptional(originalSignature: Type): (Type, Boolean) = {
-//      if (originalSignature.<:<(typeOf[Option[_]])) {
-//        (originalSignature.typeArgs.head, true)
-//      } else {
-//        (originalSignature, false)
-//      }
-//    }
-//
-//    //println(s"inDocument: ${ if (document.field("events") != null) document.field("events").getClass else null }")
-//
-//    val input = document.toMap.asScala.map {
-//      case (k, v) =>
-//        typeMap.get(k) match {
-//          case None =>
-//            if (k.equalsIgnoreCase("@rid")) {
-//              val fieldsWithAnnotations: List[(String, List[Annotation])] = onlyFieldsWithAnnotations(tpe).get
-//              fieldsWithAnnotations.find(pair => pair._2.exists(annotation => annotation.tree.tpe =:= typeOf[Id])) match {
-//                case Some(nameAnnotations) =>
-//                  val keyName = nameAnnotations._1
-//                  //println(s"Rid fieldName: $keyName")
-//                  val ridFieldSignature = typeMap.get(keyName).get //safe ?
-//                val (signature, optional) = checkOptional(ridFieldSignature)
-//                  val valueType = v.asInstanceOf[ORID].getIdentity // unsafe, test it, improve it
-//                  keyName -> (if (optional) Option(valueType) else valueType)
-//                case None =>
-//                  (k, v)
-//              }
-//            } else {
-//              (k, v)
-//            }
-//
-//          case Some(originalSignature) =>
-//            val (signature, optional) = checkOptional(originalSignature)
-//            val valueType = v match {
-//              case m: ODocument =>
-//                if (signature.<:<(typeOf[ORID])) {
-//                  m.getIdentity
-//                } else if (signature.<:<(typeOf[ODocument])) {
-//                  m
-//                } else {
-//                  createCaseClassByType(signature, m)
-//                }
-//              case m: util.Set[ODocument] =>
-//                m.asScala.map(item => createCaseClassByType(signature.typeArgs.head, item)).toSet
-//              case m: util.List[ODocument] =>
-//                m.asScala.toList.map(item => createCaseClassByType(signature.typeArgs.head, item))
-//              case m => m
-//            }
-//            //println("Value type: " + valueType)
-//            k -> (if (optional) Some(valueType) else valueType)
-//        }
-//    }
-//
-//
-//    /*  println(s"Input:  $input")
-//      println(s"Params: $params")*/
-//    val prms = params.map(_.name.toString).map(name => {
-//      input.get(name) match {
-//        case Some(value) =>
-//          //println(s"Value type name: $name - value: ${value.getClass}")
-//          value
-//        case None =>
-//          val (signature, optional) = checkOptional(typeMap(name))
-//          val xxx = if (signature.<:<(typeOf[ORID])) {
-//            document.getIdentity
-//          } else {
-//            null
-//          }
-//          if (optional) Option(xxx) else xxx
-//      }
-//    }).toSeq
-//    //println("Prms: " + prms)
-//    constr(prms: _*) // invoke constructor
-//
-//  }
 
   // return a human-readable type string for type argument 'T'
   // typeString[Int] returns "Int"
@@ -256,7 +176,7 @@ object ReflectionUtils {
   }
 
   def getOType(inName: String, field: Field, clazz: Class[_]): OType = {
-    val sym: Option[Symbol] = getScalaFieldSymbol(inName, getTypeForClass(clazz))
+    val sym: Option[Symbol] = getScalaFieldSymbol(inName, toType(clazz))
     getOType(sym.get)  // Symbol MUST exist
   }
 
@@ -267,7 +187,7 @@ object ReflectionUtils {
   def isId(symbol: Symbol) = hasAnnotation(symbol: Symbol, typeOf[Id])
 
   def isId(name: String, clazz: Class[_]): Boolean = {
-    val typeOfClass = getTypeForClass(clazz)
+    val typeOfClass = toType(clazz)
     val maybeFieldsWithAnnotations: Option[List[(String, List[Annotation])]] = onlyFieldsWithAnnotations(typeOfClass)
     maybeFieldsWithAnnotations match {
       case Some(fieldsWithAnnotations) =>
@@ -294,7 +214,7 @@ object ReflectionUtils {
           case Some(generic) => //Option[ORID]
             idField.get(cc).asInstanceOf[Option[ORID]]
           case None => //ORID
-            getTypeForClass(idField.getType) match {
+            toType(idField.getType) match {
               case tpe if tpe =:= typeOf[ORID] =>
                 Option(idField.get(cc).asInstanceOf[ORID])
               case _ =>
@@ -330,7 +250,7 @@ object ReflectionUtils {
 
   def getScalaFieldSymbol(fieldName: String, typ: Type): Option[Symbol] = constructorParams(typ).find( _.name.toString == fieldName )
 
-  def getScalaFieldType(fieldName: String, clazz: Class[_]): Option[Type] = getScalaFieldType( fieldName, getTypeForClass(clazz) )
+  def getScalaFieldType(fieldName: String, clazz: Class[_]): Option[Type] = getScalaFieldType( fieldName, toType(clazz) )
 
   def getScalaFieldType(fieldName: String, typ: Type): Option[Type] = getScalaFieldSymbol(fieldName, typ).map{ p=>p.typeSignature }
 
