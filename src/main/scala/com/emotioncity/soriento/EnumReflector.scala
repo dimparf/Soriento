@@ -37,7 +37,7 @@ class EnumReflector(val enumElementType: Type) {
   val withNameMethod = enumObject.getClass.getMethods.filter(m => m.getName.contains("withName"))(0)
   val valuesMethod = enumObject.getClass.getMethod("values")
 
-  val rawValues: Iterable[scala.Enumeration$Value] = valuesMethod.invoke(enumObject).asInstanceOf[Iterable[scala.Enumeration$Value]]
+  lazy val rawValues: IndexedSeq[scala.Enumeration$Value] = valuesMethod.invoke(enumObject).asInstanceOf[Iterable[scala.Enumeration$Value]].toIndexedSeq
 
 
   def fromID(enumVal: Int) = idToEnumValue(enumVal) //applyMethod.invoke(enumObject, new Integer(enumVal))
@@ -58,6 +58,9 @@ class EnumReflector(val enumElementType: Type) {
     s.isPublic &&
       s.returnType.typeSymbol.isClass &&
       s.returnType.typeSymbol.asClass.baseClasses.filter(_.fullName == "scala.Enumeration.Value").size > 0
+
+
+  lazy val ids = rawValues.map(toID)
 
   /**
     * Finds the name of the enum as its named as a member of the enum class.

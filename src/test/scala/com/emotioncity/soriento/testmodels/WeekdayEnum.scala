@@ -11,5 +11,5 @@ object WeekdayEnum extends Enumeration {
   val THU = Value(3)
   val FRI = Value("FRI")
   val SAT = Value
-  val SUN = Value
+  val SUN = Value(99)
 }

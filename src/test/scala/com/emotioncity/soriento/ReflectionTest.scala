@@ -122,6 +122,9 @@ class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter
     reflector.memberNameToEnumValue("FRI") should be (WeekdayEnum.FRI)
     reflector.idToMemberName(0) should be ("MON")
     reflector.idToMemberName(2) should be ("wednesday")
+    reflector.ids.contains(1) should be (true)
+    reflector.ids.contains(3) should be (true)
+    reflector.ids.contains(99) should be (true)
   }
 
   after {
