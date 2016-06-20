@@ -165,6 +165,8 @@ object ReflectionUtils {
       case tpe if typ <:< typeOf[Array[Byte]] => OType.BINARY
       //case tpe if typ <:< typeOf[java.lang.Character] => OType.CHARACTER
       case tpe if typ <:< typeOf[java.util.Date] => OType.DATE
+      case tpe if typ <:< typeOf[Array[_]] => OType.EMBEDDEDLIST
+      case tpe if typ <:< typeOf[Seq[_]] => OType.EMBEDDEDLIST
       // case tpe if typ <:< typeOf[java.util.Date] => OType.DATETIME  // Should prefer this. Will be better precision
       case _ =>  OType.ANY
     }

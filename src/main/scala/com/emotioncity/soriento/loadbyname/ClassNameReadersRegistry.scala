@@ -41,7 +41,7 @@ case class DocumentFromConstructor(val tpe: Type,
 
     // Ask for field values from the document
     val prms: Array[Any] = fieldConstructors.map(fc => fc(doc))
-    //    println(s"CTOR: ${tpe}  ${prms.toList}")
+    //    println(s"doc: ${doc.getClassName} CTOR: ${tpe}  ${prms.toList}")
     //    prms.foreach( x => println( s"  ${x} :${x.getClass}") )
     constr(prms: _*) // invoke constructor
   }
@@ -229,7 +229,6 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
     // collection.mutable should precede collection.immutable, which should precede collection.
 
     // TODO. Manage null values for container fields.
-
     typ match {
 
       case typ if EnumReflector.isEnumeration(typ) => {
@@ -272,7 +271,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
       }
 
       case typ if typ <:< typeOf[Map[_, _]] => getValueMapperForReadMapCollection(typ)
-      case typ if typ <:< typeOf[Iterable[_]] => getValueMapperForReadListCollection(typ)
+      case typ if (typ <:< typeOf[Iterable[_]] || typ <:< typeOf[Array[_]]) => getValueMapperForReadListCollection(typ)
 
       case typ if typ.typeSymbol.isClass => {
         // Ensure there's a reader for this field class
@@ -340,42 +339,12 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
     }
 
     typ match {
-      //Maps
-      //Maps: immutable
-      case typ if
-      typ <:< typeOf[collection.immutable.HashMap[String, _]] ||
-        typ <:< typeOf[collection.immutable.Map[String, _]] => {
-        value: Any =>
-
-          val elems: collection.immutable.Map[String, Any] = value.asInstanceOf[util.Map[String, ODocument]].asScala.mapValues(v => read(v)).toMap
-          elems.asInstanceOf[collection.immutable.Map[String, Any]] // Type check
-      }
-
-      //Maps: mutable
-      case typ if
-      typ <:< typeOf[collection.mutable.HashMap[String, _]] ||
-        typ <:< typeOf[collection.mutable.Map[String, _]] => {
-        value: Any =>
-
-          val elems = value.asInstanceOf[util.Map[String, ODocument]].asScala.map(kv => (kv._1 -> read(kv._2)))
-          elems.asInstanceOf[collection.mutable.HashMap[String, Any]] // Type check
-      }
-      //Maps: misc
-      case typ if
-      typ <:< typeOf[collection.Map[String, _]] => {
-
-
-        {
-          value: Any =>
-            val elems: mutable.Map[String, Any] = value.asInstanceOf[util.Map[String, ODocument]].asScala.map(kv => (kv._1 -> read(kv._2)))
-            elems
-        }
-      }
 
       //Sets: immutable
       case typ if
       //typ <:< typeOf[collection.immutable.HashSet[_]] ||
       typ <:< typeOf[collection.immutable.Set[_]] => {
+
         value: Any =>
           val elems: Seq[Any] = value.asInstanceOf[util.Set[ODocument]].asScala.toSeq.map(doc => read(doc))
           collection.immutable.Set[Any](elems: _*) // Type check
@@ -384,13 +353,13 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
       case typ if
       //typ <:< typeOf[collection.mutable.HashSet[_]] ||
       typ <:< typeOf[collection.mutable.Set[_]] => {
+
         value: Any =>
           val elems: mutable.Set[Any] = value.asInstanceOf[util.Set[ODocument]].asScala.map(doc => read(doc))
           elems
       }
       //Sets: misc
-      case typ if
-      typ <:< typeOf[collection.Set[_]] => {
+      case typ if typ <:< typeOf[collection.Set[_]] => {
 
         {
           value: Any =>
@@ -399,46 +368,48 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
         }
       }
 
-      //Lists : immutable
-      case typ if
-      typ <:< typeOf[collection.immutable.List[_]] ||
-        typ <:< typeOf[collection.immutable.Iterable[_]] ||
-        typ <:< typeOf[collection.immutable.Seq[_]] ||
-        typ <:< typeOf[collection.immutable.LinearSeq[_]] => {
-
+      //Lists : misc
+      case typ if typ <:< typeOf[Array[_]] => {
+            val clz = ReflectionUtils.toJavaClass(genericType)
 
         {
           value: Any =>
+            val list = value.asInstanceOf[util.List[ODocument]]
+            val result:Array[Any] = java.lang.reflect.Array.newInstance(clz, list.size()).asInstanceOf[Array[Any]]
+            var i = -1
+            for (doc <- list.iterator().asScala) {
+              i += 1
+              result(i) = read(doc)
+            }
+            result
+        }
+      }
+
+      //Lists : immutable
+      case typ if typ <:< typeOf[collection.immutable.List[_]] ||
+        typ <:< typeOf[collection.immutable.Iterable[_]] ||
+        typ <:< typeOf[collection.immutable.Seq[_]] ||
+        typ <:< typeOf[collection.immutable.LinearSeq[_]] => { value: Any =>
             val elems: List[Any] = value.asInstanceOf[util.List[ODocument]].asScala.map(doc => read(doc)).toList
             collection.immutable.List(elems: _*)
         }
-      }
 
-      //Lists : mutable
+
       case typ if
-      typ <:< typeOf[collection.mutable.Buffer[_]] ||
+        typ <:< typeOf[collection.IndexedSeq[_]] ||
+        typ <:< typeOf[collection.Seq[_]] ||
+        typ <:< typeOf[collection.mutable.Buffer[_]] ||
+        typ <:< typeOf[collection.mutable.Buffer[_]] ||
         typ <:< typeOf[collection.mutable.IndexedSeq[_]] ||
         typ <:< typeOf[collection.mutable.Seq[_]] ||
-        typ <:< typeOf[collection.mutable.Iterable[_]] => {
-        addType(typ.typeArgs.head)
+        typ <:< typeOf[collection.mutable.Iterable[_]] => { value: Any =>
 
-        {
-          value: Any =>
-
-            // TODO: Result an ArrayBuffer?
-            val elems: mutable.Buffer[Any] = value.asInstanceOf[util.List[ODocument]].asScala.map(doc => read(doc))
-            elems
-        }
-      }
-
-      //Lists : misc
-      case typ if
-      typ <:< typeOf[collection.IndexedSeq[_]] ||
-        typ <:< typeOf[collection.Seq[_]] => {
-        value: Any =>
-
-          val elems = value.asInstanceOf[util.List[ODocument]].asScala.map(doc => read(doc))
-          elems.asInstanceOf[collection.IndexedSeq[_]]
+          val list = value.asInstanceOf[util.List[ODocument]]
+          val result = new collection.mutable.ArrayBuffer[Any](list.size())
+          for (doc <- list.iterator().asScala) {
+            result += read(doc)
+          }
+          result
       }
 
       case _: Any => unhandledType(typ)

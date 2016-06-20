@@ -1,7 +1,7 @@
 package com.emotioncity.soriento.loadbyname
 
 
-import com.emotioncity.soriento.{Dsl, EnumReflector, ODb, ReflectionUtils}
+import com.emotioncity.soriento.{Dsl, EnumReflector, ODb, ODocumentReader, ReflectionUtils}
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.id.ORID
@@ -159,14 +159,21 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
     }
   }
 
+
+
   test("All type fields") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
       val odb = new ODb {}
       val oclass: OClass = odb.createOClass[AllTypeFields]
+      odb.createOClass[Thing]
 
       // Default mapping for enums is to INTEGER
       oclass.getProperty("e").getType() should be(OType.INTEGER)
       oclass.getProperty("eOpt").getType() should be(OType.INTEGER)
+
+      oclass.getProperty("objArray").getType() should be(OType.EMBEDDEDLIST)
+      oclass.getProperty("objISeq").getType() should be(OType.EMBEDDEDLIST)
+      oclass.getProperty("objISeq").getLinkedClass().toString  should be("Thing")
 
       val obj = AllTypeFields(
         e = WeekdayEnum.FRI,
@@ -192,12 +199,27 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
       val objs: Seq[AllTypeFields] = db.queryAnyBySql[AllTypeFields]("select * from AllTypeFields;")
       objs.size should be(1)
       val converted = objs(0)
-      (converted eq objs) should be(false)
-      (converted.withNullIDs() eq objs) should be(false)
-      (converted.withNullIDs() == obj) should be(true)
+      obj.id.isDefined should be (false)
+      converted.id.isDefined should be (true)
+      converted.objISeq.isInstanceOf[IndexedSeq[_]] should be(true)
+      converted.objISeq(1).isInstanceOf[Thing] should be(true)
+      (obj eq converted) should be(false)
+      (converted.e eq WeekdayEnum.FRI) should be(true)
+      (converted.e == obj.e) should be(true)
       (converted.e eq obj.e) should be(true)
+      (converted eq obj) should be(false)
+      // Arrays don't behave well with ==
+      // Also, the loaded object has a id, the original does not
+      (converted.withNullIDs().copy(objArray=null) == obj.copy(objArray=null)) should be(true)
+
+      // Compare array contens
+      for( (a,b) <- converted.objArray.zip(obj.objArray) ){
+        (a==b) should be(true)
+      }
     }
     }
   }
+
+
 }
 

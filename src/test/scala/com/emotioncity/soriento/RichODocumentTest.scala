@@ -139,30 +139,6 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
   //
   //  }
 
-  test("enum field") {
-
-    object Colours extends Enumeration {
-      val Red, Amber, Green = Value
-    }
-
-    val e = Colours.Red
-
-    createOClass[AllTypeFields]
-
-    val obj = AllTypeFields(
-      e = WeekdayEnum.FRI,
-      eOpt = Some(WeekdayEnum.THU))
-
-    val doc: ODocument = obj.save
-    val converted = doc.as[AllTypeFields].get
-    val convertedNoID: AllTypeFields = converted.copy(id = None)
-
-    (obj eq converted) should be(false)
-    (converted.e eq WeekdayEnum.FRI) should be(true)
-//    println(obj)
-//    println(convertedNoID)
-    (obj == convertedNoID) should be(true)
-  }
 
   after {
     dropOClass[Home]
@@ -174,7 +150,6 @@ class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with 
     dropOClass[LinkedMessage]
     dropOClass[BlogWithLinkedMessage]
     dropOClass[BlogWithLinkSetMessages]
-    dropOClass[AllTypeFields]
     //dropOClass[ClassWithOptionalPrimitiveField]
   }
 
