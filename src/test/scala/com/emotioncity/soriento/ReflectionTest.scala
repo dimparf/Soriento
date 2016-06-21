@@ -2,18 +2,18 @@ package com.emotioncity.soriento
 
 import com.emotioncity.soriento.ReflectionUtils._
 import com.emotioncity.soriento.support.OrientDbSupport
-import com.emotioncity.soriento.testmodels._
+import com.emotioncity.soriento.testmodels.{WeekdayEnum, _}
 import com.orientechnologies.orient.core.id.ORecordId
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 import org.scalatest.OptionValues._
-import scala.reflect.runtime.universe.{typeOf,MethodSymbol,Type}
+
+import scala.reflect.runtime.universe.{MethodSymbol, Type, typeOf}
 
 /**
   * Created by stream on 25.12.14.
   */
 
 package enumtest {
-
 
   // Case class with enum constructor fields
   case class CC(val nonEnum: Int, val wd: WeekdayEnum.WeekdayEnum)
@@ -84,6 +84,7 @@ class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter
     import enumtest._
     import com.emotioncity.soriento.testmodels.WeekdayEnum._
 
+
     // Enum params of case class
     val enumParams = constructorParams(typeOf[CC]).map(_.typeSignature).filter(EnumReflector.isEnumeration _)
     (enumParams.size) should be(1)
@@ -93,13 +94,13 @@ class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter
     val cc = CC(123, WeekdayEnum.THU)
     (cc.wd eq er.fromID(er.toID(cc.wd))) should be(true)
     (cc.wd eq er.fromName(er.toName(cc.wd)).asInstanceOf[WeekdayEnum.WeekdayEnum]) should be(true)
-    (er.values.size == 7) should be(true)
+    (er.idToEnumValue.size == 7) should be(true)
 
 
 
 
     // Accessing non-case class
-    val typ = ReflectionUtils.getTypeForClass(classOf[EC])
+    val typ = ReflectionUtils.toType(classOf[EC])
     //val typ = typeOf[EC]
 
 
@@ -117,7 +118,13 @@ class ReflectionTest extends FunSuite with Matchers with ODb with BeforeAndAfter
     val enumObj = enumGetter.invoke(ecObj)
     reflector.toName(enumObj) == WeekdayEnum.FRI.toString should be(true)
 
-
+    reflector.memberNameToEnumValue("wednesday") should be (WeekdayEnum.wednesday)
+    reflector.memberNameToEnumValue("FRI") should be (WeekdayEnum.FRI)
+    reflector.idToMemberName(0) should be ("MON")
+    reflector.idToMemberName(2) should be ("wednesday")
+    reflector.ids.contains(1) should be (true)
+    reflector.ids.contains(3) should be (true)
+    reflector.ids.contains(99) should be (true)
   }
 
   after {

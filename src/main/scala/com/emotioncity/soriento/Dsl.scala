@@ -20,11 +20,16 @@ trait Dsl {
       field.asInstanceOf[scala.Enumeration$Value].id
     else {
       field match {
+          // Unpack option
         case Some(v) => scalaFieldToDocumentField(v)
         case None => null
         // TODO: Add map here.
+          // TODO: handle collections of basic types
+        case x: String => x // Strings are sequences
+        case p: Array[_] => p.map { e => scalaFieldToDocumentField(e) }.toList.asJavaCollection
         case p: Set[_] => p.map { e => scalaFieldToDocumentField(e) }.asJavaCollection
         case p: List[_] => p.map { e => scalaFieldToDocumentField(e) }.asJavaCollection
+        case p: Iterable[_] => p.map { e => scalaFieldToDocumentField(e) }.asJavaCollection
         case p: Product if p.productArity > 0 => productToDocument(p)
         case x: Any => x // Builtins and null
         case null => null

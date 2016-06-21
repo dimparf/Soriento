@@ -11,7 +11,9 @@ object EnumReflector {
   def apply(enumElementType: Type): EnumReflector = cache.getOrElse(enumElementType, new EnumReflector(enumElementType))
 
   final def isEnumeration(sym: Symbol): Boolean = isEnumeration(sym.typeSignature)
+
   final def isEnumeration(tpe: Type): Boolean = tpe.baseClasses.exists(_.fullName == "scala.Enumeration.Value")
+
   final def isEnumerationValue(obj: Any): Boolean = obj.isInstanceOf[Enumeration$Value]
 }
 
@@ -24,8 +26,8 @@ object EnumReflector {
 class EnumReflector(val enumElementType: Type) {
 
   private val tref = enumElementType.asInstanceOf[TypeRef]
-  private val trr: Type = tref.pre
-  val className = trr.typeSymbol.asClass.fullName
+  private val enumType: Type = tref.pre
+  val className = enumType.typeSymbol.asClass.fullName
 
   /// The enum's companion object
   getClass.getClassLoader.loadClass(className)
@@ -35,10 +37,10 @@ class EnumReflector(val enumElementType: Type) {
   val withNameMethod = enumObject.getClass.getMethods.filter(m => m.getName.contains("withName"))(0)
   val valuesMethod = enumObject.getClass.getMethod("values")
 
-  val rawValues: Iterable[scala.Enumeration$Value] = valuesMethod.invoke(enumObject).asInstanceOf[Iterable[scala.Enumeration$Value]]
+  lazy val rawValues: IndexedSeq[scala.Enumeration$Value] = valuesMethod.invoke(enumObject).asInstanceOf[Iterable[scala.Enumeration$Value]].toIndexedSeq
 
 
-  def fromID(enumVal: Int) = values(enumVal) //applyMethod.invoke(enumObject, new Integer(enumVal))
+  def fromID(enumVal: Int) = idToEnumValue(enumVal) //applyMethod.invoke(enumObject, new Integer(enumVal))
 
   def fromName(enumName: String): scala.Enumeration$Value = withNameMethod.invoke(enumObject, enumName).asInstanceOf[scala.Enumeration$Value]
 
@@ -49,6 +51,31 @@ class EnumReflector(val enumElementType: Type) {
 
   def toName(enum: Any): String = enum.toString //nameMethod.invoke(enum).asInstanceOf[String]
 
-  val valueToNames = collection.immutable.TreeMap[Int, String](rawValues.map { x => (toID(x), toName(x)) }.toSeq: _*)
-  val values = collection.immutable.TreeMap(rawValues.map { x => (toID(x), x) }.toSeq: _*)
+  lazy val idToName = collection.immutable.TreeMap[Int, String](rawValues.map { x => (toID(x), toName(x)) }.toSeq: _*)
+  lazy val idToEnumValue = collection.immutable.TreeMap(rawValues.map { x => (toID(x), x) }.toSeq: _*)
+
+  private def hasEnumerationReturnType(s: MethodSymbol) =
+    s.isPublic &&
+      s.returnType.typeSymbol.isClass &&
+      s.returnType.typeSymbol.asClass.baseClasses.filter(_.fullName == "scala.Enumeration.Value").size > 0
+
+
+  lazy val ids = rawValues.map(toID)
+
+  /**
+    * Finds the name of the enum as its named as a member of the enum class.
+    */
+  lazy val memberNameToEnumValue = collection.immutable.TreeMap[String, scala.Enumeration$Value](
+    ReflectionUtils.classGetters(enumType)
+      //.filter(s => s.isPublic && s.returnType <:< typeOf[scala.Enumeration$Value])  // Nope!
+      .filter(hasEnumerationReturnType)
+      .map { s =>
+        val memberName = s.name.toString
+        val enumValue = enumObject.getClass.getMethod(memberName).invoke(enumObject).asInstanceOf[scala.Enumeration$Value]
+        println(s"${memberName} ${enumValue}")
+        (memberName -> enumValue)
+      }: _*
+  )
+
+  lazy val idToMemberName = memberNameToEnumValue.map { case (name, enum) => (toID(enum) -> name) }
 }
