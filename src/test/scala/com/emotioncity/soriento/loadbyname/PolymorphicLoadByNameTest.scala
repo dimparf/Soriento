@@ -160,6 +160,26 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
   }
 
 
+  test("Exception on unconstructable") {
+
+    implicit val typeReaders = ClassNameReadersRegistry()
+    typeReaders.add[AllTypeFields]
+
+    val dsl = new Dsl {}
+
+    val doc = dsl.productToDocument(AllTypeFields())
+    doc.field("i", 2.0)  // double were int is expected
+
+    try {
+      val obj2 = typeReaders.read(doc)
+    }
+    catch {
+      case e:DocumentReadConstructException => {
+        println(e.getMessage)
+      }
+    }
+  }
+
 
   test("All type fields") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>

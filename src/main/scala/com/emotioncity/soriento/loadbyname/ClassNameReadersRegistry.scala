@@ -24,6 +24,34 @@ object Typedefs {
 
 import Typedefs._
 
+class DocumentReadException(val doc: ODocument=null, val message: String = null, val cause: Exception = null) extends java.lang.IllegalArgumentException(message, cause)
+
+/**
+  * Failed providing this parametes to the constructor for this type.
+  */
+case class DocumentReadConstructException(override val doc: ODocument,
+                                          params:Array[Any],
+                                          tpe: Type,
+                                          override val message: String = "Failed to construct object from document",
+                                          override val cause: Exception = null) extends DocumentReadException(doc, message, cause) {
+  override def getMessage: String = {
+    val table = params.map(_.getClass)
+      .zipAll( ReflectionUtils.constructorParams(tpe), null, null )
+      .map{case (x,y)=>f"   ${x.getSimpleName}%20s    -  ${y.typeSignature.toString}%-30s"}
+      .zipAll(params, "-", "-")
+      .map{case (x,y)=>s"${x} - ${y}\n"}
+
+    s"""With:
+      params: ${params.mkString(",")}
+         tpe: ${tpe}
+         doc: ${doc}
+          SUPPLIED TYPE  -  CONSTRUCTOR EXPECTED TYPE    -  PARAM VALUE
+${table.mkString("")}
+${super.getMessage}
+"""
+  }
+}
+
 /**
   * Reads a document and emits a scala type.
   *
@@ -41,9 +69,13 @@ case class DocumentFromConstructor(val tpe: Type,
 
     // Ask for field values from the document
     val prms: Array[Any] = fieldConstructors.map(fc => fc(doc))
-    //    println(s"doc: ${doc.getClassName} CTOR: ${tpe}  ${prms.toList}")
-    //    prms.foreach( x => println( s"  ${x} :${x.getClass}") )
-    constr(prms: _*) // invoke constructor
+
+    try {
+      constr(prms: _*) // invoke constructor
+    } catch {
+      // Breakpoint here when readings fails!
+      case e:java.lang.IllegalArgumentException => throw DocumentReadConstructException(doc, prms, tpe)
+    }
   }
 }
 
