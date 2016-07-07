@@ -21,6 +21,7 @@ case class AllTypeFields(
                           val f: Float = 1.0f,
                           val d: Double = 1.0,
                           val b: Byte = 1,
+                          val string:String = "beebop",
                           val e: WeekdayEnum = MON, // scala.Enumeration
 
                           // List of builtin types not working.

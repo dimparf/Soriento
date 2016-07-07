@@ -35,17 +35,36 @@ case class DocumentReadConstructException(override val doc: ODocument,
                                           override val message: String = "Failed to construct object from document",
                                           override val cause: Exception = null) extends DocumentReadException(doc, message, cause) {
   override def getMessage: String = {
-    val table = params.map(_.getClass)
-      .zipAll( ReflectionUtils.constructorParams(tpe), null, null )
-      .map{case (x,y)=>f"   ${x.getSimpleName}%20s    -  ${y.typeSignature.toString}%-30s"}
-      .zipAll(params, "-", "-")
-      .map{case (x,y)=>s"${x} - ${y}\n"}
+    val cparams = ReflectionUtils.constructorParams(tpe)
+
+    val table = (0 until Math.max(cparams.size, params.size)).map { i:Int =>
+      val p = params(i)
+
+      val foundType = if (i>=params.size) "<missing>" else {
+        if (params(i)==null) "<null>"
+        else params(i).getClass.getSimpleName
+      }
+
+      val paramString = if (i>=params.size) "<missing>" else {
+        val s = s"${params(i)}"
+        s.drop(s.size-40)
+      }
+      val paramName = if (i>=cparams.size) "<missing>" else {
+        val s = s"${cparams(i).name}"
+        s.drop(s.size-15)
+      }
+
+      val expectedType = if (i>=cparams.size) "xxx" else cparams(i).typeSignature.toString
+      f" ${i}%3d ${paramName}%-15s ${paramString}%40s : ${foundType}%-30s   ${expectedType}\n"
+    }
+
+
 
     s"""With:
       params: ${params.mkString(",")}
          tpe: ${tpe}
          doc: ${doc}
-          SUPPLIED TYPE  -  CONSTRUCTOR EXPECTED TYPE    -  PARAM VALUE
+PARAM                                                   VALUE : SUPPLIED TYPE                  CONSTRUCTOR EXPECTED TYPE
 ${table.mkString("")}
 ${super.getMessage}
 """

@@ -167,19 +167,48 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
 
     val dsl = new Dsl {}
 
-    val doc = dsl.productToDocument(AllTypeFields())
-    doc.field("i", 2.0)  // double were int is expected
-
     try {
+      val doc = dsl.productToDocument(AllTypeFields())
+      doc.field("i", 2.0) // double were int is expected
+      doc.field("s", null.asInstanceOf[String]) // exception should not fail to report with null parameters.
       val obj2 = typeReaders.read(doc)
     }
     catch {
-      case e:DocumentReadConstructException => {
+      case e: DocumentReadConstructException => {
         println(e.getMessage)
       }
     }
   }
 
+  test("Allow null object field") {
+    implicit val typeReaders = ClassNameReadersRegistry()
+    typeReaders.add[AllTypeFields]
+    val dsl = new Dsl {}
+    val doc = dsl.productToDocument(AllTypeFields())
+    doc.field("string", null.asInstanceOf[String])  // Should be able to load null into an object field.
+  }
+
+
+  test("Exception on null primitive") {
+    // Deserializing null and putting it into a Double, Int, Short, ... as 0 is probably a mistake.
+    // Should throw and exception
+
+    implicit val typeReaders = ClassNameReadersRegistry()
+    typeReaders.add[AllTypeFields]
+
+    val dsl = new Dsl {}
+
+    try {
+      val doc = dsl.productToDocument(AllTypeFields())
+      doc.field("i", null.asInstanceOf[String])
+      val obj2 = typeReaders.read(doc)
+    }
+    catch {
+      case e: DocumentReadConstructException => {
+        println(e.getMessage)
+      }
+    }
+  }
 
   test("All type fields") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
