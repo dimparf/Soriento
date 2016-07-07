@@ -55,7 +55,7 @@ case class DocumentReadConstructException(override val doc: ODocument,
       }
 
       val expectedType = if (i>=cparams.size) "xxx" else cparams(i).typeSignature.toString
-      f" ${i}%3d ${paramName}%-15s ${paramString}%40s : ${foundType}%-30s   ${expectedType}\n"
+      f" ${i}%3d ${paramName}%15s ${paramString}%40s : ${foundType}%-30s   ${expectedType}\n"
     }
 
 
@@ -64,7 +64,7 @@ case class DocumentReadConstructException(override val doc: ODocument,
       params: ${params.mkString(",")}
          tpe: ${tpe}
          doc: ${doc}
-PARAM                                                   VALUE : SUPPLIED TYPE                  CONSTRUCTOR EXPECTED TYPE
+PARAM |         NAME |                              DOC VALUE | DOC VALUE TYPE                 | CONSTRUCTOR EXPECTED TYPE
 ${table.mkString("")}
 ${super.getMessage}
 """

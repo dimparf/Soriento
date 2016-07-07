@@ -210,6 +210,25 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
     }
   }
 
+  // FAILING
+  /*
+  test("Basic type result") {
+    withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
+      val odb = new ODb {}
+      odb.createOClass[AllTypeFields]
+      db.save(AllTypeFields())
+
+      val result = db.query[java.util.List[ODocument]](new OSQLSynchQuery[ODocument]("select string from AllTypeFields").setFetchPlan("*:-1"))
+      println( result.toArray()(0).getClass )
+      //should be (AllTypeFields().string)
+      val dsl = new Dsl {}
+      implicit val typeReaders = ClassNameReadersRegistry()
+      import AnyRichODatabaseDocumentImpl._
+      val result2 = db.queryAnyBySql[AllTypeFields]("select string from AllTypeFields;")
+    }
+  }
+  */
+
   test("All type fields") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
       val odb = new ODb {}

@@ -28,6 +28,7 @@ object AnyRichODatabaseDocumentImpl {
       */
     def queryAnyBySql[T <: Any](query: String)(implicit reader: ODocumentReader[Any]): Seq[T] = blockingCall { db =>
       val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](query))
+      //val constraint = scala.reflect.runtime.universe.typeOf[T]
       val objs: Seq[Any] = results.asScala.map(document => reader.read(document))
       objs.asInstanceOf[Seq[T]]
     }
