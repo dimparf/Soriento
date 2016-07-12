@@ -164,6 +164,7 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
 
     implicit val typeReaders = ClassNameReadersRegistry()
     typeReaders.add[AllTypeFields]
+    typeReaders.add[Sub]  // Register polymorphic
 
     val dsl = new Dsl {}
 
@@ -183,6 +184,8 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
   test("Allow null object field") {
     implicit val typeReaders = ClassNameReadersRegistry()
     typeReaders.add[AllTypeFields]
+    typeReaders.add[Sub]  // Register polymorphic
+
     val dsl = new Dsl {}
     val doc = dsl.productToDocument(AllTypeFields())
     doc.field("string", null.asInstanceOf[String])  // Should be able to load null into an object field.
@@ -195,6 +198,7 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
 
     implicit val typeReaders = ClassNameReadersRegistry()
     typeReaders.add[AllTypeFields]
+    typeReaders.add[Sub]  // Register polymorphic
 
     val dsl = new Dsl {}
 
@@ -234,6 +238,8 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
       val odb = new ODb {}
       val oclass: OClass = odb.createOClass[AllTypeFields]
       odb.createOClass[Thing]
+      val supers = List(odb.createOClass[Super])
+      odb.createOClass[Sub].setSuperClasses(supers.asJava)
 
       // Default mapping for enums is to INTEGER
       oclass.getProperty("e").getType() should be(OType.INTEGER)
@@ -261,6 +267,7 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
 
       implicit val typeReaders = ClassNameReadersRegistry()
       typeReaders.add[AllTypeFields]
+      typeReaders.add[Sub]
 
       import AnyRichODatabaseDocumentImpl._
 

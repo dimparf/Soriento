@@ -11,6 +11,11 @@ import scala.collection.mutable.ArrayBuffer
 
 case class Thing(x:Int)
 
+trait Super
+
+case class Sub(x:Int = 123) extends Super
+
+
 /**
   * Created by sir on 5/10/16.
   */
@@ -32,6 +37,8 @@ case class AllTypeFields(
                           //                          val iOpt: Option[Int] = Some(123),
 
                           val obj:Thing = new Thing(123),
+                          val stringISeq:IndexedSeq[String] = IndexedSeq("123","456"),
+                          val intISeq:IndexedSeq[Int] = IndexedSeq(123),
                           val objISeq:IndexedSeq[Thing] = IndexedSeq(Thing(1), Thing(2)),
                           val objSeq:Seq[Thing] = Seq(Thing(1), Thing(2)),
                           val objMutISeq:collection.mutable.IndexedSeq[Thing] = ArrayBuffer(Thing(1), Thing(2)),
@@ -40,10 +47,18 @@ case class AllTypeFields(
                           val objImMutISeq:collection.immutable.Seq[Thing] = collection.immutable.IndexedSeq(Thing(1), Thing(2)),
                           val objArray:Array[Thing] = Array(Thing(1), Thing(2)),
 
+                          //val intArray:Array[Int] = Array(1,2), // Fails
+                          //val stringArray:Array[String] = Array("1","2"), // Works but need to fix test to compare array fields
+
                           //FAILING val iOptOpt: Option[Option[Int]] = Some(Some(123)),
                           val eOpt: Option[WeekdayEnum] = Some(MON),
                           //FAILING val eOptOpt: Option[Option[WeekdayEnum]] = Some(Some(MON)),
-                          @Id id: Option[ORID] = None
+                          @Id id: Option[ORID] = None,
+
+                          // Polymorphic members
+                          val sub:Super = Sub(123),
+                          val subList:List[Super] = List(Sub(123)),
+                          val subSeq:Seq[Super] = Seq(Sub(123))
                         ){
   def withNullIDs() = this.copy(id=None)
 }
