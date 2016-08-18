@@ -24,9 +24,10 @@ lazy val commonSettings = Seq(
     "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/"
   ),
 libraryDependencies ++= Seq(
+  "javax.persistence" % "persistence-api" % "1.0.2",
   "com.tinkerpop.blueprints" % "blueprints-core" % "2.6.0",
-  "com.orientechnologies" % "orientdb-core" % "2.1.8",
-  "com.orientechnologies" % "orientdb-graphdb" % "2.1.8",
+  "com.orientechnologies" % "orientdb-core" % "2.2.5",
+  "com.orientechnologies" % "orientdb-graphdb" % "2.2.5",
   "org.scala-lang" % "scalap" % "2.11.8", //TODO fix scala dep on scalaVersion
   //"jline" % "jline" % "2.12.1",
   "jline" % "jline" % "0.9.94",

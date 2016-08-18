@@ -65,11 +65,11 @@ object RichODatabaseDocumentImpl {
       //println("ThreadLocal is: " + instance.getClass.getName)
       Future {
         val internalDb = if (isPooled) {
-          val tempDb = db.asInstanceOf[ODatabaseDocumentTx]
-          tempDb.activateOnCurrentThread()
+          db.asInstanceOf[ODatabaseDocumentTx]
         } else {
           instance.asInstanceOf[ODatabaseDocumentTx].copy()
         }
+        internalDb.activateOnCurrentThread()
         blocking {
           payload(internalDb)
         }
