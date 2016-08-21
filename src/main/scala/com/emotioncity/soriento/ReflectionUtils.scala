@@ -24,8 +24,15 @@ object ReflectionUtils {
   val mirror = runtimeMirror(getClass.getClassLoader)
 
   def constructor(t: Type): MethodMirror = {
-    val ctr = t.decl(termNames.CONSTRUCTOR)
-    mirror.reflectClass(t.typeSymbol.asClass).reflectConstructor(ctr.asMethod)
+    try {
+      val ctr = t.decl(termNames.CONSTRUCTOR)
+      mirror.reflectClass(t.typeSymbol.asClass).reflectConstructor(ctr.asMethod)
+    } catch {
+      case e: ScalaReflectionException => {
+        // May get here if type is abstract
+        throw e // Useful place for breakpoint.
+      }
+    }
   }
 
   def constructorParams(t: Type) = constructor(t).symbol.paramLists.flatten
@@ -142,10 +149,10 @@ object ReflectionUtils {
     * Ignores any annotations. Prefer to use getOType(parameterSymbol: Symbol) where possible
     * since this will allow specialization by annotation.
     */
-  def getOTypeByType(typ: Type): OType = {
-    typ match {
+  def getOTypeByTypeOpt(typ: Type): Option[OType] = {
+    val o = typ match {
       case tpe if tpe <:< typeOf[Option[_]] => getOTypeByType(tpe.typeArgs(0))
-      case tpe if EnumReflector.isEnumeration(typ) => OType.INTEGER
+      case tpe if EnumReflector.isEnumeration(typ) => OType.INTEGER // Is default. Could serialize as strings, or object
       case tpe if typ <:< typeOf[Boolean] => OType.BOOLEAN
       case tpe if typ <:< typeOf[Int] => OType.INTEGER
       case tpe if typ <:< typeOf[Long] => OType.LONG
@@ -167,8 +174,15 @@ object ReflectionUtils {
       case tpe if typ <:< typeOf[java.util.Date] => OType.DATE
       case tpe if typ <:< typeOf[Array[_]] => OType.EMBEDDEDLIST
       case tpe if typ <:< typeOf[Seq[_]] => OType.EMBEDDEDLIST
-      // case tpe if typ <:< typeOf[java.util.Date] => OType.DATETIME  // Should prefer this. Will be better precision
-      case _ =>  OType.ANY
+      case _ => return None
+    }
+    Some(o)
+  }
+
+  def getOTypeByType(typ: Type): OType = {
+    getOTypeByTypeOpt(typ) match {
+      case Some(o) => o
+      case None => OType.ANY
     }
   }
 

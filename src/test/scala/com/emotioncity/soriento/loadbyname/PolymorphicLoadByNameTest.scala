@@ -160,12 +160,86 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
   }
 
 
+  test("Exception on unconstructable") {
+
+    implicit val typeReaders = ClassNameReadersRegistry()
+    typeReaders.add[AllTypeFields]
+    typeReaders.add[Sub]  // Register polymorphic
+
+    val dsl = new Dsl {}
+
+    try {
+      val doc = dsl.productToDocument(AllTypeFields())
+      doc.field("i", 2.0) // double were int is expected
+      doc.field("s", null.asInstanceOf[String]) // exception should not fail to report with null parameters.
+      val obj2 = typeReaders.read(doc)
+    }
+    catch {
+      case e: DocumentReadConstructException => {
+        println(e.getMessage)
+      }
+    }
+  }
+
+  test("Allow null object field") {
+    implicit val typeReaders = ClassNameReadersRegistry()
+    typeReaders.add[AllTypeFields]
+    typeReaders.add[Sub]  // Register polymorphic
+
+    val dsl = new Dsl {}
+    val doc = dsl.productToDocument(AllTypeFields())
+    doc.field("string", null.asInstanceOf[String])  // Should be able to load null into an object field.
+  }
+
+
+  test("Exception on null primitive") {
+    // Deserializing null and putting it into a Double, Int, Short, ... as 0 is probably a mistake.
+    // Should throw and exception
+
+    implicit val typeReaders = ClassNameReadersRegistry()
+    typeReaders.add[AllTypeFields]
+    typeReaders.add[Sub]  // Register polymorphic
+
+    val dsl = new Dsl {}
+
+    try {
+      val doc = dsl.productToDocument(AllTypeFields())
+      doc.field("i", null.asInstanceOf[String])
+      val obj2 = typeReaders.read(doc)
+    }
+    catch {
+      case e: DocumentReadConstructException => {
+        println(e.getMessage)
+      }
+    }
+  }
+
+  // FAILING
+  /*
+  test("Basic type result") {
+    withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
+      val odb = new ODb {}
+      odb.createOClass[AllTypeFields]
+      db.save(AllTypeFields())
+
+      val result = db.query[java.util.List[ODocument]](new OSQLSynchQuery[ODocument]("select string from AllTypeFields").setFetchPlan("*:-1"))
+      println( result.toArray()(0).getClass )
+      //should be (AllTypeFields().string)
+      val dsl = new Dsl {}
+      implicit val typeReaders = ClassNameReadersRegistry()
+      import AnyRichODatabaseDocumentImpl._
+      val result2 = db.queryAnyBySql[AllTypeFields]("select string from AllTypeFields;")
+    }
+  }
+  */
 
   test("All type fields") {
     withDropDB(makeTestDB()) { implicit db: ODatabaseDocumentTx =>
       val odb = new ODb {}
       val oclass: OClass = odb.createOClass[AllTypeFields]
       odb.createOClass[Thing]
+      val supers = List(odb.createOClass[Super])
+      odb.createOClass[Sub].setSuperClasses(supers.asJava)
 
       // Default mapping for enums is to INTEGER
       oclass.getProperty("e").getType() should be(OType.INTEGER)
@@ -193,6 +267,7 @@ class PolymorphicLoadByNameTest extends FunSuite with Matchers with BeforeAndAft
 
       implicit val typeReaders = ClassNameReadersRegistry()
       typeReaders.add[AllTypeFields]
+      typeReaders.add[Sub]
 
       import AnyRichODatabaseDocumentImpl._
 

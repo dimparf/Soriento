@@ -24,6 +24,53 @@ object Typedefs {
 
 import Typedefs._
 
+class DocumentReadException(val doc: ODocument=null, val message: String = null, val cause: Exception = null) extends java.lang.IllegalArgumentException(message, cause)
+
+/**
+  * Failed providing this parametes to the constructor for this type.
+  */
+case class DocumentReadConstructException(override val doc: ODocument,
+                                          params:Array[Any],
+                                          tpe: Type,
+                                          override val message: String = "Failed to construct object from document",
+                                          override val cause: Exception = null) extends DocumentReadException(doc, message, cause) {
+  override def getMessage: String = {
+    val cparams = ReflectionUtils.constructorParams(tpe)
+
+    val table = (0 until Math.max(cparams.size, params.size)).map { i:Int =>
+      val p = params(i)
+
+      val foundType = if (i>=params.size) "<missing>" else {
+        if (params(i)==null) "<null>"
+        else params(i).getClass.getSimpleName
+      }
+
+      val paramString = if (i>=params.size) "<missing>" else {
+        val s = s"${params(i)}"
+        s.drop(s.size-40)
+      }
+      val paramName = if (i>=cparams.size) "<missing>" else {
+        val s = s"${cparams(i).name}"
+        s.drop(s.size-15)
+      }
+
+      val expectedType = if (i>=cparams.size) "xxx" else cparams(i).typeSignature.toString
+      f" ${i}%3d ${paramName}%15s ${paramString}%40s : ${foundType}%-30s   ${expectedType}\n"
+    }
+
+
+
+    s"""With:
+      params: ${params.mkString(",")}
+         tpe: ${tpe}
+         doc: ${doc}
+PARAM |         NAME |                              DOC VALUE | DOC VALUE TYPE                 | CONSTRUCTOR EXPECTED TYPE
+${table.mkString("")}
+${super.getMessage}
+"""
+  }
+}
+
 /**
   * Reads a document and emits a scala type.
   *
@@ -41,9 +88,13 @@ case class DocumentFromConstructor(val tpe: Type,
 
     // Ask for field values from the document
     val prms: Array[Any] = fieldConstructors.map(fc => fc(doc))
-    //    println(s"doc: ${doc.getClassName} CTOR: ${tpe}  ${prms.toList}")
-    //    prms.foreach( x => println( s"  ${x} :${x.getClass}") )
-    constr(prms: _*) // invoke constructor
+
+    try {
+      constr(prms: _*) // invoke constructor
+    } catch {
+      // Breakpoint here when readings fails!
+      case e:java.lang.IllegalArgumentException => throw DocumentReadConstructException(doc, prms, tpe)
+    }
   }
 }
 
@@ -151,6 +202,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
           _classNameToType += (className -> tpe.get)
 
           val reader = DocumentFromConstructor(tpe = tpe.get, fieldConstructors = null)
+
           _readers += (className -> reader)
           // Instantiating documentReader may recursively ask for the same type.
           // This late binding of fieldConstructors allows recursive definitions
@@ -274,8 +326,17 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
       case typ if (typ <:< typeOf[Iterable[_]] || typ <:< typeOf[Array[_]]) => getValueMapperForReadListCollection(typ)
 
       case typ if typ.typeSymbol.isClass => {
-        // Ensure there's a reader for this field class
-        this.addType(typ)
+
+        val clzSym = typ.typeSymbol.asClass
+
+        if (!clzSym.isAbstract) {
+          // Ensure there's a reader for this field class
+          this.addType(typ)
+        }
+
+        if (!clzSym.isFinal) {
+          // TODO. Optimize final classes with no possible subtypes.
+        }
 
         {
           value: Any => this.read(value.asInstanceOf[ODocument])
@@ -338,6 +399,8 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
       addType(genericType)
     }
 
+    val elementReader = getValueMapperForRead(genericType)
+
     typ match {
 
       //Sets: immutable
@@ -346,7 +409,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
       typ <:< typeOf[collection.immutable.Set[_]] => {
 
         value: Any =>
-          val elems: Seq[Any] = value.asInstanceOf[util.Set[ODocument]].asScala.toSeq.map(doc => read(doc))
+          val elems: Seq[Any] = value.asInstanceOf[util.Set[Any]].asScala.toSeq.map(doc => elementReader(doc))
           collection.immutable.Set[Any](elems: _*) // Type check
       }
       //Sets: mutable
@@ -355,7 +418,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
       typ <:< typeOf[collection.mutable.Set[_]] => {
 
         value: Any =>
-          val elems: mutable.Set[Any] = value.asInstanceOf[util.Set[ODocument]].asScala.map(doc => read(doc))
+          val elems: mutable.Set[Any] = value.asInstanceOf[util.Set[Any]].asScala.map(doc => elementReader(doc))
           elems
       }
       //Sets: misc
@@ -363,7 +426,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
 
         {
           value: Any =>
-            val elems: Set[Any] = value.asInstanceOf[util.Set[ODocument]].asScala.map(doc => read(doc)).toSet
+            val elems: Set[Any] = value.asInstanceOf[util.Set[Any]].asScala.map(doc => elementReader(doc)).toSet
             elems
         }
       }
@@ -374,12 +437,12 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
 
         {
           value: Any =>
-            val list = value.asInstanceOf[util.List[ODocument]]
+            val list = value.asInstanceOf[util.List[Any]]
             val result:Array[Any] = java.lang.reflect.Array.newInstance(clz, list.size()).asInstanceOf[Array[Any]]
             var i = -1
-            for (doc <- list.iterator().asScala) {
+            for (elem <- list.iterator().asScala) {
               i += 1
-              result(i) = read(doc)
+              result(i) = elementReader(elem)
             }
             result
         }
@@ -390,7 +453,7 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
         typ <:< typeOf[collection.immutable.Iterable[_]] ||
         typ <:< typeOf[collection.immutable.Seq[_]] ||
         typ <:< typeOf[collection.immutable.LinearSeq[_]] => { value: Any =>
-            val elems: List[Any] = value.asInstanceOf[util.List[ODocument]].asScala.map(doc => read(doc)).toList
+            val elems: List[Any] = value.asInstanceOf[util.List[_]].asScala.map(elem => elementReader(elem)).toList
             collection.immutable.List(elems: _*)
         }
 
@@ -404,10 +467,10 @@ case class ClassNameReadersRegistry(val classNamer: (Type => String) = ClassToNa
         typ <:< typeOf[collection.mutable.Seq[_]] ||
         typ <:< typeOf[collection.mutable.Iterable[_]] => { value: Any =>
 
-          val list = value.asInstanceOf[util.List[ODocument]]
+          val list = value.asInstanceOf[util.List[_]]
           val result = new collection.mutable.ArrayBuffer[Any](list.size())
-          for (doc <- list.iterator().asScala) {
-            result += read(doc)
+          for (elem <- list.iterator().asScala) {
+            result += elementReader(elem)
           }
           result
       }

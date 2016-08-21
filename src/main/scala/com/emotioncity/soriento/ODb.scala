@@ -51,6 +51,7 @@ trait ODb {
   }
 
   private[soriento] def createOClassByType(schema: OSchema, typ: Type): OClass = {
+
     val clazz = ReflectionUtils.toJavaClass(typ)
     val ccSimpleName = clazz.getSimpleName
 
@@ -62,7 +63,16 @@ trait ODb {
         // Prevent recursive definition
         register += ccSimpleName -> oClass
 
-        val fields: List[Symbol] = if (clazz.isInterface) List.empty[Symbol] else ReflectionUtils.constructorParams(typ)
+        val fields: List[Symbol] = if (clazz.isInterface) List.empty[Symbol]
+        else {
+          try {
+            ReflectionUtils.constructorParams(typ)
+          } catch {
+            case e:ScalaReflectionException => {
+              throw e
+            }
+          }
+        }
 
         fields
           .filter(!ReflectionUtils.isId(_)) // IDs saved explicitly
@@ -85,7 +95,11 @@ trait ODb {
                  | OType.LINKSET
                  | OType.EMBEDDEDSET => {
               val genericOpt = fieldType.typeArgs.head // MUST be a generic type
-              oClass.createProperty(fieldName, oType, createOClassByType(schema, genericOpt))
+              ReflectionUtils.getOTypeByTypeOpt(genericOpt) match{
+                case Some(otype) => oClass.createProperty(fieldName, oType, otype)
+                case None => oClass.createProperty(fieldName, oType, createOClassByType(schema, genericOpt))
+              }
+
             }
 
             case OType.EMBEDDEDMAP
@@ -98,7 +112,10 @@ trait ODb {
               val genericOpt2 = fieldType.typeArgs(1)
               if (genericOpt1 <:< typeOf[String]) new IllegalArgumentException(s"Map key must be string in field ${ccSimpleName}.${fieldName}")
 
-              oClass.createProperty(fieldName, oType, createOClassByType(schema, genericOpt2))
+              ReflectionUtils.getOTypeByTypeOpt(genericOpt2) match{
+                case Some(otype) => oClass.createProperty(fieldName, oType, otype)
+                case None => oClass.createProperty(fieldName, oType, createOClassByType(schema, genericOpt2))
+              }
             }
             case OType.BOOLEAN
                  | OType.INTEGER
