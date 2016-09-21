@@ -72,7 +72,7 @@ class EnumReflector(val enumElementType: Type) {
       .map { s =>
         val memberName = s.name.toString
         val enumValue = enumObject.getClass.getMethod(memberName).invoke(enumObject).asInstanceOf[scala.Enumeration$Value]
-        println(s"${memberName} ${enumValue}")
+//        println(s"${memberName} ${enumValue}")
         (memberName -> enumValue)
       }: _*
   )
