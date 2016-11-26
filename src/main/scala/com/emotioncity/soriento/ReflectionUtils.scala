@@ -5,7 +5,6 @@ import java.util
 import javax.persistence.Id
 
 import com.emotioncity.soriento.annotations._
-import com.orientechnologies.orient.core.db.record.OTrackedSet
 import com.orientechnologies.orient.core.id.ORID
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
@@ -15,9 +14,8 @@ import scala.reflect.runtime.universe._
 
 
 /**
- * Created by stream on 14.12.14.
- */
-
+  * Created by stream on 14.12.14.
+  */
 object ReflectionUtils {
 
   import scala.collection.JavaConverters._
@@ -36,16 +34,40 @@ object ReflectionUtils {
     val constr = constructor(tpe)
     val params = constr.symbol.paramLists.flatten // get constructor params
     val typeMap = params.map(symbol => symbol.name.toString -> symbol.typeSignature).toMap
+    //println("TypeMap: " + typeMap)
+
+    def checkOptional(originalSignature: Type): (Type, Boolean) = {
+      if (originalSignature.<:<(typeOf[Option[_]])) {
+        (originalSignature.typeArgs.head, true)
+      } else {
+        (originalSignature, false)
+      }
+    }
+
+    //println(s"inDocument: ${ if (document.field("events") != null) document.field("events").getClass else null }")
+
     val input = document.toMap.asScala.map {
       case (k, v) =>
         typeMap.get(k) match {
-          case None => (k, v)
-          case Some(originalSignature) =>
-            val (signature, optional) = if (originalSignature.<:<(typeOf[Option[_]])) {
-              (originalSignature.typeArgs.head, true)
+          case None =>
+            if (k.equalsIgnoreCase("@rid")) {
+              val fieldsWithAnnotations: List[(String, List[Annotation])] = onlyFieldsWithAnnotations(tpe).get
+              fieldsWithAnnotations.find(pair => pair._2.exists(annotation => annotation.tree.tpe =:= typeOf[Id])) match {
+                case Some(nameAnnotations) =>
+                  val keyName = nameAnnotations._1
+                  //println(s"Rid fieldName: $keyName")
+                  val ridFieldSignature = typeMap.get(keyName).get //safe ?
+                val (signature, optional) = checkOptional(ridFieldSignature)
+                  val valueType = v.asInstanceOf[ORID].getIdentity // unsafe, test it, improve it
+                  keyName -> (if (optional) Option(valueType) else valueType)
+                case None =>
+                  (k, v)
+              }
             } else {
-              (originalSignature, false)
+              (k, v)
             }
+          case Some(originalSignature) =>
+            val (signature, optional) = checkOptional(originalSignature)
             val valueType = v match {
               case m: ODocument =>
                 if (signature.<:<(typeOf[ORID])) {
@@ -55,25 +77,27 @@ object ReflectionUtils {
                 } else {
                   createCaseClassByType(signature, m)
                 }
-              case m: OTrackedSet[ODocument @unchecked] =>
+              case m: util.Set[ODocument] =>
                 m.asScala.map(item => createCaseClassByType(signature.typeArgs.head, item)).toSet
-              case m: util.ArrayList[ODocument @unchecked] =>
+              case m: util.List[ODocument] =>
                 m.asScala.toList.map(item => createCaseClassByType(signature.typeArgs.head, item))
               case m => m
             }
+            //println("Value type: " + valueType)
             k -> (if (optional) Some(valueType) else valueType)
         }
     }
 
-    constr(params.map(_.name.toString).map(name => {
+
+    /*  println(s"Input:  $input")
+      println(s"Params: $params")*/
+    val prms = params.map(_.name.toString).map(name => {
       input.get(name) match {
-        case Some(value) => value
+        case Some(value) =>
+          //println(s"Value type name: $name - value: ${value.getClass}")
+          value
         case None =>
-          val (signature, optional) = if (typeMap(name).<:<(typeOf[Option[_]])) {
-            (typeMap(name).typeArgs.head, true)
-          } else {
-            (typeMap(name), false)
-          }
+          val (signature, optional) = checkOptional(typeMap(name))
           val xxx = if (signature.<:<(typeOf[ORID])) {
             document.getIdentity
           } else {
@@ -81,7 +105,9 @@ object ReflectionUtils {
           }
           if (optional) Option(xxx) else xxx
       }
-    }).toSeq: _*) // invoke constructor
+    }).toSeq
+    //println("Prms: " + prms)
+    constr(prms: _*) // invoke constructor
 
   }
 
@@ -102,11 +128,11 @@ object ReflectionUtils {
   }
 
   /**
-   * Powerful for determine type of Generic
-   * @tparam T generic type
-   * @return scala.reflect.runtime.universe.Type
-   */
-  def typeStringByTypeTag[T: TypeTag] = typeOf[T].typeArgs.head
+    * Powerful for determine type of Generic
+    * @tparam T generic type
+    * @return scala.reflect.runtime.universe.Type
+    */
+  def typeStringByTypeTag[T: TypeTag](t: T): Option[Type] = typeOf[T].typeArgs.headOption
 
   def typeStringByType(t: Type): Option[Type] = t.typeArgs.headOption
 
@@ -121,8 +147,8 @@ object ReflectionUtils {
       .typeSignature
       .members
       .collectFirst { case method: MethodSymbol if method.name.toString == "apply" =>
-      method.paramLists.head.map(p => p.name.toString -> p.annotations)
-    }
+        method.paramLists.head.map(p => p.name.toString -> p.annotations)
+      }
   }
 
   def onlyFieldsWithAnnotations(tpe: Type): Option[List[(String, List[Annotation])]] = {
@@ -132,8 +158,8 @@ object ReflectionUtils {
       .typeSignature
       .members
       .collectFirst { case method: MethodSymbol if method.name.toString == "apply" =>
-      method.paramLists.head.map(p => p.name.toString -> p.annotations).filter(t => t._2.nonEmpty)
-    }
+        method.paramLists.head.map(p => p.name.toString -> p.annotations).filter(t => t._2.nonEmpty)
+      }
   }
 
   def getOType[T](inName: String, field: Field)(implicit tag: ClassTag[T]): OType = {
@@ -141,27 +167,28 @@ object ReflectionUtils {
   }
 
   def getOType[T](inName: String, field: Field, clazz: Class[_]): OType = {
+    val fieldName = field.getName
     val fieldClassName = field.getType.getName
-    fieldClassName match {
-      case "java.lang.Boolean" | "boolean" => OType.BOOLEAN
-      case "java.lang.String" | "string" => OType.STRING
-      case "java.lang.Byte" | "byte" => OType.BYTE
-      case "java.lang.Short" | "short" => OType.SHORT
-      case "java.lang.Integer" | "int" => OType.INTEGER
-      case "java.lang.Long" | "long" => OType.LONG
-      case "java.lang.Float" | "float" => OType.FLOAT
-      case "java.lang.Double" | "double" => OType.DOUBLE
-      case "java.util.Date" => OType.DATE
-      /*case "scala.Option" =>
-        val genericOpt = getGenericTypeClass(field)
-        genericOpt match {
-          case Some(t) =>
-            println(s"Type for class: ${t.getSimpleName}")
-            val propertyName = t.getSimpleName
+    val genericOpt = getScalaGenericTypeClass(fieldName, clazz) //getClass getType => use scala version (bottom)
+    genericOpt match {
+      case Some(generic) =>
+        simpleFieldOType(clazz, inName, generic.toString)
+      case None =>
+        simpleFieldOType(clazz, inName, fieldClassName)
+    }
+  }
 
-          case None =>
-            OType.ANY
-        }*/
+  private def simpleFieldOType[T](clazz: Class[_], inName: String, fieldClassName: String): OType = {
+    fieldClassName match {
+      case "java.lang.Boolean" | "boolean" | "Boolean" => OType.BOOLEAN
+      case "java.lang.String" | "String" => OType.STRING
+      case "java.lang.Byte" | "byte" | "Byte" => OType.BYTE
+      case "java.lang.Short" | "short" | "Short" => OType.SHORT
+      case "java.lang.Integer" | "int" | "Int" => OType.INTEGER
+      case "java.lang.Long" | "long" | "Long" => OType.LONG
+      case "java.lang.Float" | "float" | "Float" => OType.FLOAT
+      case "java.lang.Double" | "double" | "Double" => OType.DOUBLE
+      case "java.util.Date" => OType.DATE
       //TODO support Option type not implemented yet, but in progress
       case _ =>
         val typeOfClass = getTypeForClass(clazz)
@@ -198,16 +225,20 @@ object ReflectionUtils {
 
   def isId(name: String, clazz: Class[_]): Boolean = {
     val typeOfClass = getTypeForClass(clazz)
-    val fieldsWithAnnotations: List[(String, List[Annotation])] = onlyFieldsWithAnnotations(typeOfClass).get
-    fieldsWithAnnotations.exists(pair => pair._1 == name && pair._2.exists(annotation => annotation.tree.tpe =:= typeOf[Id]))
+    val maybeFieldsWithAnnotations: Option[List[(String, List[Annotation])]] = onlyFieldsWithAnnotations(typeOfClass)
+    maybeFieldsWithAnnotations match {
+      case Some(fieldsWithAnnotations) =>
+        fieldsWithAnnotations.exists(pair => pair._1 == name && pair._2.exists(annotation => annotation.tree.tpe =:= typeOf[Id]))
+      case None => false
+    }
   }
 
   /**
-   * Get RID if it present in object
-   * TODO: More type safe!
-   * @param cc case class
-   * @return None if RID does not exist else Some(rid)
-   */
+    * Get RID if it present in object
+    * TODO: More type safe!
+    * @param cc case class
+    * @return None if RID does not exist else Some(rid)
+    */
   def rid(cc: Product): Option[ORID] = {
     val clazz = cc.getClass
     val fieldList: List[Field] = cc.getClass.getDeclaredFields.toList
@@ -231,7 +262,12 @@ object ReflectionUtils {
     }
   }
 
-  def getGenericTypeClass(field: Field): Option[Class[_]] = {
+  /**
+    * Do not use this method. It is broken, return None for boxing java types (Double, Boolean, etc)
+    * @param field field of constructor
+    * @return
+    */
+  private[soriento] def getGenericTypeClass(field: Field): Option[Class[_]] = {
     val genericType = field.getGenericType
     genericType match {
       case parametrizedType: ParameterizedType =>
@@ -246,5 +282,27 @@ object ReflectionUtils {
         None
     }
   }
+
+  def getScalaGenericTypeClass(fieldName: String, clazz: Class[_]): Option[Type] = {
+    val tpe = getTypeForClass(clazz)
+
+    val paramOpt: Option[Option[Symbol]] = tpe.companion.typeSymbol
+      .typeSignature
+      .members
+      .collectFirst { case method: MethodSymbol if method.name.toString == "apply" =>
+        method.paramLists.head.find(p => p.name.toString == fieldName)
+      }
+
+    paramOpt match {
+      case Some(p) =>
+        p.flatMap(s => s.typeSignature.resultType.typeArgs.headOption)
+      case None =>
+        None
+    }
+
+  }
+
+  def isCaseClass(tpe: Type) =
+    tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass
 
 }

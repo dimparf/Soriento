@@ -1,5 +1,6 @@
 package com.emotioncity.soriento
 
+import com.emotioncity.soriento.support.{RemoteOrientDbSupport, OrientDbSupport}
 import com.emotioncity.soriento.testmodels._
 import com.orientechnologies.orient.core.metadata.schema.OType
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -12,15 +13,17 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 
 class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
-  import ODocumentReader._
   val schema = orientDb.getMetadata.getSchema
 
   after {
     dropOClass[Test]
     dropOClass[Message]
     dropOClass[BlogWithLinkedMessage]
+    dropOClass[LinkedMessage]
     dropOClass[BlogWithEmbeddedMessages]
     dropOClass[BlogWithLinkSetMessages]
+    dropOClass[ClassWithOptionalField]
+    dropOClass[ClassWithOptionalPrimitiveField]
   }
 
   test("ODb should be create OClass with name in OrientDb") {
@@ -55,6 +58,11 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
   }
 
   test("ODb should be drop OClass from OrientDb") {
+    createOClass[Test]
+    createOClass[Message]
+    createOClass[BlogWithLinkedMessage]
+    createOClass[BlogWithEmbeddedMessages]
+
     dropOClass[Test]
     dropOClass[Message]
     dropOClass[BlogWithLinkedMessage]
@@ -71,15 +79,63 @@ class ODbTest extends FunSuite with Matchers with BeforeAndAfter with ODb {
     droppedAfterDropped should equal(false)
   }
 
-  test("ODb should be create schema without field annotated with @javax.persistent.Id") {
+  test("ODb should be create schema with field annotated with @javax.persistent.Id") {
     createOClass[BlogWithEmbeddedListMessages]
-    schema.existsClass("BlogWithEmbeddedListMessages")
+    schema.existsClass("BlogWithEmbeddedListMessages") shouldBe true
     val oClass = schema.getClass("BlogWithEmbeddedListMessages")
     oClass.getProperty("id") should be(null)
     oClass.getProperty("messages") should not be null
     oClass.getProperty("name") should not be null
     dropOClass[BlogWithEmbeddedListMessages]
     dropOClass[Message]
+  }
+
+ /* test("should create schema with Option[T] link annotated fields") {
+    createOClass[ClassWithOptionalLinkedField]
+    schema.existsClass("ClassWithOptionalLinkedField") shouldBe true
+    val createdOClass = schema.getClass("ClassWithOptionalLinkedField")
+    createdOClass.existsProperty("simpleOptList") shouldBe true
+    val simpleOptListType = createdOClass.getProperty("simpleOptList").getType
+    val className = createdOClass.getProperty("simpleOptList").getLinkedClass
+    className should equal("Simple")
+    simpleOptListType should equal(OType.EMBEDDEDSET)
+  }*/
+
+  test("should create OClass by case class with Option[T] fields") {
+    createOClass[ClassWithOptionalField]
+    schema.existsClass("ClassWithOptionalField") shouldBe true
+    val createdOClass = schema.getClass("ClassWithOptionalField")
+    createdOClass.existsProperty("optField") shouldBe true
+    val optFieldType = createdOClass.getProperty("optField").getType
+    optFieldType should equal(OType.STRING)
+
+    createOClass[ClassWithOptionalPrimitiveField]
+    schema.existsClass("ClassWithOptionalPrimitiveField") shouldBe true
+    val createdOClassP = schema.getClass("ClassWithOptionalPrimitiveField")
+
+    createdOClassP.existsProperty("doubleOpt") shouldBe true
+    val optFieldTypeP = createdOClassP.getProperty("doubleOpt").getType
+    optFieldTypeP should equal(OType.DOUBLE)
+    createdOClassP.existsProperty("longValue") shouldBe true
+    val longFieldTypeP = createdOClassP.getProperty("longValue").getType
+    longFieldTypeP should equal(OType.LONG)
+  }
+
+  test("Behavior: create OClass by case class structure if it not exists else do nothing") {
+    createOClass[Simple]
+    schema.existsClass("Simple") shouldBe true
+    createOClass[Simple]
+    schema.existsClass("Simple") shouldBe true
+    createOClass[Complex]
+    schema.existsClass("Complex") shouldBe true
+    createOClass[Complex]
+    schema.existsClass("Complex") shouldBe true
+    schema.existsClass("Simple") shouldBe true
+    dropOClass[Complex] shouldBe true
+    schema.existsClass("Complex") shouldBe false
+    schema.existsClass("Simple") shouldBe true
+    dropOClass[Simple] shouldBe true
+    schema.existsClass("Simple") shouldBe false
   }
 
 }

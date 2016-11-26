@@ -2,6 +2,7 @@ package com.emotioncity.soriento
 
 import java.util.{List => JList, Set => JSet}
 
+import com.orientechnologies.orient.core.db.document.ODatabaseDocument
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 
@@ -107,7 +108,7 @@ object RichODocumentImpl {
     }
 
     def as[T](implicit reader: ODocumentReader[T]): Option[T] = reader.readOpt(oDocument)
-
+    
     /**
      * Return simple field represented as ODocument field
      * @param key name of ODocument

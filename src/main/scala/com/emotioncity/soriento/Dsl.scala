@@ -1,15 +1,16 @@
 package com.emotioncity.soriento
 
+import java.util.Collections
+
 import com.emotioncity.soriento.ReflectionUtils._
 import com.orientechnologies.orient.core.record.impl.ODocument
 
-import scala.language.implicitConversions
 import scala.collection.JavaConverters._
 
 
 /**
- * Created by stream on 31.10.14.
- */
+  * Created by stream on 31.10.14.
+  */
 trait Dsl {
 
   implicit def productToDocument[T >: Any](cc: Product): ODocument = {
@@ -20,16 +21,17 @@ trait Dsl {
     //println(s"document rid: ${document.getIdentity}")
     val values = cc.productIterator
     val fieldList = cc.getClass.getDeclaredFields.toList
-    fieldList.foreach { field =>
+    val purifiedFromId = values.zip(fieldList.iterator).toList.filter { case (v, f) => !isId(f.getName, cc.getClass) }
+    purifiedFromId.foreach { case (value, field) =>
       val fieldName = field.getName
-      val fieldValue = if (!values.hasNext) None else values.next() match {
+      val fieldValue = value match {
         case p: Product if p.productArity > 0 =>
           p match {
-            case Some(value) =>
-              if (isCaseClass(value)) {
-                productToDocument(value.asInstanceOf[Product])
+            case Some(v) =>
+              if (ReflectionUtils.isCaseClass(ReflectionUtils.getTypeForClass(v.getClass))) {
+                productToDocument(v.asInstanceOf[Product])
               } else {
-                value
+                v
               }
             case _: List[_] =>
               p.asInstanceOf[List[_]].map {
@@ -49,6 +51,8 @@ trait Dsl {
                 case item =>
                   item
               }.asJavaCollection
+            case Nil =>
+              Collections.emptyList
             case _ => x
           }
       }
@@ -61,7 +65,12 @@ trait Dsl {
     document
   }
 
-  private[this] def isCaseClass(o: Any) = o.getClass.getInterfaces.contains(classOf[scala.Product])
+  /*
+
+    def saveAs[T](implicit reader: ODocumentReader[T], orientDb: ODatabaseDocument): Option[T] = {
+      import RichODatabaseDocumentImpl._
+      orientDb.saveAs[T](oDocument)
+    }*/
 
 }
 

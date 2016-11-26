@@ -14,7 +14,7 @@ lazy val commonSettings = Seq(
   testForkedParallel := false,
   parallelExecution in Test := false,
   autoCompilerPlugins := true,
-  javacOptions ++= Seq("-source", "1.7", "-target", "1.7"),
+  javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-language:implicitConversions"),
   resolvers ++= Seq(
     Classpaths.typesafeReleases,
@@ -24,13 +24,13 @@ lazy val commonSettings = Seq(
     "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/"
   ),
 libraryDependencies ++= Seq(
-  "com.tinkerpop.blueprints" % "blueprints-core" % "2.3.0",
-  "com.orientechnologies" % "orientdb-core" % "2.1.0",
-  "com.orientechnologies" % "orientdb-graphdb" % "2.1.0",
-  "org.scala-lang" % "scalap" % "2.11.6", //TODO fix scala dep on scalaVersion
-  "org.mockito" % "mockito-core" % "1.9.5" % "test",
-  "org.scalatest" %% "scalatest" % "2.2.3" % "test",
-  "org.specs2" %% "specs2" % "2.3.12" % "test"
+  "com.tinkerpop.blueprints" % "blueprints-core" % "2.6.0",
+  "com.orientechnologies" % "orientdb-core" % "2.1.8",
+  "com.orientechnologies" % "orientdb-graphdb" % "2.1.8",
+  "org.scala-lang" % "scalap" % "2.11.7", //TODO fix scala dep on scalaVersion
+  "org.mockito" % "mockito-core" % "1.10.19" % "test",
+  "org.scalatest" %% "scalatest" % "2.2.5" % "test",
+  "org.specs2" %% "specs2" % "2.3.13" % "test"
 )
 )
 

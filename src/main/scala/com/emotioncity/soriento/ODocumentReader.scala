@@ -3,13 +3,21 @@ package com.emotioncity.soriento
 import java.util.{List => JList}
 
 import com.orientechnologies.orient.core.record.impl.ODocument
-
+import scala.reflect.runtime.universe._
 import scala.util.Try
 
+object ODocumentReader {
 
-/**
- * Created by stream on 30.03.15.
- */
+  implicit def createReader[T](implicit tag: TypeTag[T]): ODocumentReader[T] = {
+    new ODocumentReader[T] {
+      override def read(oDocument: ODocument): T = {
+        ReflectionUtils.createCaseClass[T](oDocument)(tag)
+      }
+    }
+  }
+}
+
+
 trait ODocumentReader[T] extends OReader[ODocument, T]
 
 trait OReader[B <: ODocument, T] {

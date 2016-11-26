@@ -6,8 +6,8 @@ import com.emotioncity.soriento.annotations.{Embedded, EmbeddedSet, Linked}
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 /**
- * Created by stream on 13.05.15.
- */
+  * Created by stream on 13.05.15.
+  */
 
 case class Owner(name: String)
 
@@ -16,12 +16,12 @@ case class Address(location: String)
 case class Event(name: String, date: Date)
 
 case class Place(
-                  name: String,
-                  @Linked owner: Owner,
-                  latitude: Double,
-                  longitude: Double,
-                  @Embedded address: Address,
-                  @EmbeddedSet events: Set[Event] = Set.empty)
+  name: String,
+  @Linked owner: Owner,
+  latitude: Double,
+  longitude: Double,
+  @Embedded address: Address,
+  @EmbeddedSet events: Set[Event] = Set.empty)
 
 class UseCaseTest extends FunSuite with Matchers with BeforeAndAfter with ODb with Dsl {
 
