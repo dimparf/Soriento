@@ -82,6 +82,18 @@ object RichODocumentImpl {
           None
       }
     }
+//
+//    def getAsMap[T,U](fieldName: String)(implicit reader: ODocumentReader[T]): Option[Map[T,U]] = {
+//      get[java.util.Map JList[ODocument]](fieldName) match {
+//        case Some(oDocumentList) =>
+//          val listOfT: scala.List[T] = oDocumentList.toList.flatMap { oDocument =>
+//            reader.readOpt(oDocument)
+//          }
+//          Option(listOfT)
+//        case None =>
+//          None
+//      }
+//    }
 
     def getAsSet[T](fieldName: String)(implicit reader: ODocumentReader[T]): Option[Set[T]] = {
       get[JSet[ODocument]](fieldName) match {
