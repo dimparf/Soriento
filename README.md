@@ -7,7 +7,7 @@ Soriento
 ## Scala OrientDb object mapping library
 
 Soriento is an object-relational mapping framework from scala case classes to OrientDb ODocument.
-##News
+## News
 - Pre-maven 0.1.0alpha release
 - fix LinkSet deserialization
 - add saveAs[T](document) to RichODatabaseDocument
@@ -15,7 +15,7 @@ Soriento is an object-relational mapping framework from scala case classes to Or
 - fix primitive type OType detection
 - update OrientDb dependencies
  
-##Note
+## Note
 Please use develop branch for development and master as production version of library.
 
 ## Features
@@ -31,11 +31,11 @@ Please use develop branch for development and master as production version of li
 Supported types:
 - Long, Double, Int, Float, Short, String, case classes: Embedded, EmbeddedList, EmbeddedSet, Link, LinkList, LinkSet
 
-##Coming soon
+## Coming soon
 - LinkMap.
 - EmbeddedMap.
 
-##Add to you project
+## Add to you project
 ```scala
  lazy val youProject = Project("YouProject", file("."))
   .settings(commonSettings: _*)
@@ -44,7 +44,7 @@ Supported types:
  lazy val sorientoProject = RootProject(uri("https://github.com/dimparf/Soriento.git#master"))
 ```
 
-##Usage
+## Usage
 Simple example:
 ```scala
   import com.emotioncity.soriento.Dsl._ // or extends Dsl trait
