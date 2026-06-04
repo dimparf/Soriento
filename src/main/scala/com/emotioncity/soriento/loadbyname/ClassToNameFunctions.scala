@@ -1,6 +1,6 @@
 package com.emotioncity.soriento.loadbyname
 
-import scala.reflect.runtime.universe.{Type,TypeRef}
+import scala.reflect.runtime.universe.{Type, TypeRef}
 
 /**
   * Policies for naming types to ODB.
@@ -13,8 +13,12 @@ object ClassToNameFunctions {
   //def underscoreTypeParameters( tag:TypeTag[_] ) : String = dropPath(tag.toString).replace("[","_").replace("]", "")
 
   private def parameterListToString(types: List[Type]): String = {
-    if (types.size == 0) ""
-    else s"[${types.map(shortGenericName(_)).mkString(",")}]"
+    if (types.isEmpty) {
+      ""
+    }
+    else {
+      s"[${types.map(shortGenericName).mkString(",")}]"
+    }
   }
 
   /**
@@ -26,7 +30,8 @@ object ClassToNameFunctions {
     s"${root}${parameterListToString(tref.args)}"
   }
 
-  def underscoreTypeParameters(typ: Type) = {
+  def underscoreTypeParameters(typ: Type): String = {
     shortGenericName(typ).replace("[", "_").replace("]", "")
   }
+
 }

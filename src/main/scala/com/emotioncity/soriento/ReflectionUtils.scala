@@ -1,8 +1,6 @@
 package com.emotioncity.soriento
 
 import java.lang.reflect.{Field, ParameterizedType}
-import java.util
-import javax.persistence.Id
 
 import com.emotioncity.soriento.annotations._
 import com.emotioncity.soriento.loadbyname.ClassNameReadersRegistry
@@ -10,7 +8,6 @@ import com.orientechnologies.orient.core.id.ORID
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 
-import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 
@@ -283,9 +280,10 @@ object ReflectionUtils {
   /**
     * Option[Option[T]] => T
     */
+  @scala.annotation.tailrec
   def removeOptionType(typ:Type): Type = {
     typ match {
-      case tpe if tpe <:< typeOf[Option[_]] => removeOptionType(tpe.typeArgs(0))
+      case tpe if tpe <:< typeOf[Option[_]] => removeOptionType(tpe.typeArgs.head)
       case _ => typ
     }
   }

@@ -6,7 +6,6 @@ import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 object AnyRichODatabaseDocumentImpl {
 
@@ -14,6 +13,7 @@ object AnyRichODatabaseDocumentImpl {
 
   /**
     * RichODatabaseDocumentTx with a T<:Any constraint.
+    *
     * @param db
     */
   implicit class AnyRichODatabaseDocumentTx(db: ODatabaseDocument) extends RichODatabaseDocumentImpl.RichODatabaseDocumentTx(db) {

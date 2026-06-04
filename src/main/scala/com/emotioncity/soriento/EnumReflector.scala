@@ -57,7 +57,7 @@ class EnumReflector(val enumElementType: Type) {
   private def hasEnumerationReturnType(s: MethodSymbol) =
     s.isPublic &&
       s.returnType.typeSymbol.isClass &&
-      s.returnType.typeSymbol.asClass.baseClasses.filter(_.fullName == "scala.Enumeration.Value").size > 0
+      s.returnType.typeSymbol.asClass.baseClasses.exists(_.fullName == "scala.Enumeration.Value")
 
 
   lazy val ids = rawValues.map(toID)

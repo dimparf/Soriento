@@ -14,7 +14,6 @@ import scala.collection.JavaConverters._
   */
 trait Dsl {
 
-
   private def scalaFieldToDocumentField(field: Any): Any = {
     if (EnumReflector.isEnumerationValue(field))
       field.asInstanceOf[scala.Enumeration$Value].id
@@ -50,21 +49,18 @@ trait Dsl {
     // Collect the (value,field) pairs.
     // Id fields are eliminated since they are provided directly in the document's constructor.
     val purifiedFromIdValuesAndFields = values.zip(fieldList.iterator).toList.filter {
-      case (v, f) => {
+      case (v, f) =>
         if (ReflectionUtils.isId(f)) {
           if (rid.isDefined) throw new Exception(s"Found multiple IDs for ${modelName}")
-
           v match {
-            case null => {} // ID not set
-            case None => {} // ID not set
+            case null => // ID not set
+            case None => // ID not set
             case Some(id) => rid = Some(id.asInstanceOf[ORID])
             case _ => rid = Some(v.asInstanceOf[ORID])
           }
-
           false // Remove from purifiedFromIdValuesAndFields
         }
         else true
-      }
     }
 
     // Make the document, with out with a ID

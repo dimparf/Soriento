@@ -1,17 +1,5 @@
-resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
-
-resolvers += "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/"
-
-resolvers += Classpaths.sbtPluginReleases
-
-resolvers += Resolver.url("scoverage-bintray", url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns)
-
-addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.1.7")
-
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.3.1")
-
-addSbtPlugin("org.scoverage" % "sbt-coveralls" % "1.0.0")
-
-//addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.8.0")
-
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
+resolvers += Resolver.bintrayRepo("scalacenter", "releases")
+addCompilerPlugin("ch.epfl.scala" %% "classpath-shrinker" % "0.1.1")
+addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.3.1")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.8")
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.0")

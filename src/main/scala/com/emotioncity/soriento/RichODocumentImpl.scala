@@ -2,11 +2,10 @@ package com.emotioncity.soriento
 
 import java.util.{List => JList, Set => JSet}
 
-import com.orientechnologies.orient.core.db.document.ODatabaseDocument
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.core.record.impl.ODocument
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe._
 
 
@@ -42,7 +41,7 @@ object RichODocumentImpl {
         case OType.EMBEDDEDLIST =>
           get[java.util.List[ODocument]](fieldName) match {
             case Some(oDocumentList) =>
-              Option(oDocumentList.toList.map(doc => reader.read(doc)).asInstanceOf[T]) //TODO STUB, use getAsList[T]
+              Option(oDocumentList.asScala.toList.map(doc => reader.read(doc)).asInstanceOf[T]) //TODO STUB, use getAsList[T]
             case None =>
               println(s"EmbeddedList not read - $fieldName")
               None
@@ -50,7 +49,7 @@ object RichODocumentImpl {
         case OType.EMBEDDEDSET =>
           get[java.util.Set[ODocument]](fieldName) match {
             case Some(oDocumentList) =>
-              Option(oDocumentList.toList.map(doc => reader.read(doc)).asInstanceOf[T])
+              Option(oDocumentList.asScala.toList.map(doc => reader.read(doc)).asInstanceOf[T])
             case None =>
               println(s"EmbeddedSet not read - $fieldName")
               None
@@ -74,7 +73,7 @@ object RichODocumentImpl {
     def getAsList[T](fieldName: String)(implicit reader: ODocumentReader[T]): Option[scala.List[T]] = {
       get[JList[ODocument]](fieldName) match {
         case Some(oDocumentList) =>
-          val listOfT: scala.List[T] = oDocumentList.toList.flatMap { oDocument =>
+          val listOfT: scala.List[T] = oDocumentList.asScala.toList.flatMap { oDocument =>
             reader.readOpt(oDocument)
           }
           Option(listOfT)
@@ -82,11 +81,23 @@ object RichODocumentImpl {
           None
       }
     }
+//
+//    def getAsMap[T,U](fieldName: String)(implicit reader: ODocumentReader[T]): Option[Map[T,U]] = {
+//      get[java.util.Map JList[ODocument]](fieldName) match {
+//        case Some(oDocumentList) =>
+//          val listOfT: scala.List[T] = oDocumentList.toList.flatMap { oDocument =>
+//            reader.readOpt(oDocument)
+//          }
+//          Option(listOfT)
+//        case None =>
+//          None
+//      }
+//    }
 
     def getAsSet[T](fieldName: String)(implicit reader: ODocumentReader[T]): Option[Set[T]] = {
       get[JSet[ODocument]](fieldName) match {
         case Some(oDocumentSet) =>
-          val setOfT: Set[T] = oDocumentSet.toSet.flatMap { oDocument: ODocument =>
+          val setOfT: Set[T] = oDocumentSet.asScala.toSet.flatMap { oDocument: ODocument =>
             reader.readOpt(oDocument)
           }
           Option(setOfT)

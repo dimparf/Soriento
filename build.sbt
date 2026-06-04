@@ -1,13 +1,12 @@
 import sbt._
-import Process._
 import Keys._
+
 
 lazy val commonSettings = Seq(
   name := "Soriento",
   organization := "com.emotioncity",
   version := "0.1.0-SNAPSHOT",
-  scalaVersion := "2.11.8",
-  //coverageEnabled := true,
+  scalaVersion := "2.12.8",
   offline := false,
   fork in run := true,
   fork in Test := true,
@@ -24,16 +23,17 @@ lazy val commonSettings = Seq(
     "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/"
   ),
 libraryDependencies ++= Seq(
-  "javax.persistence" % "persistence-api" % "1.0.2",
+  "org.scala-lang" % "scala-reflect" % "2.12.8",
   "com.tinkerpop.blueprints" % "blueprints-core" % "2.6.0",
-  "com.orientechnologies" % "orientdb-core" % "2.2.5",
-  "com.orientechnologies" % "orientdb-graphdb" % "2.2.5",
-  "org.scala-lang" % "scalap" % "2.11.8", //TODO fix scala dep on scalaVersion
-  //"jline" % "jline" % "2.12.1",
-  "jline" % "jline" % "0.9.94",
+  "com.orientechnologies" % "orientdb-core" % "3.0.0",
+  "com.orientechnologies" % "orientdb-graphdb" % "3.0.0",
+
+  "io.circe" %% "circe-core" % "0.11.1",
+  "io.circe" %% "circe-generic" % "0.11.1",
+  "io.circe" %% "circe-parser" % "0.11.1",
+
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
-  "org.scalatest" %% "scalatest" % "2.2.5" % "test",
-  "org.specs2" %% "specs2" % "2.3.13" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.8" % "test",
 )
 )
 

@@ -1,15 +1,14 @@
 package com.emotioncity.soriento
 
-import com.orientechnologies.orient.core.command.OCommandRequest
 import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
 import com.orientechnologies.orient.core.db.document.{ODatabaseDocument, ODatabaseDocumentTx}
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.OCommandSQL
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
 
-import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, blocking}
+import scala.collection.JavaConverters._
 
 /**
   * Created by stream on 31.03.15.
@@ -20,12 +19,12 @@ object RichODatabaseDocumentImpl {
 
     def queryDocumentsBySql(sql: String): List[ODocument] = blockingCall { db =>
       val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](sql))
-      results.toList
+      results.asScala.toList
     }
 
     def queryBySql[T](query: String)(implicit reader: ODocumentReader[T]): List[T] = blockingCall { db =>
       val results: java.util.List[ODocument] = db.query(new OSQLSynchQuery[ODocument](query))
-      results.toList.map(document => reader.read(document))
+      results.asScala.toList.map(document => reader.read(document))
     }
 
     def commandRequest[RET <: Any](query: String): RET = blockingCall { db =>
@@ -44,6 +43,7 @@ object RichODatabaseDocumentImpl {
     /**
       * TODO in OrientDb 2.2 use isPooled method of db instance
       * thanks orientdb team
+      *
       * @return
       */
     def isPooled = db.getClass.getName.equalsIgnoreCase("com.orientechnologies.orient.core.db.OPartitionedDatabasePool$DatabaseDocumentTxPolled")
@@ -78,14 +78,13 @@ object RichODatabaseDocumentImpl {
 
     def asyncQueryBySql(sql: String): Future[List[ODocument]] = asyncCall { internalDb =>
       val results: java.util.List[ODocument] = internalDb.query(new OSQLSynchQuery[ODocument](sql))
-      results.toList
+      results.asScala.toList
     }
 
     def asyncQueryBySql[T](query: String)(implicit reader: ODocumentReader[T]): Future[List[T]] = asyncCall { internalDb =>
       val results: java.util.List[ODocument] = internalDb.query(new OSQLSynchQuery[ODocument](query))
-      results.toList.map(document => reader.read(document))
+      results.asScala.toList.map(document => reader.read(document))
     }
-
 
   }
 

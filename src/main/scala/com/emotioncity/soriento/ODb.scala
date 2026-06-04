@@ -57,7 +57,7 @@ trait ODb {
 
     register.get(ccSimpleName) match {
       case Some(oclass) => oclass
-      case None => {
+      case None =>
 
         val oClass = schema.createClass(ccSimpleName)
         // Prevent recursive definition
@@ -144,7 +144,6 @@ trait ODb {
         }
 
         oClass
-      }
     }
   }
 }
