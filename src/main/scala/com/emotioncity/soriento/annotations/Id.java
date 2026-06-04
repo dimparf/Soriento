@@ -3,10 +3,10 @@ package com.emotioncity.soriento.annotations;
 import java.lang.annotation.*;
 
 /**
- * Created by stream on 22.02.15.
+ * @author Dmitry Parenskiy
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
-public @interface LinkSet {
+public @interface Id {
 }

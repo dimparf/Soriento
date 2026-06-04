@@ -1,18 +1,16 @@
 package com.emotioncity.soriento
 
-import java.util.{List => JList}
-
 import com.orientechnologies.orient.core.record.impl.ODocument
 import scala.reflect.runtime.universe._
 import scala.util.Try
+import io.circe._, io.circe.generic.auto._, io.circe.parser._, io.circe.syntax._
 
 object ODocumentReader {
 
   implicit def createReader[T](implicit tag: TypeTag[T]): ODocumentReader[T] = {
-    new ODocumentReader[T] {
-      override def read(oDocument: ODocument): T = {
-        ReflectionUtils.createCaseClass[T](oDocument)(tag)
-      }
+    oDocument: ODocument => {
+      decode[T](oDocument.toJSON)
+      ReflectionUtils.createCaseClass[T](oDocument)(tag)
     }
   }
 }

@@ -18,6 +18,7 @@ Soriento is an object-relational mapping framework from scala case classes to Or
 ## Note
 Please use develop branch for development and master as production version of library.
 
+
 ## Features
 
  - Creating/deleting OrientDb classes by case classes.
@@ -27,6 +28,8 @@ Please use develop branch for development and master as production version of li
  - Support OType mapping Scala => OrientDb OTypes.
  - Transactions support.
  - Query by SQL.
+ - Polymorphic serialization and deserialization of List elements.
+ - Scala Enumeration support.
  
 Supported types:
 - Long, Double, Int, Float, Short, String, case classes: Embedded, EmbeddedList, EmbeddedSet, Link, LinkList, LinkSet
@@ -127,6 +130,34 @@ import BlogWithEmbeddedMessages._
 ```
 
 More examples in test directory.
+
+##New: Polymorphic loading (by class name)
+
+See PolyMorphicLoadByNameTest.scala : "Polymorphic"
+```
+    val teSchema = List(db.getMetadata().getSchema().createClass("TraceElement")).asJava
+    createOClass[TraceElementViewEvent].setSuperClasses(teSchema)
+    createOClass[TraceElementLoginEvent].setSuperClasses(teSchema)
+
+    db.save(new TraceElementLoginEvent(123, LoginEvent(1000)))
+    db.save(new TraceElementViewEvent(124, ViewEvent(1000, 99)))
+
+
+    // ClassNameReadersRegistry maps ODocument.getClassname
+    // to functions (ODocument => Any) to produce a scala class matching
+    // TODO: Discover on demand from package
+    val typeReaders = ClassNameReadersRegistry()
+    typeReaders.add[TraceElementLoginEvent]
+    typeReaders.add[TraceElementViewEvent]
+
+    implicit val reader = new ByClassNameODocumentReader(typeReaders)
+    import AnyRichODatabaseDocumentImpl._
+
+    val blogs: List[TraceElement] = db.queryAnyBySql[TraceElement]("select * from TraceElement;")
+```
+To achieve this, type names need to be loaded into the typeReaders registry before the query.
+
+
 
 ## Testing
 To run unit tests:

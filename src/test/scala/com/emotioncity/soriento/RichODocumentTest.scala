@@ -15,7 +15,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite, Inside, Matchers}
   */
 
 class RichODocumentTest extends FunSuite with Matchers with BeforeAndAfter with Inside with Dsl
-with ODb {
+  with ODb {
 
   import ODocumentReader._
 
@@ -124,7 +124,7 @@ with ODb {
 
   test("convert document to object class explicity") {
     val message = LinkedMessage("Hi all")
-    val savedMessageDoc = message.save
+    val savedMessageDoc: ODocument = message.save
     val converted = savedMessageDoc.as[LinkedMessage]
     converted should not be empty
     converted should contain(LinkedMessage("Hi all", Option(savedMessageDoc.getIdentity)))
@@ -133,8 +133,12 @@ with ODb {
     broken shouldBe empty
 
     //createOClass[ClassWithOptionalPrimitiveField]
-
   }
+
+  //  def saveLoad[T](obj:T) = {
+  //
+  //  }
+
 
   after {
     dropOClass[Home]
